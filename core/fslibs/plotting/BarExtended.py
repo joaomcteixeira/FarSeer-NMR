@@ -322,10 +322,107 @@ class BarExtended(PlottingBase):
         return
 
 if __name__ == "__main__":
-    print('hello world')
-    #import os
+    import os
     
-    #testing_path = os.path.join(os.path.realpath(__file__), 'testing')
+    file_name = os.path.realpath(__file__)
     
-    #for f in os.listdir(testing_path):
-    #    print(f)
+    print("### testing {}".format(file_name))
+    
+    dataset_path = os.path.join(
+        os.path.dirname(file_name),
+        'testing',
+        'dataset'
+        )
+        
+    print("testing dataset: {}".format(dataset_path))
+    
+    a = []
+    for f in sorted(os.listdir(testing_path)):
+        print("reading: {}".format(f))
+        a.append(
+            np.loadtxt(
+                os.path.join(testing_path, f),
+                delimiter=',',
+                skiprows=1,
+                dtype=str
+                )
+            )
+    
+    full_data_set = np.stack(a, axis=0)
+    print("dataset shape: {}".format(full_data_set))
+    
+    config = {
+        "subtitle_fn": "Arial",
+        "subtitle_fs": 8,
+        "subtitle_pad": 0.99,
+        "subtitle_weight": "normal",
+        "x_label_fn": "Arial",
+        "x_label_fs": 8,
+        "x_label_pad": 2,
+        "x_label_weight": "bold",
+        "y_label_fn": "Arial",
+        "y_label_fs": 8,
+        "y_label_pad": 3,
+        "y_label_weight": "bold",
+        "x_ticks_pad": 2,
+        "x_ticks_len": 2,
+        "y_ticks_fn": "Arial",
+        "y_ticks_fs": 6,
+        "y_ticks_rot": 0,
+        "y_ticks_pad": 1,
+        "y_ticks_weight": "normal",
+        "y_ticks_len": 2,
+        "y_grid_flag": True,
+        "y_grid_color": "lightgrey",
+        "y_grid_linestyle": "-",
+        "y_grid_linewidth": 0.2,
+        "y_grid_alpha": 0.8,
+        "vspace": 0.5,
+        "theo_pre_color": "red",
+        "theo_pre_lw": 1.0,
+        "tag_cartoon_color": "black",
+        "tag_cartoon_lw": 1.0,
+        "tag_cartoon_ls": "-",
+        "measured_color": "black",
+        "status_color_flag": False,
+        "missing_color": "red",
+        "unassigned_color": "lightgrey",
+        "bar_width": 0.8,
+        "bar_alpha": 1,
+        "bar_linewidth": 0,
+        "threshold_flag": True,
+        "threshold_color": "red",
+        "threshold_linewidth": 0.5,
+        "threshold_alpha": 0.8,
+        "mark_fontsize": 3,
+        "mark_prolines_flag": False,
+        "mark_prolines_symbol": "P",
+        "mark_user_details_flag": False,
+        "color_user_details_flag": False,
+        "user_marks_dict": {
+            "mark": "m"
+        },
+        "user_bar_colors_dict": {
+            "mark": "khaki"
+        },
+                "cols_page": 1,
+        "rows_page": 6,
+        "x_ticks_fn": "monospace",
+        "x_ticks_fs": 6,
+        "x_ticks_rot": 90,
+        "x_ticks_weight": "normal",
+        "x_ticks_color_flag": True,
+        "fig_dpi": 300,
+        "fig_file_type": "pdf",
+        "fig_height": 11.69,
+        "fig_width": 8.69
+    }
+    
+    plot = BarExtended(
+        full_data_set[:,:,21],
+        full_data_set[:,:,[0,1,2,3,4,11,12,15]],
+        config
+        )
+    
+    plot.plot()
+    plot.savefig()
