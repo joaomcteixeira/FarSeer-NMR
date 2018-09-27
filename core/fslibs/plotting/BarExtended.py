@@ -23,6 +23,7 @@ along with Farseer-NMR. If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from math import ceil
 
 import core.fslibs.Logger as Logger
 from core.fslibs.plotting.PlottingBase import PlottingBase
@@ -31,13 +32,21 @@ from core.fslibs.WetHandler import WetHandler as fsw
 class BarExtended(PlottingBase):
     """Extended Bar plotting template."""
     
-    def __init__(self, data, data_info, config, data_extra=None, **kwargs):
-        super.__init__(data, data_info, data_extra, config, **kwargs)
+    def __init__(self,
+            data,
+            data_info,
+            config,
+            data_extra=None,
+            partype="",
+            exp_names="",
+            **kwargs
+            ):
+        super().__init__(data, data_info, data_extra, config, **kwargs)
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
-        self.logge.debug("BarExtendedHorizontal initiated")
+        self.logger.debug("BarExtendedHorizontal initiated")
         
-        self.logger.debug("Column Selected: {}".format(self.sel))
+        self.logger.debug("Column Selected: {}".format(partype))
         self.logger.debug("Configuration dictionary \n{}".format(self.config))
         self.logger.debug("Shape of data matrix: {}".format(self.data.shape))
         self.logger.debug("Kwargs: {}".format(self.kwargs))
@@ -45,10 +54,12 @@ class BarExtended(PlottingBase):
         self.ppm_data = False
         self.ratio_data = False
         
-        if self.sel in ('H1_delta', 'N15_delta', 'CSP'):
+        # for ('H1_delta', 'N15_delta', 'CSP')
+        if partype == 'ppm' :
             self.ppm_data = True
         
-        elif self.sel in ('Height_ratio','Vol_ratio'):
+        # for ('Height_ratio','Vol_ratio')
+        elif partype == 'ratio':
             self.ratio_data = True
         
         self.logger.debug(
@@ -57,11 +68,19 @@ class BarExtended(PlottingBase):
                 self.ratio_data
                 )
             )
+        
+        if self.kwargs.get("exp_names"):
+            self.experiment_names = self.kwargs.get("exp_names")
+        else:
+            self.experiment_names = [str(i) for i in range(data.shape[0])]
             
-        self.experiment_names = self.data.items
         self.logger.debug("Experiment names: {}".format(self.experiment_names))
         
         self._calcs_numsubplots()
+    
+    def data_select(self):
+        """dummy function to comply with ABC"""
+        return
     
     def _calcs_numsubplots(self):
         """
@@ -79,6 +98,58 @@ class BarExtended(PlottingBase):
         
         return
     
+    def _config_fig(self):
+        """
+        Calculates number of subplot rows per page based on
+        user data and settings.
+        
+        Returns:
+            - numrows (int): number of total rows
+            - real_fig_height (float, inches): final figure height
+        """
+        
+        numrows = ceil(self.num_subplots/self.config["cols_page"]) + 1 
+        
+        real_fig_height = \
+            (self.config["fig_height"] / self.config["rows_page"]) \
+                * numrows
+        
+        return numrows, real_fig_height
+    
+    def draw_figure(self, **kwargs):
+        """
+        Draws the figure architecture.
+        
+        Defines the size of the figure and subplots based
+        on the data to plot.
+        
+        Returns:
+            - None.
+        
+        Stores :
+            - self.figure: Figure object.
+            - self.axs: axes of the figure (in case matplotlib is used).
+            - self.len_axs (int): the number of subplots created in the
+                figure object.
+        """
+        
+        numrows, real_fig_height = self._config_fig()
+        
+        # http://stackoverflow.com/questions/17210646/python-subplot-within-a-loop-first-panel-appears-in-wrong-position
+        self.figure, self.axs = plt.subplots(
+            nrows=numrows,
+            ncols=self.config["cols_page"],
+            figsize=(self.config["fig_width"], real_fig_height)
+            )
+        self.len_axs = len(self.axs)
+        self.axs = self.axs.ravel()
+        plt.tight_layout(
+            rect=[0.01,0.01,0.995,0.995],
+            h_pad=real_fig_height/self.config["rows_page"]
+            )
+        
+        return
+    
     def plot_subplots(self, **kwargs):
         """
         Sends the specific data to each subplot.
@@ -90,27 +161,53 @@ class BarExtended(PlottingBase):
             - None
         """
         
-        for i in range(self.data_to_plot):
+        for i in range(self.data.shape[0]):
             
             self.logger.debug("Starting subplot no: {}".format(i))
-            data = self.data[i]
-            data_info = self.data_info[i]
             
             if self.data_extra:
                 data_extra = self.data_extra[i]
             else:
                 data_extra = None
             
-            self.subplot(i, data_array, data_info, data_extra=data_extra)
+            self.subplot(
+                i,
+                self.data[i],
+                self.data_info[i],
+                data_extra=data_extra
+                )
             
             
         self.figure.subplots_adjust(hspace=self.config["vspace"])
+    
+    def _set_item_colors(self, items, series, d):
+        """
+        Translates the 'Peak Status' col to a dict of colours.
+        
+        Parameters:
+            items (matplotlib obj): either plot bars, ticks, etc...
+        
+            series (pd.Series): containing the 'Peak Status' information.
+        
+            d (dict): keys are series values, and values are colours.
+        
+        Returns:
+            None, series are changed in place.
+        """
+        
+        for i, it in zip(range(series.size), items):
+            if str(series[i]) in d.keys():
+                it.set_color(d[str(series[i])])
+            
+            else:
+                continue
+        return
     
     def subplot(self, i, data_array, data_info, data_extra=None):
         """Configures subplot."""
         
         c = self.config
-        col = self.col
+        col = self.info_cols
         
         number_of_residues_to_plot = data_array.shape[0]
         self.logger.debug(
@@ -140,21 +237,24 @@ class BarExtended(PlottingBase):
         
         self.logger.debug("xtick_spacing set to: {}".format(xtick_spacing))
         
+        self.logger.debug("data ResNo: {}".format(data_info[0::xtick_spacing,col['ResNo']]))
+        self.logger.debug("data 1-letter: {}".format(data_info[0::xtick_spacing,col['1-letter']]))
+        
         ticklabels = \
-            np.add(
-                data_info[0::xtick_spacing,col['ResNo']],
-                data_info[0::xtick_spacing,col['1-letter']]
+            np.core.defchararray.add(
+                np.copy(data_info[0::xtick_spacing,col['ResNo']]),
+                np.copy(data_info[0::xtick_spacing,col['1-letter']])
                 )
         
         self.logger.debug("Number of xticklabels: {}".format(len(ticklabels)))
         self.logger.debug("X Tick Labels. {}".format(ticklabels))
         
         # Configure XX ticks and Label
-        axs[i].set_xticks(number_of_residues_to_plot)
+        self.axs[i].set_xticks(range(number_of_residues_to_plot))
         self.logger.debug("set_xticks: OK")
         
         ## https://github.com/matplotlib/matplotlib/issues/6266
-        axs[i].set_xticklabels(
+        self.axs[i].set_xticklabels(
             ticklabels,
             fontname=c["x_ticks_fn"],
             fontsize=c["x_ticks_fs"],
@@ -167,7 +267,7 @@ class BarExtended(PlottingBase):
         if c["x_ticks_color_flag"]:
             self.logger.debug("Configuring x_ticks_color_flag...")
             self._set_item_colors(
-                axs[i].get_xticklabels(),
+                self.axs[i].get_xticklabels(),
                 data_info[0::xtick_spacing,col['Peak Status']],
                 {
                     'measured':c["measured_color"],
@@ -178,7 +278,7 @@ class BarExtended(PlottingBase):
             self.logger.debug("...Done")
         
         # Set subplot titles
-        axs[i].set_title(
+        self.axs[i].set_title(
             self.experiment_names[i],
             y=c["subtitle_pad"],
             fontsize=c["subtitle_fs"],
@@ -200,16 +300,16 @@ class BarExtended(PlottingBase):
         self.logger.debug("set_item_colors: OK")
         
         # configures spines
-        axs[i].spines['bottom'].set_zorder(10)
-        axs[i].spines['top'].set_zorder(10)
+        self.axs[i].spines['bottom'].set_zorder(10)
+        self.axs[i].spines['top'].set_zorder(10)
         self.logger.debug("Spines set: OK")
         # cConfigures YY ticks
-        axs[i].set_ylim(c["y_lims"][0], c["y_lims"][1])
-        axs[i].locator_params(axis='y', tight=True, nbins=c["y_ticks_nbins"])
+        self.axs[i].set_ylim(c["y_lims"][0], c["y_lims"][1])
+        self.axs[i].locator_params(axis='y', tight=True, nbins=8)
         self.logger.debug("Set Y limits: OK")
         
-        axs[i].set_yticklabels(
-            ['{:.2f}'.format(yy) for yy in axs[i].get_yticks()],
+        self.axs[i].set_yticklabels(
+            ['{:.2f}'.format(yy) for yy in self.axs[i].get_yticks()],
             fontname=c["y_ticks_fn"],
             fontsize=c["y_ticks_fs"],
             fontweight=c["y_ticks_weight"],
@@ -218,14 +318,14 @@ class BarExtended(PlottingBase):
         self.logger.debug("Set Y tick labels: OK")
         
         # configures tick params
-        axs[i].margins(x=0.01)
-        axs[i].tick_params(
+        self.axs[i].margins(x=0.01)
+        self.axs[i].tick_params(
             axis='x',
             pad=c["x_ticks_pad"],
             length=c["x_ticks_len"],
             direction='out'
             )
-        axs[i].tick_params(
+        self.axs[i].tick_params(
             axis='y',
             pad=c["y_ticks_pad"],
             length=c["y_ticks_len"],
@@ -234,15 +334,15 @@ class BarExtended(PlottingBase):
         self.logger.debug("Configured X and Y tick params: OK")
             
         # Set axes labels
-        axs[i].set_xlabel(
+        self.axs[i].set_xlabel(
             'Residue',
             fontname=c["x_label_fn"],
             fontsize=c["x_label_fs"],
             labelpad=c["x_label_pad"],
             weight=c["x_label_weight"],
-            rotation=c["x_label_rot"]
+            rotation=0
             )
-        axs[i].set_ylabel(
+        self.axs[i].set_ylabel(
             ylabel,
             fontsize=c["y_label_fs"],
             labelpad=c["y_label_pad"],
@@ -254,7 +354,7 @@ class BarExtended(PlottingBase):
         
         # Adds grid
         if y_grid_flag:
-            axs[i].yaxis.grid(
+            self.axs[i].yaxis.grid(
                 color=c["y_grid_color"],
                 linestyle=c["y_grid_linestyle"],
                 linewidth=c["y_grid_linewidth"],
@@ -266,7 +366,7 @@ class BarExtended(PlottingBase):
         # Adds red line to identify significant changes.
         if c["threshold_flag"] and self.ppm_data:
             self._plot_threshold(
-                axs[i],
+                self.axs[i],
                 data_array,
                 c["threshold_color"],
                 c["threshold_linewidth"],
@@ -277,7 +377,7 @@ class BarExtended(PlottingBase):
         
         if c["mark_prolines_flag"]:
             self._text_marker(
-                axs[i],
+                self.axs[i],
                 bars,
                 data_info[:,col['1-letter']],
                 {'P':c["mark_prolines_symbol"]},
@@ -288,7 +388,7 @@ class BarExtended(PlottingBase):
         
         if c["mark_user_details_flag"]:
             self._text_marker(
-                axs[i],
+                self.axs[i],
                 bars,
                 data_info[:,col['Details']],
                 c["user_marks_dict"],
@@ -307,7 +407,7 @@ class BarExtended(PlottingBase):
         
         if self.kwargs["PRE_loaded"] and self.ratio_data:
             self._plot_theo_pre(
-                axs[i],
+                self.axs[i],
                 self.experiment_names[i],
                 c["y_lims"][1]*0.05,
                 bartype='h',
@@ -337,19 +437,20 @@ if __name__ == "__main__":
     print("testing dataset: {}".format(dataset_path))
     
     a = []
-    for f in sorted(os.listdir(testing_path)):
+    for f in sorted(os.listdir(dataset_path)):
         print("reading: {}".format(f))
         a.append(
-            np.loadtxt(
-                os.path.join(testing_path, f),
+            np.genfromtxt(
+                os.path.join(dataset_path, f),
                 delimiter=',',
-                skiprows=1,
-                dtype=str
+                skip_header=1,
+                dtype=str,
+                missing_values='NaN'
                 )
             )
     
     full_data_set = np.stack(a, axis=0)
-    print("dataset shape: {}".format(full_data_set))
+    print("dataset shape: {}".format(full_data_set.shape))
     
     config = {
         "subtitle_fn": "Arial",
@@ -405,7 +506,7 @@ if __name__ == "__main__":
         "user_bar_colors_dict": {
             "mark": "khaki"
         },
-                "cols_page": 1,
+        "cols_page": 1,
         "rows_page": 6,
         "x_ticks_fn": "monospace",
         "x_ticks_fs": 6,
@@ -415,13 +516,16 @@ if __name__ == "__main__":
         "fig_dpi": 300,
         "fig_file_type": "pdf",
         "fig_height": 11.69,
-        "fig_width": 8.69
+        "fig_width": 8.69,
+        "y_lims":(0,0.6)
     }
     
     plot = BarExtended(
         full_data_set[:,:,21],
         full_data_set[:,:,[0,1,2,3,4,11,12,15]],
-        config
+        config,
+        partype='ppm',
+        exp_names=["0","25","50","100","200","400","500"]
         )
     
     plot.plot()
