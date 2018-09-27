@@ -32,7 +32,7 @@ class BarExtended(PlottingBase):
     """Extended Bar plotting template."""
     
     def __init__(self, data, data_info, config, data_extra=None, **kwargs):
-        super.__init__(data, data_info, config, data_extra=None, kwargs)
+        super.__init__(data, data_info, data_extra, config, **kwargs)
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logge.debug("BarExtendedHorizontal initiated")
@@ -40,6 +40,7 @@ class BarExtended(PlottingBase):
         self.logger.debug("Column Selected: {}".format(self.sel))
         self.logger.debug("Configuration dictionary \n{}".format(self.config))
         self.logger.debug("Shape of data matrix: {}".format(self.data.shape))
+        self.logger.debug("Kwargs: {}".format(self.kwargs))
         
         self.ppm_data = False
         self.ratio_data = False
@@ -50,8 +51,12 @@ class BarExtended(PlottingBase):
         elif self.sel in ('Height_ratio','Vol_ratio'):
             self.ratio_data = True
         
-        self.logger.debug("PPM and RATIO data types? {} and {}"\
-            .format(self.ppm_data, self.ratio_data)
+        self.logger.debug(
+            "PPM and RATIO data types? {} and {}".format(
+                self.ppm_data,
+                self.ratio_data
+                )
+            )
             
         self.experiment_names = self.data.items
         self.logger.debug("Experiment names: {}".format(self.experiment_names))
@@ -165,7 +170,7 @@ class BarExtended(PlottingBase):
                 axs[i].get_xticklabels(),
                 data_info[0::xtick_spacing,col['Peak Status']],
                 {
-                    'measured':c["measured_color",
+                    'measured':c["measured_color"],
                     'missing':c["missing_color"],
                     'unassigned':c["unassigned_color"]
                     }
@@ -300,7 +305,7 @@ class BarExtended(PlottingBase):
                 )
             self.logger.debug("Color user details: OK")
         
-        if self.data.PRE_loaded and self.ratio_data:
+        if self.kwargs["PRE_loaded"] and self.ratio_data:
             self._plot_theo_pre(
                 axs[i],
                 self.experiment_names[i],
@@ -315,3 +320,12 @@ class BarExtended(PlottingBase):
             self.logger.debug("DeltaPRE plotted: OK")
         
         return
+
+if __name__ == "__main__":
+    print('hello world')
+    #import os
+    
+    #testing_path = os.path.join(os.path.realpath(__file__), 'testing')
+    
+    #for f in os.listdir(testing_path):
+    #    print(f)
