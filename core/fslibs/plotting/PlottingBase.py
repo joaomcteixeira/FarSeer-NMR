@@ -36,8 +36,13 @@ class PlottingBase(metaclass=ABCMeta):
         
         - config (dict): a dictionary containing all the configuration
             parameters required for this plotting routine.
+            Mandatory keys:
+                - fig_height (float, inches)
+                - fig_width (float, inches)
+                - cols_per_page (int): columns of subplots per figure page
+                - rows_per_page (int): rows of subplots per figure page
     """
-    def __init__(self, data, config, args*):
+    def __init__(self, data, config, **kwargs):
         
         self.original_data = data
         self.config = config
@@ -49,7 +54,7 @@ class PlottingBase(metaclass=ABCMeta):
         self.len_axs = None
     
     @abstractmethod
-    def data_select(self, *args):
+    def data_select(self, **kwargs):
         """
         Selects the desired data to plot from the original input data.
         
@@ -66,7 +71,38 @@ class PlottingBase(metaclass=ABCMeta):
         pass
     
     @abstractmethod
-    def draw_figure(self, *args):
+    def _calcs_numsubplots(self):
+        """
+        Calculates the total number of subplots to be plotted
+        based on the user data.
+        
+        Returns:
+            - None
+            
+        Stores:
+            - self.num_subplots (int)
+        """
+        pass
+    
+    def _config_fig(self):
+        """
+        Calculates number of subplot rows per page based on
+        user data and settings.
+        
+        Returns:
+            - numrows (int): number of total rows
+            - real_fig_height (float, inches): final figure height
+        """
+        
+        numrows = ceil(self.num_subplots/self.config["cols_per_page"]) + 1 
+        
+        real_fig_height = \
+            (self.config["fig_height"] / self.config["rows_per_page"]) \
+                * numrows
+        
+        return numrows, real_fig_height
+    
+    def draw_figure(self, **kwargs):
         """
         Draws the figure architecture.
         
@@ -79,14 +115,29 @@ class PlottingBase(metaclass=ABCMeta):
         Stores :
             - self.figure: Figure object.
             - self.axs: axes of the figure (in case matplotlib is used).
-            - self.num_subplots (int): the number of subplots to be used
             - self.len_axs (int): the number of subplots created in the
                 figure object.
         """
-        pass
+        
+        numrows, real_fig_height = self._config_fig()
+        
+        # http://stackoverflow.com/questions/17210646/python-subplot-within-a-loop-first-panel-appears-in-wrong-position
+        self.figure, self.axs = plt.subplots(
+            nrows=numrows,
+            ncols=self.config["cols_per_page"],
+            figsize=(self.config["fig_width"], real_fig_height)
+            )
+        self.len_axs = len(self.axs)
+        self.axs = self.axs.ravel()
+        plt.tight_layout(
+            rect=[0.01,0.01,0.995,0.995],
+            h_pad=real_fig_height/self.config["rows_per_page"]
+            )
+        
+        return
     
     @abstractmethod
-    def plot_subplots(self, args*):
+    def plot_subplots(self, **kwargs):
         """
         Sends the specific data to each subplot.
         
@@ -98,7 +149,7 @@ class PlottingBase(metaclass=ABCMeta):
         """
     
     @abstractmethod
-    def subplot(self, args*):
+    def subplot(self, **kwargs):
         """The routine that defines each subplot."""
     
     def clean_subplots(self):
