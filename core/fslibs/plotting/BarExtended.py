@@ -31,8 +31,8 @@ from core.fslibs.WetHandler import WetHandler as fsw
 class BarExtended(PlottingBase):
     """Extended Bar plotting template."""
     
-    def __init__(self, data, config):
-        super.__init__(data, config)
+    def __init__(self, data, config, selection_col):
+        super.__init__(data, config, selection_col)
         
         self._calcs_numsubplots()
     
@@ -47,4 +47,20 @@ class BarExtended(PlottingBase):
         Stores:
             - self.num_subplots (int)
         """
-        self.num_subplots = self.shape[0]
+        self.num_subplots = self.data.shape[0]
+        
+        return
+    
+    def data_select(self):
+        """
+        Selects exact data to plot.
+        
+        Stores:
+            - self.data_to_plot (np.array of shape [z,y,x]).
+        """
+        
+        self.data_to_plot = np.array(self.data.loc[:,:,self.sel].fillna(0))
+        
+        return
+        
+        
