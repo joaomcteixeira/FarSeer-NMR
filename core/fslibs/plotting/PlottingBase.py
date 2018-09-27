@@ -40,15 +40,28 @@ class PlottingBase(metaclass=ABCMeta):
     def __init__(self, data, config, args*):
         
         self.original_data = data
+        self.config = config
+        
+        self.data_to_plot = None
+        self.figure = None
+        self.axs = None
+        self.num_subplots = None
+        self.len_axs = None
     
     @abstractmethod
     def data_select(self, *args):
         """
         Selects the desired data to plot from the original input data.
         
+        This function can be used to fine select the data to the ploted
+        or transpose matrix coordinates or any other request that
+        faciliates the task of .plot_subplots() method.
+        
         Returns:
-            - None. Creates a self.data_to_plot attribute of numpy.array
-                type.
+            - None.
+            
+        Stores:
+            - self.data_to_plot (numpy.array): selected data to plot
         """
         pass
     
@@ -85,7 +98,7 @@ class PlottingBase(metaclass=ABCMeta):
         """
     
     @abstractmethod
-    def subplot(self):
+    def subplot(self, args*):
         """The routine that defines each subplot."""
     
     def clean_subplots(self):
