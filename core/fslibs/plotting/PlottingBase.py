@@ -30,9 +30,20 @@ class PlottingBase(metaclass=ABCMeta):
     PlottingBase and define its specific functions (@abstractmethod).
     
     Parameters:
-        - data (pd.Panel or np.array): multidimensional array containain
-            the dataset to be plot. This dataset can be further selected
-            by the self.data_select() method.
+        - data (np.array(dtype=int) of shape [z,y,x]): multidimensional array
+            containain the dataset to be plot. Where:
+                X) is the column containing the calculated or observed NMR
+                    parameter to be used as Y axis in plots,
+                Y) are rows containing the X information for each residue
+                Z) is [Y,X] for each experiment.
+            Data can be further treated with data_select() method.
+        
+        - data_info (np.array(dtype=str) of shape [z,y,x]): same as <data>
+            but for columns ResNo, 1-letter, 3-letter, Peak Status, Merit,
+            Fit Method, Vol. Method, Details; in this order.
+        
+        - data_info (np.array(dtype=str) of shape [z,y,x]): additional
+            info.
         
         - config (dict): a dictionary containing all the configuration
             parameters required for this plotting routine.
@@ -42,14 +53,27 @@ class PlottingBase(metaclass=ABCMeta):
                 - cols_per_page (int): columns of subplots per figure page
                 - rows_per_page (int): rows of subplots per figure page
         
-        - selection_col (str or int): the selection key to select the
-            column in data to be used as Y axis values.
+        - additional kwargs can be passed as **kwargs.
     """
-    def __init__(self, data, config, selection_col, **kwargs):
+    
+    info_cols={
+        "ResNo":0,
+        "1-letter":1,
+        "3-letter":2,
+        "Peak Status":3,
+        "Merit":4,
+        "Fit Method":5,
+        "Vol. Method":6,
+        "Details":7
+        }
+    
+    def __init__(self, data, data_info, data_extra, config, **kwargs):
         
-        self.original_data = data
+        self.data = data
+        self.data_info = data_info
+        self.data_extra = data_extra
         self.config = config
-        self.sel = selection_col
+        self.kwargs = kwargs
         
         self.data_to_plot = None
         self.figure = None
