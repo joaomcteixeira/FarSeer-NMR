@@ -35,6 +35,11 @@ class BarExtended(PlottingBase):
         super.__init__(data, config, selection_col)
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
+        self.logge.debug("BarExtendedHorizontal initiated")
+        
+        self.logger.debug("Column Selected: {}".format(self.sel))
+        self.logger.debug("Configuration dictionary \n{}".format(self.config))
+        self.logger.debug("Shape of data matrix: {}".format(self.data.shape))
         
         self.ppm_data = False
         self.ratio_data = False
@@ -44,8 +49,12 @@ class BarExtended(PlottingBase):
         
         elif self.sel in ('Height_ratio','Vol_ratio'):
             self.ratio_data = True
+        
+        self.logger.debug("PPM and RATIO data types? {} and {}"\
+            .format(self.ppm_data, self.ratio_data)
             
         self.experiment_names = self.data.items
+        self.logger.debug("Experiment names: {}".format(self.experiment_names))
         
         self._calcs_numsubplots()
     
@@ -61,6 +70,7 @@ class BarExtended(PlottingBase):
             - self.num_subplots (int)
         """
         self.num_subplots = self.data.shape[0]
+        self.logger.debug("Number of subplots: {}".format(self.num_subplots))
         
         return
     
@@ -75,6 +85,9 @@ class BarExtended(PlottingBase):
         # fillna(0) is added because nan conflicts with text_maker()
         # in bar.get_height() which return nan
         self.data_to_plot = np.array(self.data.loc[:,:,self.sel].fillna(0))
+        self.logger.debug(
+            "Shape of selected data {}".format(self.data_to_plot.shape)
+            )
         
         return
     
@@ -90,6 +103,7 @@ class BarExtended(PlottingBase):
         """
         
         for i, data_array in enumerate(self.data_to_plot):
+            self.logger.debug("Starting subplot no: {}".format(i))
             data_info = self.data.iloc[i]
             self.subplot(data_array, data_info, i)
             
@@ -102,6 +116,9 @@ class BarExtended(PlottingBase):
         c = self.config
         
         number_of_residues_to_plot = data_array.shape[0]
+        self.logger.debug(
+            "Number of residues to plot: {}".format(number_of_residues_to_plot)
+            )
         
         bars = self.axs[i].bar(
             range(number_of_residues_to_plot),
@@ -112,7 +129,9 @@ class BarExtended(PlottingBase):
             linewidth=c["bar_linewidth"],
             zorder=4
             )
-            
+        
+        self.logger.debug("Created bar plot: OK")
+        
         # ticks positions:
         # this is used to fit both applyFASTA=True or False
         # reduces xticks to 100 as maximum to avoid ticklabel overlap
@@ -122,12 +141,17 @@ class BarExtended(PlottingBase):
         else:
             xtick_spacing = 1
         
+        self.logger.debug("xtick_spacing set to: {}".format(xtick_spacing))
+        
         ticklabels = \
             data_info.loc[0::xtick_spacing,['ResNo','1-letter']].\
                 apply(lambda x: ''.join(x), axis=1)
         
+        self.logger.debug("Number of xticklabels: {}".format(len(ticklabels)))
+        
         # Configure XX ticks and Label
         axs[i].set_xticks(number_of_residues_to_plot)
+        self.logger.debug("set_xticks: OK")
         
         ## https://github.com/matplotlib/matplotlib/issues/6266
         axs[i].set_xticklabels(
@@ -137,9 +161,11 @@ class BarExtended(PlottingBase):
             fontweight=c["x_ticks_weight"],
             rotation=c["x_ticks_rot"]
             )
+        self.logger.debug("set_xticklabels: OK")
         
         # defines xticks colors
         if c["x_ticks_color_flag"]:
+            self.logger.debug("Configuring x_ticks_color_flag...")
             self._set_item_colors(
                 axs[i].get_xticklabels(),
                 data_info.loc[0::xtick_spacing,'Peak Status'],
@@ -149,30 +175,7 @@ class BarExtended(PlottingBase):
                     'unassigned':c["unassigned_color"]
                     }
                 )
-        
-        # Configure XX ticks and Label
-        axs[i].set_xticks(self.major_axis)
-        ## https://github.com/matplotlib/matplotlib/issues/6266
-        axs[i].set_xticklabels(
-            self.loc[experiment,:,['ResNo', '1-letter', 'ATOM']].\
-                apply(lambda x: ''.join(x), axis=1),
-            fontname=x_ticks_fn,
-            fontsize=x_ticks_fs,
-            fontweight=x_ticks_weight,
-            rotation=x_ticks_rot
-            )
-        
-        # defines xticks colors
-        if x_ticks_color_flag:
-            self._set_item_colors(
-                axs[i].get_xticklabels(),
-                self.loc[experiment, :, 'Peak Status'],
-                {
-                    'measured':measured_color,
-                    'missing':missing_color,
-                    'unassigned':unassigned_color
-                    }
-                )
+            self.logger.debug("...Done")
         
         # Set subplot titles
         axs[i].set_title(
@@ -182,6 +185,7 @@ class BarExtended(PlottingBase):
             fontname=c["subtitle_fn"],
             weight=c["subtitle_weight"]
             )
+        self.logger.debug("Set title: OK")
         
         # defines bars colors
         self._set_item_colors(
@@ -193,12 +197,17 @@ class BarExtended(PlottingBase):
                 'unassigned': c["unassigned_color"]
                 }
             )
+        self.logger.debug("set_item_colors: OK")
+        
         # configures spines
         axs[i].spines['bottom'].set_zorder(10)
         axs[i].spines['top'].set_zorder(10)
+        self.logger.debug("Spines set: OK")
         # cConfigures YY ticks
         axs[i].set_ylim(c["y_lims"][0], c["y_lims"][1])
         axs[i].locator_params(axis='y', tight=True, nbins=c["y_ticks_nbins"])
+        self.logger.debug("Set Y limits: OK")
+        
         axs[i].set_yticklabels(
             ['{:.2f}'.format(yy) for yy in axs[i].get_yticks()],
             fontname=c["y_ticks_fn"],
@@ -206,6 +215,8 @@ class BarExtended(PlottingBase):
             fontweight=c["y_ticks_weight"],
             rotation=c["y_ticks_rot"]
             )
+        self.logger.debug("Set Y tick labels: OK")
+        
         # configures tick params
         axs[i].margins(x=0.01)
         axs[i].tick_params(
@@ -220,6 +231,8 @@ class BarExtended(PlottingBase):
             length=c["y_ticks_len"],
             direction='out'
             )
+        self.logger.debug("Configured X and Y tick params: OK")
+            
         # Set axes labels
         axs[i].set_xlabel(
             'Residue',
@@ -237,6 +250,7 @@ class BarExtended(PlottingBase):
             weight=c["y_label_weight"],
             rotation=c["y_label_rot"]
             )
+        self.logger.debug("Configured X and Y labels")
         
         # Adds grid
         if y_grid_flag:
@@ -247,6 +261,7 @@ class BarExtended(PlottingBase):
                 alpha=c["y_grid_alpha"],
                 zorder=0
                 )
+            self.logger.debug("Configured grid: OK")
         
         # Adds red line to identify significant changes.
         if c["threshold_flag"] and self.ppm_data:
@@ -258,6 +273,7 @@ class BarExtended(PlottingBase):
                 c["threshold_alpha"],
                 zorder=c["threshold_zorder"]
                 )
+            self.logger.debug("Threshold: OK")
         
         if c["mark_prolines_flag"]:
             self._text_marker(
@@ -268,6 +284,7 @@ class BarExtended(PlottingBase):
                 c["y_lims"][1],
                 fs=c["mark_fontsize"]
                 )
+            self.logger.debug("Prolines Marked: OK")
         
         if c["mark_user_details_flag"]:
             self._text_marker(
@@ -278,6 +295,7 @@ class BarExtended(PlottingBase):
                 c["y_lims"][1],
                 fs=c["mark_fontsize"]
                 )
+            self.logger.debug("User marks: OK")
         
         if c["color_user_details_flag"]:
             self._set_item_colors(
@@ -285,6 +303,7 @@ class BarExtended(PlottingBase):
                 data_info.loc[:,'Details'],
                 c["user_bar_colors_dict"]
                 )
+            self.logger.debug("Color user details: OK")
         
         if self.data.PRE_loaded and self.ratio_data:
             self._plot_theo_pre(
@@ -298,4 +317,6 @@ class BarExtended(PlottingBase):
                 tag_ls=c["tag_cartoon_ls"],
                 tag_lw=c["tag_cartoon_lw"]
                 )
+            self.logger.debug("DeltaPRE plotted: OK")
+        
         return
