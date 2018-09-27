@@ -199,6 +199,14 @@ class PlottingBase(metaclass=ABCMeta):
         for i in range(self.num_subplots, self.len_axs):
             self.axs[i].remove()
     
+    def save_figure(self, path=''):
+        """Saves figure to path"""
+        
+        path = path or "plot.pdf"
+        self.figure.savefig(path)
+        
+        return
+    
     
 if __name__ == "__main__":
     
