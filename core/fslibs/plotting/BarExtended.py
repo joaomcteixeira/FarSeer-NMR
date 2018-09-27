@@ -31,8 +31,8 @@ from core.fslibs.WetHandler import WetHandler as fsw
 class BarExtended(PlottingBase):
     """Extended Bar plotting template."""
     
-    def __init__(self, data, config, selection_col):
-        super.__init__(data, config, selection_col)
+    def __init__(self, data, data_info, config, data_extra=None, **kwargs):
+        super.__init__(data, data_info, config, data_extra=None, kwargs)
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logge.debug("BarExtendedHorizontal initiated")
@@ -74,23 +74,6 @@ class BarExtended(PlottingBase):
         
         return
     
-    def data_select(self):
-        """
-        Selects exact data to plot.
-        
-        Stores:
-            - self.data_to_plot (np.array of shape [z,y,x]).
-        """
-        
-        # fillna(0) is added because nan conflicts with text_maker()
-        # in bar.get_height() which return nan
-        self.data_to_plot = np.array(self.data.loc[:,:,self.sel].fillna(0))
-        self.logger.debug(
-            "Shape of selected data {}".format(self.data_to_plot.shape)
-            )
-        
-        return
-    
     def plot_subplots(self, **kwargs):
         """
         Sends the specific data to each subplot.
@@ -102,18 +85,27 @@ class BarExtended(PlottingBase):
             - None
         """
         
-        for i, data_array in enumerate(self.data_to_plot):
+        for i in range(self.data_to_plot):
+            
             self.logger.debug("Starting subplot no: {}".format(i))
-            data_info = self.data.iloc[i]
-            self.subplot(data_array, data_info, i)
+            data = self.data[i]
+            data_info = self.data_info[i]
+            
+            if self.data_extra:
+                data_extra = self.data_extra[i]
+            else:
+                data_extra = None
+            
+            self.subplot(i, data_array, data_info, data_extra=data_extra)
             
             
             #fig.subplots_adjust(hspace=hspace)
     
-    def subplot(self, data_array, data_info, i):
+    def subplot(self, i, data_array, data_info, data_extra=None):
         """Configures subplot."""
         
         c = self.config
+        col = self.col
         
         number_of_residues_to_plot = data_array.shape[0]
         self.logger.debug(
@@ -144,10 +136,13 @@ class BarExtended(PlottingBase):
         self.logger.debug("xtick_spacing set to: {}".format(xtick_spacing))
         
         ticklabels = \
-            data_info.loc[0::xtick_spacing,['ResNo','1-letter']].\
-                apply(lambda x: ''.join(x), axis=1)
+            np.add(
+                data_info[0::xtick_spacing,col['ResNo']],
+                data_info[0::xtick_spacing,col['1-letter']]
+                )
         
         self.logger.debug("Number of xticklabels: {}".format(len(ticklabels)))
+        self.logger.debug("X Tick Labels. {}".format(ticklabels))
         
         # Configure XX ticks and Label
         axs[i].set_xticks(number_of_residues_to_plot)
@@ -168,7 +163,7 @@ class BarExtended(PlottingBase):
             self.logger.debug("Configuring x_ticks_color_flag...")
             self._set_item_colors(
                 axs[i].get_xticklabels(),
-                data_info.loc[0::xtick_spacing,'Peak Status'],
+                data_info[0::xtick_spacing,col['Peak Status']],
                 {
                     'measured':c["measured_color",
                     'missing':c["missing_color"],
@@ -190,7 +185,7 @@ class BarExtended(PlottingBase):
         # defines bars colors
         self._set_item_colors(
             bars,
-            data_info.loc[:,'Peak Status'],
+            data_info[:,col['Peak Status']],
             {
                 'measured': c["measured_color"],
                 'missing': c["missing_color"],
@@ -279,7 +274,7 @@ class BarExtended(PlottingBase):
             self._text_marker(
                 axs[i],
                 bars,
-                data_info.loc[:,'1-letter'],
+                data_info[:,col['1-letter']],
                 {'P':c["mark_prolines_symbol"]},
                 c["y_lims"][1],
                 fs=c["mark_fontsize"]
@@ -290,7 +285,7 @@ class BarExtended(PlottingBase):
             self._text_marker(
                 axs[i],
                 bars,
-                data_info.loc[:,'Details'],
+                data_info[:,col['Details']],
                 c["user_marks_dict"],
                 c["y_lims"][1],
                 fs=c["mark_fontsize"]
@@ -300,7 +295,7 @@ class BarExtended(PlottingBase):
         if c["color_user_details_flag"]:
             self._set_item_colors(
                 bars,
-                data_info.loc[:,'Details'],
+                data_info[:,col["Details"]],
                 c["user_bar_colors_dict"]
                 )
             self.logger.debug("Color user details: OK")
