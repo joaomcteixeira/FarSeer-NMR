@@ -33,53 +33,18 @@ class BarExtended(PlottingBase):
     
     def __init__(self, data, config):
         super.__init__(data, config)
+        
+        self._calcs_numsubplots()
     
-    def data_select(self, *args):
+    def _calcs_numsubplots(self):
         """
-        Selects the desired data to plot from the original input data.
-        
-        This function can be used to fine select the data to the ploted
-        or transpose matrix coordinates or any other request that
-        faciliates the task of .plot_subplots() method.
-        
-        Returns:
-            - None.
-            
-        Stores:
-            - self.data_to_plot (numpy.array): selected data to plot
-        """
-        pass
-    
-    def draw_figure(self, *args):
-        """
-        Draws the figure architecture.
-        
-        Defines the size of the figure and subplots based
-        on the data to plot.
-        
-        Returns:
-            - None.
-        
-        Stores :
-            - self.figure: Figure object.
-            - self.axs: axes of the figure (in case matplotlib is used).
-            - self.num_subplots (int): the number of subplots to be used
-            - self.len_axs (int): the number of subplots created in the
-                figure object.
-        """
-        pass
-    
-    def plot_subplots(self, args*):
-        """
-        Sends the specific data to each subplot.
-        
-        The way data is sliced from the whole data to plot matrix
-        depends on the nature of the subplots.
+        Calculates the total number of subplots to be plotted
+        based on the user data.
         
         Returns:
             - None
+            
+        Stores:
+            - self.num_subplots (int)
         """
-    
-    def subplot(self, args*):
-        """The routine that defines each subplot."""
-
+        self.num_subplots = self.shape[0]
