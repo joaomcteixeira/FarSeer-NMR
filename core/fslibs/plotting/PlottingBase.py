@@ -41,11 +41,15 @@ class PlottingBase(metaclass=ABCMeta):
                 - fig_width (float, inches)
                 - cols_per_page (int): columns of subplots per figure page
                 - rows_per_page (int): rows of subplots per figure page
+        
+        - selection_col (str or int): the selection key to select the
+            column in data to be used as Y axis values.
     """
-    def __init__(self, data, config, **kwargs):
+    def __init__(self, data, config, selection_col, **kwargs):
         
         self.original_data = data
         self.config = config
+        self.sel = selection_col
         
         self.data_to_plot = None
         self.figure = None
