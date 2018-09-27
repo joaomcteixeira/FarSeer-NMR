@@ -184,6 +184,15 @@ class PlottingBase(metaclass=ABCMeta):
         """The routine that defines each subplot."""
         pass
     
+    def plot(self):
+        """Runs all operations to plot."""
+        self.data_select()
+        self._calcs_numsubplots()
+        self.draw_figure()
+        self.plot_subplots()
+        self.clean_subplots()
+        return
+    
     def clean_subplots(self):
         """ Removes unsed subplots."""
         
