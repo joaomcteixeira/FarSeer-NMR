@@ -104,7 +104,7 @@ class BarExtended(PlottingBase):
             self.subplot(i, data_array, data_info, data_extra=data_extra)
             
             
-            #fig.subplots_adjust(hspace=hspace)
+        self.figure.subplots_adjust(hspace=self.config["vspace"])
     
     def subplot(self, i, data_array, data_info, data_extra=None):
         """Configures subplot."""
@@ -425,4 +425,4 @@ if __name__ == "__main__":
         )
     
     plot.plot()
-    plot.savefig()
+    plot.save_figure()
