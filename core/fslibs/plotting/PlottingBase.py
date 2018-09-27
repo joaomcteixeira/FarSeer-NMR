@@ -184,11 +184,28 @@ class PlottingBase(metaclass=ABCMeta):
         """The routine that defines each subplot."""
         pass
     
+    def plot(self):
+        """Runs all operations to plot."""
+        self.data_select()
+        self._calcs_numsubplots()
+        self.draw_figure()
+        self.plot_subplots()
+        self.clean_subplots()
+        return
+    
     def clean_subplots(self):
         """ Removes unsed subplots."""
         
         for i in range(self.num_subplots, self.len_axs):
             self.axs[i].remove()
+    
+    def save_figure(self, path=''):
+        """Saves figure to path"""
+        
+        path = path or "plot.pdf"
+        self.figure.savefig(path)
+        
+        return
     
     
 if __name__ == "__main__":
