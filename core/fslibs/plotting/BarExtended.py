@@ -34,6 +34,19 @@ class BarExtended(PlottingBase):
     def __init__(self, data, config, selection_col):
         super.__init__(data, config, selection_col)
         
+        self.logger = Logger.FarseerLogger(__name__).setup_log()
+        
+        self.ppm_data = False
+        self.ratio_data = False
+        
+        if self.sel in ('H1_delta', 'N15_delta', 'CSP'):
+            self.ppm_data = True
+        
+        elif self.sel in ('Height_ratio','Vol_ratio'):
+            self.ratio_data = True
+            
+        self.experiment_names = self.data.items
+        
         self._calcs_numsubplots()
     
     def _calcs_numsubplots(self):
@@ -59,8 +72,230 @@ class BarExtended(PlottingBase):
             - self.data_to_plot (np.array of shape [z,y,x]).
         """
         
+        # fillna(0) is added because nan conflicts with text_maker()
+        # in bar.get_height() which return nan
         self.data_to_plot = np.array(self.data.loc[:,:,self.sel].fillna(0))
         
         return
+    
+    def plot_subplots(self, **kwargs):
+        """
+        Sends the specific data to each subplot.
         
+        The way data is sliced from the whole data to plot matrix
+        depends on the nature of the subplots.
         
+        Returns:
+            - None
+        """
+        
+        for i, data_array in enumerate(self.data_to_plot):
+            data_info = self.data.iloc[i]
+            self.subplot(data_array, data_info, i)
+            
+            
+            #fig.subplots_adjust(hspace=hspace)
+    
+    def subplot(self, data_array, data_info, i):
+        """Configures subplot."""
+        
+        c = self.config
+        
+        number_of_residues_to_plot = data_array.shape[0]
+        
+        bars = self.axs[i].bar(
+            range(number_of_residues_to_plot),
+            data_array,
+            width=c["bar_width"],
+            align='center',
+            alpha=c["bar_alpha"],
+            linewidth=c["bar_linewidth"],
+            zorder=4
+            )
+            
+        # ticks positions:
+        # this is used to fit both applyFASTA=True or False
+        # reduces xticks to 100 as maximum to avoid ticklabel overlap
+        if number_of_residues_to_plot > 100:
+            xtick_spacing = number_of_residues_to_plot//100
+        
+        else:
+            xtick_spacing = 1
+        
+        ticklabels = \
+            data_info.loc[0::xtick_spacing,['ResNo','1-letter']].\
+                apply(lambda x: ''.join(x), axis=1)
+        
+        # Configure XX ticks and Label
+        axs[i].set_xticks(number_of_residues_to_plot)
+        
+        ## https://github.com/matplotlib/matplotlib/issues/6266
+        axs[i].set_xticklabels(
+            ticklabels,
+            fontname=c["x_ticks_fn"],
+            fontsize=c["x_ticks_fs"],
+            fontweight=c["x_ticks_weight"],
+            rotation=c["x_ticks_rot"]
+            )
+        
+        # defines xticks colors
+        if c["x_ticks_color_flag"]:
+            self._set_item_colors(
+                axs[i].get_xticklabels(),
+                data_info.loc[0::xtick_spacing,'Peak Status'],
+                {
+                    'measured':c["measured_color",
+                    'missing':c["missing_color"],
+                    'unassigned':c["unassigned_color"]
+                    }
+                )
+        
+        # Configure XX ticks and Label
+        axs[i].set_xticks(self.major_axis)
+        ## https://github.com/matplotlib/matplotlib/issues/6266
+        axs[i].set_xticklabels(
+            self.loc[experiment,:,['ResNo', '1-letter', 'ATOM']].\
+                apply(lambda x: ''.join(x), axis=1),
+            fontname=x_ticks_fn,
+            fontsize=x_ticks_fs,
+            fontweight=x_ticks_weight,
+            rotation=x_ticks_rot
+            )
+        
+        # defines xticks colors
+        if x_ticks_color_flag:
+            self._set_item_colors(
+                axs[i].get_xticklabels(),
+                self.loc[experiment, :, 'Peak Status'],
+                {
+                    'measured':measured_color,
+                    'missing':missing_color,
+                    'unassigned':unassigned_color
+                    }
+                )
+        
+        # Set subplot titles
+        axs[i].set_title(
+            self.experiment_names[i],
+            y=c["subtitle_pad"],
+            fontsize=c["subtitle_fs"],
+            fontname=c["subtitle_fn"],
+            weight=c["subtitle_weight"]
+            )
+        
+        # defines bars colors
+        self._set_item_colors(
+            bars,
+            data_info.loc[:,'Peak Status'],
+            {
+                'measured': c["measured_color"],
+                'missing': c["missing_color"],
+                'unassigned': c["unassigned_color"]
+                }
+            )
+        # configures spines
+        axs[i].spines['bottom'].set_zorder(10)
+        axs[i].spines['top'].set_zorder(10)
+        # cConfigures YY ticks
+        axs[i].set_ylim(c["y_lims"][0], c["y_lims"][1])
+        axs[i].locator_params(axis='y', tight=True, nbins=c["y_ticks_nbins"])
+        axs[i].set_yticklabels(
+            ['{:.2f}'.format(yy) for yy in axs[i].get_yticks()],
+            fontname=c["y_ticks_fn"],
+            fontsize=c["y_ticks_fs"],
+            fontweight=c["y_ticks_weight"],
+            rotation=c["y_ticks_rot"]
+            )
+        # configures tick params
+        axs[i].margins(x=0.01)
+        axs[i].tick_params(
+            axis='x',
+            pad=c["x_ticks_pad"],
+            length=c["x_ticks_len"],
+            direction='out'
+            )
+        axs[i].tick_params(
+            axis='y',
+            pad=c["y_ticks_pad"],
+            length=c["y_ticks_len"],
+            direction='out'
+            )
+        # Set axes labels
+        axs[i].set_xlabel(
+            'Residue',
+            fontname=c["x_label_fn"],
+            fontsize=c["x_label_fs"],
+            labelpad=c["x_label_pad"],
+            weight=c["x_label_weight"],
+            rotation=c["x_label_rot"]
+            )
+        axs[i].set_ylabel(
+            ylabel,
+            fontsize=c["y_label_fs"],
+            labelpad=c["y_label_pad"],
+            fontname=c["y_label_fn"],
+            weight=c["y_label_weight"],
+            rotation=c["y_label_rot"]
+            )
+        
+        # Adds grid
+        if y_grid_flag:
+            axs[i].yaxis.grid(
+                color=c["y_grid_color"],
+                linestyle=c["y_grid_linestyle"],
+                linewidth=c["y_grid_linewidth"],
+                alpha=c["y_grid_alpha"],
+                zorder=0
+                )
+        
+        # Adds red line to identify significant changes.
+        if c["threshold_flag"] and self.ppm_data:
+            self._plot_threshold(
+                axs[i],
+                data_array,
+                c["threshold_color"],
+                c["threshold_linewidth"],
+                c["threshold_alpha"],
+                zorder=c["threshold_zorder"]
+                )
+        
+        if c["mark_prolines_flag"]:
+            self._text_marker(
+                axs[i],
+                bars,
+                data_info.loc[:,'1-letter'],
+                {'P':c["mark_prolines_symbol"]},
+                c["y_lims"][1],
+                fs=c["mark_fontsize"]
+                )
+        
+        if c["mark_user_details_flag"]:
+            self._text_marker(
+                axs[i],
+                bars,
+                data_info.loc[:,'Details'],
+                c["user_marks_dict"],
+                c["y_lims"][1],
+                fs=c["mark_fontsize"]
+                )
+        
+        if c["color_user_details_flag"]:
+            self._set_item_colors(
+                bars,
+                data_info.loc[:,'Details'],
+                c["user_bar_colors_dict"]
+                )
+        
+        if self.data.PRE_loaded and self.ratio_data:
+            self._plot_theo_pre(
+                axs[i],
+                self.experiment_names[i],
+                c["y_lims"][1]*0.05,
+                bartype='h',
+                pre_color=c["theo_pre_color"],
+                pre_lw=c["theo_pre_lw"],
+                tag_color=c["tag_cartoon_color"],
+                tag_ls=c["tag_cartoon_ls"],
+                tag_lw=c["tag_cartoon_lw"]
+                )
+        return
