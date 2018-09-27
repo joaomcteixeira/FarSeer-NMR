@@ -80,9 +80,11 @@ class PlottingBase(metaclass=ABCMeta):
         self.axs = None
         self.num_subplots = None
         self.len_axs = None
+        
+        super().__init__()
     
     @abstractmethod
-    def data_select(self, **kwargs):
+    def data_select(self):
         """
         Selects the desired data to plot from the original input data.
         
@@ -165,7 +167,7 @@ class PlottingBase(metaclass=ABCMeta):
         return
     
     @abstractmethod
-    def plot_subplots(self, **kwargs):
+    def plot_subplots(self):
         """
         Sends the specific data to each subplot.
         
@@ -175,10 +177,12 @@ class PlottingBase(metaclass=ABCMeta):
         Returns:
             - None
         """
+        pass
     
     @abstractmethod
-    def subplot(self, **kwargs):
+    def subplot(self):
         """The routine that defines each subplot."""
+        pass
     
     def clean_subplots(self):
         """ Removes unsed subplots."""
@@ -187,3 +191,6 @@ class PlottingBase(metaclass=ABCMeta):
             self.axs[i].remove()
     
     
+if __name__ == "__main__":
+    
+    print(__name__)
