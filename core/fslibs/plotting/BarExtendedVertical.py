@@ -1,3 +1,4 @@
+
 """
 Copyright © 2017-2018 Farseer-NMR
 
@@ -30,7 +31,7 @@ from core.fslibs.plotting.ExperimentPlot import ExperimentPlot
 from core.fslibs.plotting.BarPlotBase import BarPlotBase
 from core.fslibs.WetHandler import WetHandler as fsw
 
-class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
+class BarExtendedVertical(ExperimentPlot, BarPlotBase):
     """
     Extended Bar plotting template.
     
@@ -87,13 +88,9 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
             )
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
-        self.logger.debug("BarExtendedHorizontal initiated")
+        self.logger.debug("BarExtendedVertical initiated")
         
         self.data_extra = data_extra
-    
-    def plot_subplots(self):
-        super().plot_subplots()
-        self.figure.subplots_adjust(hspace=self.config["vspace"])
     
     def subplot(self, i, data_array, data_info, data_extra=None):
         """Configures subplot."""
@@ -111,10 +108,10 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
             "Number of residues to plot: {}".format(number_of_residues_to_plot)
             )
         
-        bars = self.axs[i].bar(
+        bars = self.axs[i].barh(
             range(number_of_residues_to_plot),
             data_array,
-            width=c["bar_width"],
+            height=c["bar_width"],
             align='center',
             alpha=c["bar_alpha"],
             linewidth=c["bar_linewidth"],
@@ -122,6 +119,26 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
             )
         
         self.logger.debug("Created bar plot: OK")
+        
+        self.axs[i].invert_yaxis()
+        # Set subplot titles
+        
+        self.axs[i].set_title(
+            self.experiment_names[i],
+            y=c["subtitle_pad"],
+            fontsize=c["subtitle_fs"],
+            fontname=c["subtitle_fn"],
+            weight=c["subtitle_weight"]
+            )
+        self.logger.debug("Set title: OK")
+        
+        # configures spines
+        self.axs[i].spines['bottom'].set_zorder(10)
+        self.axs[i].spines['top'].set_zorder(10)
+        self.axs[i].spines['left'].set_zorder(10)
+        self.axs[i].spines['right'].set_zorder(10)
+        ## Configure XX ticks and Label
+        self.logger.debug("Spines set: OK")
         
         # ticks positions:
         # this is used to fit both applyFASTA=True or False
@@ -147,24 +164,26 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
         self.logger.debug("X Tick Labels. {}".format(ticklabels))
         
         # Configure XX ticks and Label
-        self.axs[i].set_xticks(range(number_of_residues_to_plot))
-        self.logger.debug("set_xticks: OK")
+        self.axs[i].set_yticks(range(number_of_residues_to_plot))
+        self.logger.debug("set_yticks: OK")
         
         ## https://github.com/matplotlib/matplotlib/issues/6266
-        self.axs[i].set_xticklabels(
+        self.axs[i].set_yticklabels(
             ticklabels,
             fontname=c["x_ticks_fn"],
             fontsize=c["x_ticks_fs"],
             fontweight=c["x_ticks_weight"],
             rotation=c["x_ticks_rot"]
             )
-        self.logger.debug("set_xticklabels: OK")
+        self.logger.debug("set_yticklabels: OK")
+        
+        
         
         # defines xticks colors
         if c["x_ticks_color_flag"]:
             self.logger.debug("Configuring x_ticks_color_flag...")
             self._set_item_colors(
-                self.axs[i].get_xticklabels(),
+                self.axs[i].get_yticklabels(),
                 data_info[0::xtick_spacing,col['Peak Status']],
                 {
                     'measured':c["measured_color"],
@@ -173,16 +192,6 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
                     }
                 )
             self.logger.debug("...Done")
-        
-        # Set subplot titles
-        self.axs[i].set_title(
-            self.experiment_names[i],
-            y=c["subtitle_pad"],
-            fontsize=c["subtitle_fs"],
-            fontname=c["subtitle_fn"],
-            weight=c["subtitle_weight"]
-            )
-        self.logger.debug("Set title: OK")
         
         # defines bars colors
         self._set_item_colors(
@@ -196,34 +205,31 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
             )
         self.logger.debug("set_item_colors: OK")
         
-        # configures spines
-        self.axs[i].spines['bottom'].set_zorder(10)
-        self.axs[i].spines['top'].set_zorder(10)
-        self.logger.debug("Spines set: OK")
+        
         # cConfigures YY ticks
-        self.axs[i].set_ylim(c["y_lims"][0], c["y_lims"][1])
-        self.axs[i].locator_params(axis='y', tight=True, nbins=8)
+        self.axs[i].set_xlim(c["y_lims"][0], c["y_lims"][1])
+        self.axs[i].locator_params(axis='x', tight=True, nbins=8)
         self.logger.debug("Set Y limits: OK")
         
-        self.axs[i].set_yticklabels(
-            ['{:.2f}'.format(yy) for yy in self.axs[i].get_yticks()],
+        self.axs[i].set_xticklabels(
+            ['{:.2f}'.format(xx) for xx in self.axs[i].get_xticks()],
             fontname=c["y_ticks_fn"],
             fontsize=c["y_ticks_fs"],
             fontweight=c["y_ticks_weight"],
-            rotation=c["y_ticks_rot"]
+            rotation=-45
             )
         self.logger.debug("Set Y tick labels: OK")
         
         # configures tick params
-        self.axs[i].margins(x=0.01)
+        self.axs[i].margins(y=0.01)
         self.axs[i].tick_params(
-            axis='x',
+            axis='y',
             pad=c["x_ticks_pad"],
             length=c["x_ticks_len"],
             direction='out'
             )
         self.axs[i].tick_params(
-            axis='y',
+            axis='x',
             pad=c["y_ticks_pad"],
             length=c["y_ticks_len"],
             direction='out'
@@ -231,15 +237,15 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
         self.logger.debug("Configured X and Y tick params: OK")
             
         # Set axes labels
-        self.axs[i].set_xlabel(
+        self.axs[i].set_ylabel(
             'Residue',
             fontname=c["x_label_fn"],
             fontsize=c["x_label_fs"],
             labelpad=c["x_label_pad"],
             weight=c["x_label_weight"],
-            rotation=0
+            rotation=c["x_label_rot"]
             )
-        self.axs[i].set_ylabel(
+        self.axs[i].set_xlabel(
             c["ylabel"],
             fontsize=c["y_label_fs"],
             labelpad=c["y_label_pad"],
@@ -251,7 +257,7 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
         
         # Adds grid
         if c["y_grid_flag"]:
-            self.axs[i].yaxis.grid(
+            self.axs[i].xaxis.grid(
                 color=c["y_grid_color"],
                 linestyle=c["y_grid_linestyle"],
                 linewidth=c["y_grid_linewidth"],
@@ -269,7 +275,8 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
                 c["threshold_color"],
                 c["threshold_linewidth"],
                 c["threshold_alpha"],
-                zorder=c["threshold_zorder"]
+                zorder=c["threshold_zorder"],
+                orientation='vertical'
                 )
             self.logger.debug("Threshold: OK")
         
@@ -281,7 +288,8 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
                 data_array,
                 data_info[:,col['1-letter']],
                 {'P':c["mark_prolines_symbol"]},
-                fs=c["mark_fontsize"]
+                fs=c["mark_fontsize"],
+                orientation='vertical'
                 )
             self.logger.debug("Prolines Marked: OK")
         
@@ -293,7 +301,8 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
                 data_array,
                 data_info[:,col['Details']],
                 c["user_marks_dict"],
-                fs=c["mark_fontsize"]
+                fs=c["mark_fontsize"],
+                orientation='vertical'
                 )
             self.logger.debug("User marks: OK")
         
@@ -342,7 +351,7 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
                     data_extra[:,0],
                     tag_position,
                     c["y_lims"][1]*0.05,
-                    bartype='h',
+                    bartype='v',
                     pre_color=c["theo_pre_color"],
                     pre_lw=c["theo_pre_lw"],
                     tag_color=c["tag_cartoon_color"],
@@ -393,13 +402,14 @@ if __name__ == "__main__":
         "subtitle_weight": "normal",
         "x_label_fn": "Arial",
         "x_label_fs": 8,
-        "x_label_pad": 2,
+        "x_label_pad": 5,
         "x_label_weight": "bold",
+        "x_label_rot":-90,
         "y_label_fn": "Arial",
         "y_label_fs": 8,
         "y_label_pad": 3,
         "y_label_weight": "bold",
-        "y_label_rot":90,
+        "y_label_rot":0,
         "x_ticks_pad": 2,
         "x_ticks_len": 2,
         "y_ticks_fn": "Arial",
@@ -446,11 +456,11 @@ if __name__ == "__main__":
             "mal": "yellow",
             "bem": "magenta"
         },
-        "cols_page": 1,
-        "rows_page": 6,
+        "cols_page": 5,
+        "rows_page": 2,
         "x_ticks_fn": "monospace",
-        "x_ticks_fs": 6,
-        "x_ticks_rot": 90,
+        "x_ticks_fs": 4,
+        "x_ticks_rot": 0,
         "x_ticks_weight": "normal",
         "x_ticks_color_flag": True,
         "fig_dpi": 300,
@@ -461,7 +471,7 @@ if __name__ == "__main__":
         "ylabel":"CSPs"
     }
     
-    plot = BarExtendedHorizontal(
+    plot = BarExtendedVertical(
         full_data_set[:,:,19].astype(float),
         full_data_set[:,:,[0,1,2,3,4,11,12,15]],
         config,
@@ -473,47 +483,47 @@ if __name__ == "__main__":
     plot.plot()
     plot.save_figure("csps.pdf")
     
-    dataset_path = os.path.join(
-        os.path.dirname(file_name),
-        'testing',
-        'dpre'
-        )
+    # dataset_path = os.path.join(
+        # os.path.dirname(file_name),
+        # 'testing',
+        # 'dpre'
+        # )
         
-    print("testing dataset: {}".format(dataset_path))
+    # print("testing dataset: {}".format(dataset_path))
     
-    a = []
-    for f in sorted(os.listdir(dataset_path)):
-        print("reading: {}".format(f))
-        a.append(
-            np.genfromtxt(
-                os.path.join(dataset_path, f),
-                delimiter=',',
-                skip_header=1,
-                dtype=str,
-                missing_values='NaN'
-                )
-            )
+    # a = []
+    # for f in sorted(os.listdir(dataset_path)):
+        # print("reading: {}".format(f))
+        # a.append(
+            # np.genfromtxt(
+                # os.path.join(dataset_path, f),
+                # delimiter=',',
+                # skip_header=1,
+                # dtype=str,
+                # missing_values='NaN'
+                # )
+            # )
     
-    full_data_set = np.stack(a, axis=0)
-    print("dataset shape: {}".format(full_data_set.shape))
+    # full_data_set = np.stack(a, axis=0)
+    # print("dataset shape: {}".format(full_data_set.shape))
     
-    pre_args = {
-        "PRE_loaded":True,
-        "series_axis":'along_z',
-        "para_name":"para"
-        }
+    # pre_args = {
+        # "PRE_loaded":True,
+        # "series_axis":'along_z',
+        # "para_name":"para"
+        # }
     
-    config["y_lims"] = (0, 1.1)
+    # config["y_lims"] = (0, 1.1)
     
-    plot = BarExtendedHorizontal(
-        full_data_set[:,:,19].astype(float),
-        full_data_set[:,:,[0,1,2,3,4,11,12,15]],
-        config,
-        data_extra=full_data_set[:,:,[21, 22]],
-        partype='ratio',
-        exp_names=["dia", "para"],
-        **pre_args
-        )
+    # plot = BarExtendedVertical(
+        # full_data_set[:,:,19].astype(float),
+        # full_data_set[:,:,[0,1,2,3,4,11,12,15]],
+        # config,
+        # data_extra=full_data_set[:,:,[21, 22]],
+        # partype='ratio',
+        # exp_names=["dia", "para"],
+        # **pre_args
+        # )
  
-    plot.plot()
-    plot.save_figure("dpre.pdf")
+    # plot.plot()
+    # plot.save_figure("dpre.pdf")

@@ -24,8 +24,45 @@ from math import ceil
 
 class BarPlotBase:
     """
-    Class with methods common to all Bar Plot templates.
+    Base class with methods common to all Bar Plot templates.
+    
+    Not functional on its own.
     """
+    
+    def plot(self):
+        """Runs all operations to plot."""
+        self.draw_figure() # from PlottingBase
+        self.plot_subplots()
+        self.clean_subplots()
+        return
+    
+    def plot_subplots(self):
+        """
+        Sends the specific data to each subplot.
+        
+        The way data is sliced from the whole data to plot matrix
+        depends on the nature of the subplots.
+        
+        Returns:
+            - None
+        """
+        
+        for i in range(self.data.shape[0]):
+            
+            self.logger.debug("Starting subplot no: {}".format(i))
+            
+            if isinstance(self.data_extra, np.ndarray):
+                data_extra = self.data_extra[i]
+            else:
+                data_extra = None
+            
+            self.subplot(
+                i,
+                self.data[i],
+                self.data_info[i],
+                data_extra=data_extra
+                )
+    
     
     def _plot_theo_pre(
             self,
@@ -249,10 +286,10 @@ class BarPlotBase:
     def _text_marker(
             self,
             ax,
-            axbar,
+            values_x,
+            values_y,
             series,
             d,
-            yy_scale,
             fs=3,
             orientation='horizontal'):
         """
@@ -261,71 +298,65 @@ class BarPlotBase:
         Parameters:
             ax (matplotlib subplot axis): where maker is written.
             
-            axbar (matplotlib object): bars of plot.
+            values_x (np.array): series with X axis information
+            
+            values_y (np.array): series with Y axis information
             
             series (np.array): series with information source.
             
             d (dict): translates information into marker.
-            
-            yy_scale (float): vertical scale calibrates marker position
             
             fs (int): font size
             
             orientation (str): {'horizontal', 'vertical'}
                 wheter plotting in a vertical or horizontal barplot.
         """
-        #elf.logger.debug("Bars series: {}".format(axbar))
         self.logger.debug("Text marker series: {}".format(series))
-        m = len(series) == len(axbar)
-        self.logger.debug("Length Bars and Series match: {}".format(m))
         
+        if orientation == 'vertical':
+            
+            for s, x, y in zip(series, values_x, values_y):
+                if str(s) in d.keys():
+                    
+                    if np.nan_to_num(y) > 0:
+                        ha='left'
+                        
+                    elif np.nan_to_num(y) < 0:
+                        ha='right'
+                    
+                    else:
+                        ha='center'
+                    
+                    ax.text(
+                        np.nan_to_num(y),
+                        np.nan_to_num(x),
+                        d[str(s)],
+                        ha=ha,
+                        va='center',
+                        fontsize=fs
+                        )
         
-        def vpos_sign(x, y):
-            """Scales to the vertical position - positive and negative."""
-            if y>=0:
-                return np.nan_to_num(x)
-            elif y<0:
-                return (x*-1)-(yy_scale/20)
-            else:
-                return 0
-        
-        def hpos_sign(x, y):
-            """Scales to the horizontal position - positive and negative."""
-            if y > 0:
-                return x+(yy_scale/20)
-            elif y<0:
-                return (x*-1)-(yy_scale/20)
-            else:
-                return 0
-        
-        for v, bar in zip(series, axbar):
-            if str(v) in d.keys():
-                x0, y0 = bar.xy
-                self.logger.debug("{},{}".format(x0, y0))
-                if orientation == 'vertical':
-                    self.logger.debug("bar_width: {}".format(bar.get_width()))
-                    hpos = hpos_sign(bar.get_width(), x0)
-                    vpos = bar.get_y() + bar.get_height()/2
-                    vaa='center'
-                
-                elif orientation == 'horizontal':
-                    self.logger.debug("bar_height: {}".format(bar.get_height()))
-                    vpos = vpos_sign(bar.get_height(), y0)
-                    hpos = bar.get_x() + bar.get_width() / 2.5
-                    vaa='bottom'
-                
-                self.logger.debug("Drawing {},{},{}".format(type(hpos),type(vpos),type(d[str(v)])))
-                self.logger.debug("Drawing {},{},{}".format(hpos,vpos,d[str(v)]))
-                
-                ax.text(
-                    hpos,
-                    vpos,
-                    d[str(v)],
-                    ha='center',
-                    va=vaa,
-                    fontsize=fs
-                    )
-            else:
-                continue
+        elif orientation == 'horizontal':
+            
+            for s, x, y in zip(series, values_x, values_y):
+                if str(s) in d.keys():
+                    
+                    if np.nan_to_num(y) > 0:
+                        va='bottom'
+                        
+                    elif np.nan_to_num(y) < 0:
+                        va='top'
+                    
+                    else:
+                        va='bottom'
+                    
+                    ax.text(
+                        np.nan_to_num(x),
+                        np.nan_to_num(y),
+                        d[str(s)],
+                        ha='center',
+                        va=va,
+                        fontsize=fs
+                        )
         
         return

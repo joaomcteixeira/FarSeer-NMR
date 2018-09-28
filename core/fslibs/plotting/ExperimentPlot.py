@@ -29,6 +29,8 @@ class ExperimentPlot(PlottingBase):
     Defines a class for plots where each subplot represents the data
     for the whole experiment where X axes are the Residue numbers (labels)
     and Y axes the NMR parameter to be represented.
+    
+    Not functional on its own.
     """
     def __init__(self,
             data,

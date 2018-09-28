@@ -20,7 +20,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Farseer-NMR. If not, see <http://www.gnu.org/licenses/>.
 """
-from abc import ABCMeta, abstractmethod
+#from abc import ABCMeta, abstractmethod
 
 from math import ceil
 from matplotlib import pyplot as plt
@@ -28,12 +28,11 @@ from matplotlib import pyplot as plt
 import core.fslibs.Logger as Logger
 
 
-class PlottingBase(metaclass=ABCMeta):
+class PlottingBase:#(metaclass=ABCMeta):
     """
-    Plotting base class.
+    Plotting base class with methods common to all plots.
     
-    To implement a new plotting routine create a class that inherits
-    PlottingBase and define its specific functions (@abstractmethod).
+    Not functional on its own.
     
     Parameters:
         - data (np.array(dtype=int) of shape [z,y,x]): multidimensional array
@@ -169,9 +168,9 @@ class PlottingBase(metaclass=ABCMeta):
             nrows=numrows,
             ncols=self.config["cols_page"],
             figsize=(self.config["fig_width"], real_fig_height)
-            )
-        self.len_axs = len(self.axs)
+            )        
         self.axs = self.axs.ravel()
+        self.len_axs = len(self.axs)
         plt.tight_layout(
             rect=[0.01,0.01,0.995,0.995],
             h_pad=real_fig_height/self.config["rows_page"]
@@ -179,35 +178,35 @@ class PlottingBase(metaclass=ABCMeta):
         
         return
     
-    @abstractmethod
-    def plot_subplots(self):
-        """
-        Sends the specific data to each subplot.
+    # @abstractmethod
+    # def plot_subplots(self):
+        # """
+        # Sends the specific data to each subplot.
         
-        The way data is sliced from the whole data to plot matrix
-        depends on the nature of the subplots.
+        # The way data is sliced from the whole data to plot matrix
+        # depends on the nature of the subplots.
         
-        Returns:
-            - None
-        """
-        pass
+        # Returns:
+            # - None
+        # """
+        # pass
     
-    @abstractmethod
-    def subplot(self):
-        """The routine that defines each subplot."""
-        pass
+    # @abstractmethod
+    # def subplot(self):
+        # """The routine that defines each subplot."""
+        # pass
     
-    def plot(self):
-        """Runs all operations to plot."""
-        self.data_select()
-        self.draw_figure()
-        self.plot_subplots()
-        self.clean_subplots()
-        return
+    # def plot(self):
+        # """Runs all operations to plot."""
+        # self.data_select()
+        # self.draw_figure()
+        # self.plot_subplots()
+        # self.clean_subplots()
+        # return
     
     def clean_subplots(self):
         """ Removes unsed subplots."""
-        
+        self.logger.debug("Length Axes: {}".format(self.len_axs))
         for i in range(self.num_subplots, self.len_axs):
             self.axs[i].remove()
     
