@@ -3145,6 +3145,15 @@ but measured in a subsequent peaklist".\
         logftable.close()
         self.logs("*** Fit table log file written: {}".format(logftable_name))
         
+        self.fit_data_dict = {
+            "fit_performed":self.fit_performed,
+            "xfit":self.xfit,
+            "fit_plot_text":self.fit_plot_text,
+            "fit_plot_ydata":self.fit_plot_ydata,
+            "fit_okay":self.fit_okay
+            }
+            
+        
         return
     
 if __name__ == "__main__":

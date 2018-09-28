@@ -32,6 +32,31 @@ class ResEvoPlot(ResiduePlot):
     """
     Represents the evolution of a given parameter along the whole series
     for each residue separately.
+    
+    Parameters:
+        - data (np.array(dtype=int) of shape [z,y,x]): multidimensional array
+            containain the dataset to be plot. Where:
+                X) is the column containing the calculated or observed NMR
+                    parameter to be used as Y axis in plots,
+                Y) are rows containing the X information for each residue
+                Z) is [Y,X] for each experiment.
+            Data can be further treated with data_select() method.
+        
+        - data_info (np.array(dtype=str) of shape [z,y,x]): same as <data>
+            but for columns ResNo, 1-letter, 3-letter, Peak Status, Merit,
+            Fit Method, Vol. Method, Details; in this order.
+        
+        - config (dict): a dictionary containing all the configuration
+            parameters required for this plotting routine.
+            Mandatory keys:
+                - fig_height (float, inches)
+                - fig_width (float, inches)
+                - cols_per_page (int): columns of subplots per figure page
+                - rows_per_page (int): rows of subplots per figure page
+        
+        - exp_names (opt, sequence of str): names of each experiment
+        
+        - additional kwargs can be passed as **kwargs.
     """
     
     def __init__(self,
@@ -61,14 +86,14 @@ class ResEvoPlot(ResiduePlot):
         
         c = self.config
         col = self.info_cols
+        k = self.kwargs
         
         # defines subplot title
         subtitle = \
             np.core.defchararray.add(
-                np.copy(data_info[0,self.info_cols['ResNo']]),
-                np.copy(data_info[0,self.info_cols['1-letter']])
+                np.copy(data_info[0,col['ResNo']]),
+                np.copy(data_info[0,col['1-letter']])
                 )
-        
         
         # Draws subplot title
         ax.set_title(
@@ -82,8 +107,8 @@ class ResEvoPlot(ResiduePlot):
         # if the user wants to represent the condition in the x axis
         # for the first dimension
         if c["set_x_values"] \
-                and (self.kwargs["series_axis"] == 'along_x' \
-                    or self.kwargs["dim_comparison"] == 'along_x'):
+                and (k["series_axis"] == 'along_x' \
+                    or k["dim_comparison"] == 'along_x'):
             
             if len(c["titration_x_values"]) != len(data):
                 msg = \
@@ -101,8 +126,8 @@ variable or confirm you have not forgot any peaklist [{}].".\
             xmax = x[-1]
             
         # for 2D and 3D analysis this option is not available
-        elif (self.kwargs["series_axis"] in ['along_y', 'along_z']) \
-                or (self.kwargs["dim_comparison"] in ['along_y', 'along_z']):
+        elif (k["series_axis"] in ['along_y', 'along_z']) \
+                or (k["dim_comparison"] in ['along_y', 'along_z']):
             x = np.arange(0, len(data))
             xmin = 0
             xmax = len(data)-1
@@ -124,8 +149,8 @@ variable or confirm you have not forgot any peaklist [{}].".\
         ax.set_ylim(c["y_lims"][0], c["y_lims"][1])
         
         if c["set_x_values"] \
-                and (self.kwargs["series_axis"] == 'along_x' \
-                    or self.kwargs["dim_comparison"] == 'along_x'):
+                and (k["series_axis"] == 'along_x' \
+                    or k["dim_comparison"] == 'along_x'):
             ax.locator_params(axis='x', tight=True, nbins=c["x_ticks_nbins"])
             
             def eval_tick(x):
@@ -228,39 +253,43 @@ variable or confirm you have not forgot any peaklist [{}].".\
                 alpha=c["fill_alpha"]
                 )
         
-        # fit_res_col = "{}_{}".format(calccol, res)
+        fit_res_col = "{}_{}".format(
+            k["calccol"],
+            data_info[0,col['ResNo']]
+            )
         
-        # if self.kwargs["fit_performed"] \
-                # and self.kwargs["series_axis"] == 'along_x'\
-                # and self.kwargs["fit_okay"][fit_res_col]:
-            # # plot fit
-            # ax.plot(
-                # self.xfit,
-                # self.fit_plot_ydata[fit_res_col],
-                # fit_line_style,
-                # lw=fit_line_width,
-                # color=fit_line_color, zorder=6
-                # )
-            # # write text
-            # axs[i].text(
-                # xmax*0.05,
-                # y_lims[1]*0.97,
-                # self.fit_plot_text[fit_res_col],
-                # ha='left',
-                # va='top',
-                # fontsize=4
-                # )
+        if k["fit_performed"] \
+                and k["series_axis"] == 'along_x'\
+                and k["fit_okay"][fit_res_col]:
+            # plot fit
+            ax.plot(
+                k["xfit"],
+                k["fit_plot_ydata"][fit_res_col],
+                c["fit_line_style"],
+                lw=c["fit_line_width"],
+                color=c["fit_line_color"],
+                zorder=6
+                )
+            # write text
+            ax.text(
+                xmax*0.05,
+                c["y_lims"][1]*0.97,
+                k["fit_plot_text"][fit_res_col],
+                ha='left',
+                va='top',
+                fontsize=4
+                )
         
-        # elif self.fit_performed and self.series_axis == 'along_x' \
-                # and not(self.fit_okay[fit_res_col]):
-            # axs[i].text(
-                # xmax*0.05,
-                # y_lims[1]*0.97,
-                # self.fit_plot_text[fit_res_col],
-                # ha='left',
-                # va='top',
-                # fontsize=4
-                # )
+        elif k["fit_performed"] and k["series_axis"] == 'along_x' \
+                and not(k["fit_okay"][fit_res_col]):
+            ax.text(
+                xmax*0.05,
+                c["y_lims"][1]*0.97,
+                k["fit_plot_text"][fit_res_col],
+                ha='left',
+                va='top',
+                fontsize=4
+                )
         
         return
     
@@ -365,7 +394,9 @@ if __name__ == "__main__":
     
     series_info = {
         "series_axis":"along_x",
-        "dim_comparison":"along_x"
+        "dim_comparison":"along_x",
+        "calccol":"CSPs",
+        "fit_performed":False
         }
     
     plot = ResEvoPlot(

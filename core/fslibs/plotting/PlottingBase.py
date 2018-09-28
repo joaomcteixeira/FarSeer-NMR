@@ -158,7 +158,7 @@ class PlottingBase:#(metaclass=ABCMeta):
         plt.tight_layout(
             rect=[0.01,0.01,0.995,0.995]
             )
-        #h_pad=real_fig_height/self.config["rows_page"]
+        
         return
     
     # @abstractmethod
