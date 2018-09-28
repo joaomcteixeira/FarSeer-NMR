@@ -42,9 +42,6 @@ class PlottingBase(metaclass=ABCMeta):
             but for columns ResNo, 1-letter, 3-letter, Peak Status, Merit,
             Fit Method, Vol. Method, Details; in this order.
         
-        - data_info (np.array(dtype=str) of shape [z,y,x]): additional
-            info.
-        
         - config (dict): a dictionary containing all the configuration
             parameters required for this plotting routine.
             Mandatory keys:

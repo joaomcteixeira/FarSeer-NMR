@@ -31,8 +31,10 @@ class BarPlotBase:
     def _plot_theo_pre(
             self,
             axs,
-            exp,
-            y,
+            values_x,
+            values_y,
+            tag_position,
+            y_lim,
             bartype='h',
             pre_color='lightblue',
             pre_lw=1,
@@ -46,9 +48,14 @@ class BarPlotBase:
         Parameters:
             axs (matplotlib subplot axis): where values are plot.
             
-            exp (str): the name of the Z axis data point.
+            values_x (np.ndarray): X values to plot
             
-            y (float): plot's y axis limit
+            values_y (np.adrray): Y values to plot
+            
+            tag_position (int): the residue number where the paramagnetic
+                tag is placed.
+            
+            y_lim (float): plot's y axis limit
             
             bartype (str): {'h', 'v', 'hm'}, whether plot of type 
                 horizontal, vertical or Heat Map. Defaults: 'h'.
@@ -63,91 +70,81 @@ class BarPlotBase:
             
             tag_lw (float): tag tick line width.
         """
-        
-        if (self.series_axis == 'along_z' and exp == self.para_name) \
-                or (self.series_axis == 'Cz' \
-                    and (self.next_dim in self.paramagnetic_names or self.prev_dim in self.paramagnetic_names)):
-            # plot theoretical PRE
             
-            x_axis_values = np.arange(
-                float(self.loc[exp,:,'ResNo'].head(n=1))-1,
-                float(self.loc[exp,:,'ResNo'].tail(n=1)),
-                1,
+        # x_axis_values = np.arange(
+            # float(self.loc[exp,:,'ResNo'].head(n=1))-1,
+            # float(self.loc[exp,:,'ResNo'].tail(n=1)),
+            # 1,
+            # )
+        
+        if bartype == 'v':
+            axs.plot(
+                values_y,
+                values_x,
+                zorder=9,
+                color=pre_color,
+                lw=pre_lw
                 )
-            
-            if bartype == 'v':
-                axs.plot(
-                    self.loc[exp,:,'Theo PRE'],
-                    x_axis_values,
-                    zorder=9,
-                    color=pre_color,
-                    lw=pre_lw
-                    )
-            
-            elif bartype == 'h':
-                axs.plot(
-                    x_axis_values,
-                    self.loc[exp,:,'Theo PRE'],
-                    zorder=9,
-                    color=pre_color,
-                    lw=pre_lw
-                    )
-            
-            # plot tag position
-            xtagm = self.loc[exp,:,'tag']=='*'
-            xtag = float(self.loc[exp,xtagm,'ResNo'])-1
-            
-            if bartype in ['h', 'DPRE_plot']:
-                axs.vlines(
-                    xtag,
-                    0,
-                    y,
-                    colors=tag_color,
-                    linestyle=tag_ls,
-                    linewidth=tag_lw,
-                    zorder=10
-                    )
-                axs.plot(
-                    xtag,
-                    y,
-                    'o',
-                    zorder=10,
-                    color='red',
-                    markersize=2
-                    )
-            
-            elif bartype == 'v':
-                axs.hlines(
-                    xtag,
-                    0,
-                    y,
-                    colors=tag_color,
-                    linestyle=tag_ls,
-                    linewidth=tag_lw,
-                    zorder=10
-                    )
-                axs.plot(
-                    y,
-                    xtag,
-                    'o',
-                    zorder=10,
-                    color='red',
-                    markersize=2
-                    )
-            
-            elif bartype == 'hm':
-                axs.vlines(
-                    xtag,
-                    0,
-                    y,
-                    colors=tag_color,
-                    linestyle=tag_ls,
-                    linewidth=tag_lw,
-                    zorder=10
-                    )
         
-        else:
-            return
+        elif bartype == 'h':
+            axs.plot(
+                values_x,
+                values_y,
+                zorder=9,
+                color=pre_color,
+                lw=pre_lw
+                )
+        
+        xtag = tag_position# - 1
+        
+        if bartype in ['h', 'DPRE_plot']:
+            axs.vlines(
+                xtag,
+                0,
+                y_lim,
+                colors=tag_color,
+                linestyle=tag_ls,
+                linewidth=tag_lw,
+                zorder=10
+                )
+            axs.plot(
+                xtag,
+                y_lim,
+                'o',
+                zorder=10,
+                color='red',
+                markersize=2
+                )
+        
+        elif bartype == 'v':
+            axs.hlines(
+                xtag,
+                0,
+                y_lim,
+                colors=tag_color,
+                linestyle=tag_ls,
+                linewidth=tag_lw,
+                zorder=10
+                )
+            axs.plot(
+                y_lim,
+                xtag,
+                'o',
+                zorder=10,
+                color='red',
+                markersize=2
+                )
+        
+        elif bartype == 'hm':
+            axs.vlines(
+                xtag,
+                0,
+                y_lim,
+                colors=tag_color,
+                linestyle=tag_ls,
+                linewidth=tag_lw,
+                zorder=10
+                )
     
     def _plot_threshold(
             self,

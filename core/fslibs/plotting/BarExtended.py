@@ -30,7 +30,42 @@ from core.fslibs.plotting.BarPlotBase import BarPlotBase
 from core.fslibs.WetHandler import WetHandler as fsw
 
 class BarExtended(PlottingBase, BarPlotBase):
-    """Extended Bar plotting template."""
+    """
+    Extended Bar plotting template.
+    
+    Parameters:
+        - data (np.array(dtype=int) of shape [z,y,x]): multidimensional array
+            containain the dataset to be plot. Where:
+                X) is the column containing the calculated or observed NMR
+                    parameter to be used as Y axis in plots,
+                Y) are rows containing the X information for each residue
+                Z) is [Y,X] for each experiment.
+            Data can be further treated with data_select() method.
+        
+        - data_info (np.array(dtype=str) of shape [z,y,x]): same as <data>
+            but for columns ResNo, 1-letter, 3-letter, Peak Status, Merit,
+            Fit Method, Vol. Method, Details; in this order.
+        
+        - config (dict): a dictionary containing all the configuration
+            parameters required for this plotting routine.
+            Mandatory keys:
+                - fig_height (float, inches)
+                - fig_width (float, inches)
+                - cols_per_page (int): columns of subplots per figure page
+                - rows_per_page (int): rows of subplots per figure page
+        
+        - data_extra (opt, np.ndarray of shape [z,y,x]): extra ndarray to help
+            on plotting the data passed as <data>.
+                In the case of plotting theoretical PRE data, data_extra
+                columns should be [Theo PRE, tag position].
+        
+        - partype (opt {'ppm', 'ratio'}, defaults None): 
+            indicates the type of data that is being plotted, so that
+            special option can be activated.
+        
+        - additional kwargs can be passed as **kwargs.
+    
+    """
     
     def __init__(self,
             data,
@@ -69,8 +104,8 @@ class BarExtended(PlottingBase, BarPlotBase):
                 )
             )
         
-        if self.kwargs.get("exp_names"):
-            self.experiment_names = self.kwargs.get("exp_names")
+        if exp_names:
+            self.experiment_names = exp_names
         else:
             self.experiment_names = [str(i) for i in range(data.shape[0])]
             
@@ -165,7 +200,7 @@ class BarExtended(PlottingBase, BarPlotBase):
             
             self.logger.debug("Starting subplot no: {}".format(i))
             
-            if self.data_extra:
+            if isinstance(self.data_extra, np.ndarray):
                 data_extra = self.data_extra[i]
             else:
                 data_extra = None
@@ -191,6 +226,7 @@ class BarExtended(PlottingBase, BarPlotBase):
         self.logger.debug(data_extra)
         
         number_of_residues_to_plot = data_array.shape[0]
+        
         self.logger.debug(
             "Number of residues to plot: {}".format(number_of_residues_to_plot)
             )
@@ -389,21 +425,53 @@ class BarExtended(PlottingBase, BarPlotBase):
                 c["user_bar_colors_dict"]
                 )
             self.logger.debug("Color user details: OK")
-        
-        if self.kwargs["PRE_loaded"] and self.ratio_data:
-            self.logger.debug("... Starting Theoretical PRE Plot")
-            self._plot_theo_pre(
-                self.axs[i],
-                self.experiment_names[i],
-                c["y_lims"][1]*0.05,
-                bartype='h',
-                pre_color=c["theo_pre_color"],
-                pre_lw=c["theo_pre_lw"],
-                tag_color=c["tag_cartoon_color"],
-                tag_ls=c["tag_cartoon_ls"],
-                tag_lw=c["tag_cartoon_lw"]
-                )
-            self.logger.debug("Theoretical PRE plotted: OK")
+               
+        if (self.kwargs["PRE_loaded"] and self.ratio_data):
+            
+            self.logger.debug("...Starting Theoretical PRE Plot")
+            
+            self.logger.debug("series_axis: {}".format(self.kwargs["series_axis"]))
+            self.logger.debug("para_name: {}".format(self.kwargs["para_name"]))
+            self.logger.debug("exp name: {}".format(self.experiment_names[i]))
+            
+            is_valid_for_PRE_plot_calc = \
+                self.kwargs["series_axis"] == 'along_z' \
+                    and self.kwargs["para_name"] == self.experiment_names[i]
+            
+            is_valid_for_PRE_plot_comp = \
+                self.kwargs["series_axis"] == 'Cz' \
+                    and (self.kwargs["next_dim"] in self.kwargs["paramagnetic_names"] \
+                        or self.kwargs["prev_dim"] in self.kwargs["paramagnetic_names"])
+            
+            is_valid_for_PRE_plot = \
+                is_valid_for_PRE_plot_calc or is_valid_for_PRE_plot_comp
+            
+            if is_valid_for_PRE_plot:
+                # plot theoretical PRE
+                self.logger.debug("... Starting Theoretical PRE Plot")
+                
+                self.logger.debug("data extra {}".format(data_extra[:,1]))
+                where_tag = np.where(data_extra[:,1]=="*")
+                self.logger.debug("where position: {}".format(where_tag))
+                tag_position = list(range(number_of_residues_to_plot))[where_tag[0][0]]
+                self.logger.debug("tag position: {}".format(tag_position))
+                
+                self._plot_theo_pre(
+                    self.axs[i],
+                    range(number_of_residues_to_plot),
+                    data_extra[:,0],
+                    tag_position,
+                    c["y_lims"][1]*0.05,
+                    bartype='h',
+                    pre_color=c["theo_pre_color"],
+                    pre_lw=c["theo_pre_lw"],
+                    tag_color=c["tag_cartoon_color"],
+                    tag_ls=c["tag_cartoon_ls"],
+                    tag_lw=c["tag_cartoon_lw"]
+                    )
+                self.logger.debug("Theoretical PRE plotted: OK")
+            else:
+                self.logger.debug("Data is not valid for PRE Plot")
         
         return
 
@@ -417,7 +485,7 @@ if __name__ == "__main__":
     dataset_path = os.path.join(
         os.path.dirname(file_name),
         'testing',
-        'dataset'
+        'csps'
         )
         
     print("testing dataset: {}".format(dataset_path))
@@ -523,4 +591,49 @@ if __name__ == "__main__":
         )
     
     plot.plot()
-    plot.save_figure()
+    plot.save_figure("csps.pdf")
+    
+    dataset_path = os.path.join(
+        os.path.dirname(file_name),
+        'testing',
+        'dpre'
+        )
+        
+    print("testing dataset: {}".format(dataset_path))
+    
+    a = []
+    for f in sorted(os.listdir(dataset_path)):
+        print("reading: {}".format(f))
+        a.append(
+            np.genfromtxt(
+                os.path.join(dataset_path, f),
+                delimiter=',',
+                skip_header=1,
+                dtype=str,
+                missing_values='NaN'
+                )
+            )
+    
+    full_data_set = np.stack(a, axis=0)
+    print("dataset shape: {}".format(full_data_set.shape))
+    
+    pre_args = {
+        "PRE_loaded":True,
+        "series_axis":'along_z',
+        "para_name":"para"
+        }
+    
+    config["y_lims"] = (0, 1.1)
+    
+    plot = BarExtended(
+        full_data_set[:,:,19].astype(float),
+        full_data_set[:,:,[0,1,2,3,4,11,12,15]],
+        config,
+        data_extra=full_data_set[:,:,[21, 22]],
+        partype='ratio',
+        exp_names=["dia", "para"],
+        **pre_args
+        )
+ 
+    plot.plot()
+    plot.save_figure("dpre.pdf")
