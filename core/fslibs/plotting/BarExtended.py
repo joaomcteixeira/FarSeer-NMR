@@ -26,10 +26,11 @@ from math import ceil
 
 import core.fslibs.Logger as Logger
 from core.fslibs.plotting.PlottingBase import PlottingBase
+from core.fslibs.plotting.ExperimentPlot import ExperimentPlot
 from core.fslibs.plotting.BarPlotBase import BarPlotBase
 from core.fslibs.WetHandler import WetHandler as fsw
 
-class BarExtended(PlottingBase, BarPlotBase):
+class BarExtended(ExperimentPlot, BarPlotBase):
     """
     Extended Bar plotting template.
     
@@ -76,116 +77,21 @@ class BarExtended(PlottingBase, BarPlotBase):
             exp_names="",
             **kwargs
             ):
-        super().__init__(data, data_info, data_extra, config, **kwargs)
+        super().__init__(
+            data,
+            data_info,
+            config,
+            partype=partype,
+            exp_names=exp_names,
+            **kwargs
+            )
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("BarExtendedHorizontal initiated")
         
-        self.logger.debug("Column Selected: {}".format(partype))
-        self.logger.debug("Configuration dictionary \n{}".format(self.config))
-        self.logger.debug("Shape of data matrix: {}".format(self.data.shape))
-        self.logger.debug("Kwargs: {}".format(self.kwargs))
-        
-        self.ppm_data = False
-        self.ratio_data = False
-        
-        # for ('H1_delta', 'N15_delta', 'CSP')
-        if partype == 'ppm' :
-            self.ppm_data = True
-        
-        # for ('Height_ratio','Vol_ratio')
-        elif partype == 'ratio':
-            self.ratio_data = True
-        
-        self.logger.debug(
-            "PPM and RATIO data types? {} and {}".format(
-                self.ppm_data,
-                self.ratio_data
-                )
-            )
-        
-        if exp_names:
-            self.experiment_names = exp_names
-        else:
-            self.experiment_names = [str(i) for i in range(data.shape[0])]
-            
-        self.logger.debug("Experiment names: {}".format(self.experiment_names))
-        
-        self._calcs_numsubplots()
+        self.data_extra = data_extra
     
-    def data_select(self):
-        """dummy function to comply with ABC"""
-        return
-    
-    def _calcs_numsubplots(self):
-        """
-        Calculates the total number of subplots to be plotted
-        based on the user data.
-        
-        Returns:
-            - None
-            
-        Stores:
-            - self.num_subplots (int)
-        """
-        self.num_subplots = self.data.shape[0]
-        self.logger.debug("Number of subplots: {}".format(self.num_subplots))
-        
-        return
-    
-    def _config_fig(self):
-        """
-        Calculates number of subplot rows per page based on
-        user data and settings.
-        
-        Returns:
-            - numrows (int): number of total rows
-            - real_fig_height (float, inches): final figure height
-        """
-        
-        numrows = ceil(self.num_subplots/self.config["cols_page"]) + 1 
-        
-        real_fig_height = \
-            (self.config["fig_height"] / self.config["rows_page"]) \
-                * numrows
-        
-        return numrows, real_fig_height
-    
-    def draw_figure(self, **kwargs):
-        """
-        Draws the figure architecture.
-        
-        Defines the size of the figure and subplots based
-        on the data to plot.
-        
-        Returns:
-            - None.
-        
-        Stores :
-            - self.figure: Figure object.
-            - self.axs: axes of the figure (in case matplotlib is used).
-            - self.len_axs (int): the number of subplots created in the
-                figure object.
-        """
-        
-        numrows, real_fig_height = self._config_fig()
-        
-        # http://stackoverflow.com/questions/17210646/python-subplot-within-a-loop-first-panel-appears-in-wrong-position
-        self.figure, self.axs = plt.subplots(
-            nrows=numrows,
-            ncols=self.config["cols_page"],
-            figsize=(self.config["fig_width"], real_fig_height)
-            )
-        self.len_axs = len(self.axs)
-        self.axs = self.axs.ravel()
-        plt.tight_layout(
-            rect=[0.01,0.01,0.995,0.995],
-            h_pad=real_fig_height/self.config["rows_page"]
-            )
-        
-        return
-    
-    def plot_subplots(self, **kwargs):
+    def plot_subplots(self):
         """
         Sends the specific data to each subplot.
         

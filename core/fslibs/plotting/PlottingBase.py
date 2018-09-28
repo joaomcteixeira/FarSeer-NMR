@@ -22,6 +22,12 @@ along with Farseer-NMR. If not, see <http://www.gnu.org/licenses/>.
 """
 from abc import ABCMeta, abstractmethod
 
+from math import ceil
+from matplotlib import pyplot as plt
+
+import core.fslibs.Logger as Logger
+
+
 class PlottingBase(metaclass=ABCMeta):
     """
     Plotting base class.
@@ -64,13 +70,20 @@ class PlottingBase(metaclass=ABCMeta):
         "Details":7
         }
     
-    def __init__(self, data, data_info, data_extra, config, **kwargs):
+    def __init__(self, data, data_info, config, **kwargs):
+        
+        self.logger = Logger.FarseerLogger(__name__).setup_log()
+        self.logger.debug("ExperimentPlot initiated")
         
         self.data = data
         self.data_info = data_info
-        self.data_extra = data_extra
         self.config = config
         self.kwargs = kwargs
+        
+        self.logger.debug("Configuration dictionary \n{}".format(self.config))
+        self.logger.debug("Shape of data matrix: {}".format(self.data.shape))
+        self.logger.debug("Shape of data info: {}".format(self.data_info.shape))
+        self.logger.debug("Kwargs: {}".format(self.kwargs))
         
         self.data_to_plot = None
         self.figure = None
@@ -80,7 +93,7 @@ class PlottingBase(metaclass=ABCMeta):
         
         super().__init__()
     
-    @abstractmethod
+    #@abstractmethod
     def data_select(self):
         """
         Selects the desired data to plot from the original input data.
@@ -97,7 +110,6 @@ class PlottingBase(metaclass=ABCMeta):
         """
         pass
     
-    @abstractmethod
     def _calcs_numsubplots(self):
         """
         Calculates the total number of subplots to be plotted
@@ -109,10 +121,30 @@ class PlottingBase(metaclass=ABCMeta):
         Stores:
             - self.num_subplots (int)
         """
-        pass
+        self.num_subplots = self.data.shape[0]
+        self.logger.debug("Number of subplots: {}".format(self.num_subplots))
+        
+        return
     
-    @abstractmethod
-    def draw_figure(self, **kwargs):
+    def _config_fig(self):
+        """
+        Calculates number of subplot rows per page based on
+        user data and settings.
+        
+        Returns:
+            - numrows (int): number of total rows
+            - real_fig_height (float, inches): final figure height
+        """
+        
+        numrows = ceil(self.num_subplots/self.config["cols_page"]) + 1 
+        
+        real_fig_height = \
+            (self.config["fig_height"] / self.config["rows_page"]) \
+                * numrows
+        
+        return numrows, real_fig_height
+    
+    def draw_figure(self):
         """
         Draws the figure architecture.
         
@@ -128,8 +160,24 @@ class PlottingBase(metaclass=ABCMeta):
             - self.len_axs (int): the number of subplots created in the
                 figure object.
         """
+        self._calcs_numsubplots()
         
-        pass
+        numrows, real_fig_height = self._config_fig()
+        
+        # http://stackoverflow.com/questions/17210646/python-subplot-within-a-loop-first-panel-appears-in-wrong-position
+        self.figure, self.axs = plt.subplots(
+            nrows=numrows,
+            ncols=self.config["cols_page"],
+            figsize=(self.config["fig_width"], real_fig_height)
+            )
+        self.len_axs = len(self.axs)
+        self.axs = self.axs.ravel()
+        plt.tight_layout(
+            rect=[0.01,0.01,0.995,0.995],
+            h_pad=real_fig_height/self.config["rows_page"]
+            )
+        
+        return
     
     @abstractmethod
     def plot_subplots(self):
@@ -152,7 +200,6 @@ class PlottingBase(metaclass=ABCMeta):
     def plot(self):
         """Runs all operations to plot."""
         self.data_select()
-        self._calcs_numsubplots()
         self.draw_figure()
         self.plot_subplots()
         self.clean_subplots()
