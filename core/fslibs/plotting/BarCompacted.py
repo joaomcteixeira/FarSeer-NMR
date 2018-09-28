@@ -120,30 +120,34 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
         self.logger.debug("Created bar plot: OK")
         
         # ticks positions:
-        initialresidue = int(data_info[0, col['ResNo']])
-        finalresidue = int(data_info[-1, col['ResNo']])
-        
         if number_of_residues_to_plot > 100:
             xtick_spacing = number_of_residues_to_plot//100*10
         
         else:
             xtick_spacing = 10
+            
+        self.logger.debug("xtick_spacing set to: {}".format(xtick_spacing))
+        xticks = range(
+            xtick_spacing-1,
+            number_of_residues_to_plot,
+            xtick_spacing
+            )
+        self.logger.debug("Setting xticks: {}".format([a for a in xticks]))
+        # -1 needs to be given because xticks star from 0
+        self.axs[i].set_xticks(xticks)
+        self.logger.debug("set_xticks: OK")
+        
+        # xtick labels
+        initialresidue = int(data_info[0, col['ResNo']])
+        finalresidue = int(data_info[-1, col['ResNo']])
         
         first_tick = ceil(initialresidue/10)*xtick_spacing
-        xtickarange = np.arange(first_tick, finalresidue, xtick_spacing)
-        
-        self.logger.debug("xtickarange: {}".format(xtickarange))
-        self.logger.debug("setting xticks to: {}".format(xtickarange-1))
-        self.axs[i].set_xticks(xtickarange-1)
-        
-        self.logger.debug("set_xticks: OK")
-        self.logger.debug("xtick_spacing set to: {}".format(xtick_spacing))
-        self.logger.debug("data ResNo: {}".format(data_info[0::xtick_spacing,col['ResNo']]))
-        self.logger.debug("data 1-letter: {}".format(data_info[0::xtick_spacing,col['1-letter']]))
+        xticklabels = np.arange(first_tick, finalresidue, xtick_spacing)
+        self.logger.debug("xticklabels: {}".format(xticklabels))
         
         ## https://github.com/matplotlib/matplotlib/issues/6266
         self.axs[i].set_xticklabels(
-            xtickarange,
+            xticklabels,
             fontname=c["x_ticks_fn"],
             fontsize=c["x_ticks_fs"],
             fontweight=c["x_ticks_weight"],
@@ -155,29 +159,16 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
             unassignedmask = \
                 data_info[:, col['Peak Status']] == 'unassigned'
             
-            for residue in data_info[unassignedmask, col['ResNo']]:
-                residue = int(residue) - 1.5
-                self.axs[i].axvspan(
-                    residue,
-                    residue+1,
-                    color=c["unassigned_color"],
-                    alpha=c["unassigned_shade_alpha"],
-                    lw=0
-                    )
-        
-        # defines xticks colors
-        if c["x_ticks_color_flag"]:
-            self.logger.debug("Configuring x_ticks_color_flag...")
-            self._set_item_colors(
-                self.axs[i].get_xticklabels(),
-                data_info[0::xtick_spacing,col['Peak Status']],
-                {
-                    'measured':c["measured_color"],
-                    'missing':c["missing_color"],
-                    'unassigned':c["unassigned_color"]
-                    }
-                )
-            self.logger.debug("...Done")
+            for res, m in enumerate(unassignedmask):
+                if m:
+                    res -= 0.5
+                    self.axs[i].axvspan(
+                        res,
+                        res+1,
+                        color=c["unassigned_color"],
+                        alpha=c["unassigned_shade_alpha"],
+                        lw=0
+                        )
         
         # Set subplot titles
         self.axs[i].set_title(
@@ -363,6 +354,93 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
 if __name__ == "__main__":
     import os
     
+    config = {
+        "cols_page": 3,
+        "rows_page": 5,
+        
+        "y_lims":(0,0.3),
+        "ylabel":"CSPs",
+        
+        "subtitle_fn": "Arial",
+        "subtitle_fs": 8,
+        "subtitle_pad": 0.99,
+        "subtitle_weight": "normal",
+        
+        "x_label_fn": "Arial",
+        "x_label_fs": 8,
+        "x_label_pad": 2,
+        "x_label_weight": "bold",
+        
+        "y_label_fn": "Arial",
+        "y_label_fs": 8,
+        "y_label_pad": 3,
+        "y_label_weight": "bold",
+        "y_label_rot":90,
+        
+        "x_ticks_pad": 2,
+        "x_ticks_len": 2,
+        "x_ticks_fn": "Arial",
+        "x_ticks_fs": 6,
+        "x_ticks_rot": 0,
+        "x_ticks_weight": "normal",
+        
+        "y_ticks_fn": "Arial",
+        "y_ticks_fs": 6,
+        "y_ticks_rot": 0,
+        "y_ticks_pad": 1,
+        "y_ticks_weight": "normal",
+        "y_ticks_len": 2,
+        
+        "y_grid_flag": True,
+        "y_grid_color": "lightgrey",
+        "y_grid_linestyle": "-",
+        "y_grid_linewidth": 0.2,
+        "y_grid_alpha": 0.8,
+        
+        "theo_pre_color": "red",
+        "theo_pre_lw": 1.0,
+        
+        "tag_cartoon_color": "black",
+        "tag_cartoon_lw": 1.0,
+        "tag_cartoon_ls": "-",
+        
+        "measured_color": "black",
+        "missing_color": "red",
+        "unassigned_color": "lightgrey",
+        
+        "bar_width": 0.8,
+        "bar_alpha": 1,
+        "bar_linewidth": 0,
+        
+        "threshold_flag": True,
+        "threshold_color": "red",
+        "threshold_linewidth": 0.5,
+        "threshold_alpha": 0.8,
+        "threshold_zorder":10,
+        
+        "mark_fontsize": 4,
+        "mark_prolines_flag": True,
+        "mark_prolines_symbol": "P",
+        "mark_user_details_flag": True,
+        "color_user_details_flag": True,
+        "user_marks_dict": {
+            "foo": "f",
+            "mal": "m",
+            "bem": "b"
+        },
+        "user_bar_colors_dict": {
+            "foo": "green",
+            "mal": "yellow",
+            "bem": "magenta"
+        },
+        "unassigned_shade": True,
+        "unassigned_shade_alpha": 0.5,
+
+        "fig_height": 11.69,
+        "fig_width": 8.69,
+        "vspace": 0.5
+    }
+    
     file_name = os.path.realpath(__file__)
     
     print("### testing {}".format(file_name))
@@ -391,83 +469,6 @@ if __name__ == "__main__":
     full_data_set = np.stack(a, axis=0)
     print("dataset shape: {}".format(full_data_set.shape))
     
-    config = {
-        "subtitle_fn": "Arial",
-        "subtitle_fs": 8,
-        "subtitle_pad": 0.99,
-        "subtitle_weight": "normal",
-        "x_label_fn": "Arial",
-        "x_label_fs": 8,
-        "x_label_pad": 2,
-        "x_label_weight": "bold",
-        "y_label_fn": "Arial",
-        "y_label_fs": 8,
-        "y_label_pad": 3,
-        "y_label_weight": "bold",
-        "y_label_rot":90,
-        "x_ticks_pad": 2,
-        "x_ticks_len": 2,
-        "y_ticks_fn": "Arial",
-        "y_ticks_fs": 6,
-        "y_ticks_rot": 0,
-        "y_ticks_pad": 1,
-        "y_ticks_weight": "normal",
-        "y_ticks_len": 2,
-        "y_grid_flag": True,
-        "y_grid_color": "lightgrey",
-        "y_grid_linestyle": "-",
-        "y_grid_linewidth": 0.2,
-        "y_grid_alpha": 0.8,
-        "vspace": 0.5,
-        "theo_pre_color": "red",
-        "theo_pre_lw": 1.0,
-        "tag_cartoon_color": "black",
-        "tag_cartoon_lw": 1.0,
-        "tag_cartoon_ls": "-",
-        "measured_color": "black",
-        "status_color_flag": False,
-        "missing_color": "red",
-        "unassigned_color": "lightgrey",
-        "bar_width": 0.8,
-        "bar_alpha": 1,
-        "bar_linewidth": 0,
-        "threshold_flag": True,
-        "threshold_color": "red",
-        "threshold_linewidth": 0.5,
-        "threshold_alpha": 0.8,
-        "threshold_zorder":10,
-        "mark_fontsize": 4,
-        "mark_prolines_flag": True,
-        "mark_prolines_symbol": "P",
-        "mark_user_details_flag": True,
-        "color_user_details_flag": True,
-        "user_marks_dict": {
-            "foo": "f",
-            "mal": "m",
-            "bem": "b"
-        },
-        "user_bar_colors_dict": {
-            "foo": "green",
-            "mal": "yellow",
-            "bem": "magenta"
-        },
-        "cols_page": 3,
-        "rows_page": 5,
-        "x_ticks_fn": "Arial",
-        "x_ticks_fs": 6,
-        "x_ticks_rot": 0,
-        "x_ticks_weight": "normal",
-        "x_ticks_color_flag": True,
-        "fig_dpi": 300,
-        "fig_file_type": "pdf",
-        "fig_height": 11.69,
-        "fig_width": 8.69,
-        "y_lims":(0,0.3),
-        "ylabel":"CSPs",
-        "unassigned_shade": True,
-        "unassigned_shade_alpha": 0.5
-    }
-    
     plot = BarCompacted(
         full_data_set[:,:,21].astype(float),
         full_data_set[:,:,[0,1,2,3,4,11,12,15]],
@@ -479,6 +480,8 @@ if __name__ == "__main__":
     
     plot.plot()
     plot.save_figure("csps.pdf")
+    
+    ######################################################################## 1
     
     dataset_path = os.path.join(
         os.path.dirname(file_name),
@@ -524,3 +527,50 @@ if __name__ == "__main__":
  
     plot.plot()
     plot.save_figure("dpre.pdf")
+    
+    ######################################################################## 2
+    
+    dataset_path = os.path.join(
+        os.path.dirname(file_name),
+        'testing',
+        'dpre_not_complete'
+        )
+        
+    print("testing dataset: {}".format(dataset_path))
+    
+    a = []
+    for f in sorted(os.listdir(dataset_path)):
+        print("reading: {}".format(f))
+        a.append(
+            np.genfromtxt(
+                os.path.join(dataset_path, f),
+                delimiter=',',
+                skip_header=1,
+                dtype=str,
+                missing_values='NaN'
+                )
+            )
+    
+    full_data_set = np.stack(a, axis=0)
+    print("dataset shape: {}".format(full_data_set.shape))
+    
+    pre_args = {
+        "PRE_loaded":True,
+        "series_axis":'along_z',
+        "para_name":"para"
+        }
+    
+    config["y_lims"] = (0, 1.1)
+    
+    plot = BarCompacted(
+        full_data_set[:,:,19].astype(float),
+        full_data_set[:,:,[0,1,2,3,4,11,12,15]],
+        config,
+        data_extra=full_data_set[:,:,[21, 22]],
+        partype='ratio',
+        exp_names=["dia", "para"],
+        **pre_args
+        )
+ 
+    plot.plot()
+    plot.save_figure("dpre_not_complete.pdf")
