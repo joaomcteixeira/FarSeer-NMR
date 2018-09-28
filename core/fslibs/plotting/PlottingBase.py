@@ -47,14 +47,6 @@ class PlottingBase:#(metaclass=ABCMeta):
             but for columns ResNo, 1-letter, 3-letter, Peak Status, Merit,
             Fit Method, Vol. Method, Details; in this order.
         
-        - config (dict): a dictionary containing all the configuration
-            parameters required for this plotting routine.
-            Mandatory keys:
-                - fig_height (float, inches)
-                - fig_width (float, inches)
-                - cols_per_page (int): columns of subplots per figure page
-                - rows_per_page (int): rows of subplots per figure page
-        
         - additional kwargs can be passed as **kwargs.
     """
     
@@ -69,25 +61,21 @@ class PlottingBase:#(metaclass=ABCMeta):
         "Details":7
         }
     
-    def __init__(self, data, data_info, config, **kwargs):
+    def __init__(self, data, data_info, **kwargs):
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("ExperimentPlot initiated")
         
         self.data = data
         self.data_info = data_info
-        self.config = config
         self.kwargs = kwargs
         
-        self.logger.debug("Configuration dictionary \n{}".format(self.config))
         self.logger.debug("Shape of data matrix: {}".format(self.data.shape))
         self.logger.debug("Shape of data info: {}".format(self.data_info.shape))
         self.logger.debug("Kwargs: {}".format(self.kwargs))
         
-        self.data_to_plot = None
         self.figure = None
         self.axs = None
-        self.num_subplots = None
         self.len_axs = None
         
         super().__init__()

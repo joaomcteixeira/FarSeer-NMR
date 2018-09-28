@@ -35,11 +35,10 @@ class ResiduePlot(PlottingBase):
     def __init__(self,
             data,
             data_info,
-            config,
             exp_names=None,
             **kwargs
             ):
-        super().__init__(data, data_info, config, **kwargs)
+        super().__init__(data, data_info, **kwargs)
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("ResiduePlot initiated")
@@ -50,6 +49,8 @@ class ResiduePlot(PlottingBase):
             self.exp_names = [str(i) for i in range(data.shape[0])]
         
         self.logger.debug("Exp names set to: {}".format(self.exp_names))
+        
+        self.num_subplots = None
         
         return
     
@@ -74,6 +75,7 @@ class ResiduePlot(PlottingBase):
         """Runs all operations to plot."""
         self.draw_figure() # from PlottingBase
         self.plot_subplots()
+        self.adjust_subplots()
         self.clean_subplots()
         return
     
@@ -87,8 +89,13 @@ class ResiduePlot(PlottingBase):
                 self.data_info[:,i,:]
                 )
         
-        self.figure.subplots_adjust(hspace=self.config["vspace"])
-        
+        return
+    
+    def adjust_subplots(self):
+        self.figure.subplots_adjust(
+            hspace=self.config["hspace"],
+            wspace=self.config["wspace"]
+            )
         return
 
 if __name__ == "__main__":

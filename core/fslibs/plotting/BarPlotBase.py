@@ -33,6 +33,7 @@ class BarPlotBase:
         """Runs all operations to plot."""
         self.draw_figure() # from PlottingBase
         self.plot_subplots()
+        self.adjust_subplots()
         self.clean_subplots()
         return
     
@@ -63,6 +64,11 @@ class BarPlotBase:
                 data_extra=data_extra
                 )
     
+    def adjust_subplots(self):
+        self.figure.subplots_adjust(
+            hspace=self.config["hspace"],
+            wspace=self.config["wspace"]
+            )
     
     def _plot_theo_pre(
             self,

@@ -46,23 +46,86 @@ class ResEvoPlot(ResiduePlot):
             but for columns ResNo, 1-letter, 3-letter, Peak Status, Merit,
             Fit Method, Vol. Method, Details; in this order.
         
-        - config (dict): a dictionary containing all the configuration
-            parameters required for this plotting routine.
-            Mandatory keys:
-                - fig_height (float, inches)
-                - fig_width (float, inches)
-                - cols_per_page (int): columns of subplots per figure page
-                - rows_per_page (int): rows of subplots per figure page
+        - config (opt, dict): a dictionary containing all the configuration
+            parameters required for this plotting routine. If None provided
+            uses the default configuraton. Access the default configuration
+            via the default_config class attribute.
         
         - exp_names (opt, sequence of str): names of each experiment
         
         - additional kwargs can be passed as **kwargs.
     """
     
+    default_config = {
+        
+        "cols_page": 5,
+        "rows_page": 8,
+        
+        "y_lims":(0,0.3),
+        "hspace": 0.5,
+        "wspace": 0.5,
+        
+        "subtitle_fn": "Arial",
+        "subtitle_fs": 8,
+        "subtitle_pad": 0.98,
+        "subtitle_weight": "normal",
+        
+        "x_label_fn": "Arial",
+        "x_label_fs": 6,
+        "x_label_pad": 2,
+        "x_label_weight": "normal",
+        "x_label": "ligand ratio",
+        
+        "y_label_fn": "Arial",
+        "y_label_fs": 6,
+        "y_label_pad": 2,
+        "y_label_weight": "normal",
+        "y_label": "CSPs",
+        
+        "set_x_values": True,
+        "titration_x_values": [0,25,50,100,200,400,500],
+        "x_ticks_fn": "Arial",
+        "x_ticks_fs": 5,
+        "x_ticks_pad": 1,
+        "x_ticks_weight": "normal",
+        "x_ticks_rot": 30,
+        "x_ticks_len":2,
+        "x_ticks_nbins": 5,
+        
+        "y_ticks_fn": "Arial",
+        "y_ticks_fs": 5,
+        "y_ticks_pad": 1,
+        "y_ticks_weight": "normal",
+        "y_ticks_rot": 0,
+        "y_ticks_len":2,
+        "y_ticks_nbins":8,
+        
+        "line_style": "-",
+        "line_width": 1,
+        "line_color": "red",
+        
+        "marker_style": "o",
+        "marker_color": "darkred",
+        "marker_size": 3,
+        
+        "fill_between": True,
+        "fill_color": "pink",
+        "fill_alpha": 0.5,
+        
+        
+        "perform_resevo_fitting": False,
+        "fit_line_color": "black",
+        "fit_line_width": 1,
+        "fit_line_style": "-",
+        
+        "fig_height": 11.69,
+        "fig_width": 8.69
+    }
+    
     def __init__(self,
             data,
             data_info,
-            config,
+            config=None,
             data_extra=None,
             exp_names=None,
             **kwargs
@@ -70,13 +133,18 @@ class ResEvoPlot(ResiduePlot):
         super().__init__(
             data,
             data_info,
-            config,
             exp_names=exp_names,
             **kwargs
             )
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("ResEvoPlot initiated")
+        
+        if config:
+            self.config = config
+        else:
+            self.config = self.default_config.copy()
+        self.logger.debug("Configuration dictionary \n{}".format(self.config))
         
         self.data_extra = data_extra
         
@@ -297,71 +365,6 @@ if __name__ == "__main__":
     
     import os
     
-    config = {
-        
-        "cols_page": 5,
-        "rows_page": 8,
-        
-        "y_lims":(0,0.3),
-        "vspace":0.5,
-        
-        "subtitle_fn": "Arial",
-        "subtitle_fs": 8,
-        "subtitle_pad": 0.98,
-        "subtitle_weight": "normal",
-        
-        "x_label_fn": "Arial",
-        "x_label_fs": 6,
-        "x_label_pad": 2,
-        "x_label_weight": "normal",
-        "x_label": "ligand ratio",
-        
-        "y_label_fn": "Arial",
-        "y_label_fs": 6,
-        "y_label_pad": 2,
-        "y_label_weight": "normal",
-        "y_label": "CSPs",
-        
-        "set_x_values": True,
-        "titration_x_values": [0,25,50,100,200,400,500],
-        "x_ticks_fn": "Arial",
-        "x_ticks_fs": 5,
-        "x_ticks_pad": 1,
-        "x_ticks_weight": "normal",
-        "x_ticks_rot": 30,
-        "x_ticks_len":2,
-        "x_ticks_nbins": 5,
-        
-        "y_ticks_fn": "Arial",
-        "y_ticks_fs": 5,
-        "y_ticks_pad": 1,
-        "y_ticks_weight": "normal",
-        "y_ticks_rot": 0,
-        "y_ticks_len":2,
-        "y_ticks_nbins":8,
-        
-        "line_style": "-",
-        "line_width": 1,
-        "line_color": "red",
-        
-        "marker_style": "o",
-        "marker_color": "darkred",
-        "marker_size": 3,
-        
-        "fill_between": True,
-        "fill_color": "pink",
-        "fill_alpha": 0.5,
-        
-        
-        "perform_resevo_fitting": False,
-        "fit_line_color": "black",
-        "fit_line_width": 1,
-        "fit_line_style": "-",
-        
-        "fig_height": 11.69,
-        "fig_width": 8.69
-    }
-    
     file_name = os.path.realpath(__file__)
     
     ######################################################################## 1
@@ -402,7 +405,6 @@ if __name__ == "__main__":
     plot = ResEvoPlot(
         full_data_set[:,:,21].astype(float),
         full_data_set[:,:,[0,1,2,3,4,11,12,15]],
-        config,
         exp_names=["0","25","50","100","200","400","500"],
         **series_info
         )

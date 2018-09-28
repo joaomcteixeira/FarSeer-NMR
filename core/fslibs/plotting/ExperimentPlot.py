@@ -35,12 +35,11 @@ class ExperimentPlot(PlottingBase):
     def __init__(self,
             data,
             data_info,
-            config,
             partype="",
             exp_names="",
             **kwargs
             ):
-        super().__init__(data, data_info, config, **kwargs)
+        super().__init__(data, data_info, **kwargs)
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("ExperimentPlot initiated")
@@ -71,6 +70,8 @@ class ExperimentPlot(PlottingBase):
             self.experiment_names = [str(i) for i in range(data.shape[0])]
             
         self.logger.debug("Experiment names: {}".format(self.experiment_names))
+        
+        self.num_subplots = None
         
         return
     

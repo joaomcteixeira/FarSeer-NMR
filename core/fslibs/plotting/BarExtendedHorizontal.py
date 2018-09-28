@@ -66,10 +66,97 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
     
     """
     
+    default_config = {
+        "cols_page": 1,
+        "rows_page": 6,
+        
+        "y_lims":(0,0.3),
+        "ylabel":"CSPs",
+        
+        "subtitle_fn": "Arial",
+        "subtitle_fs": 8,
+        "subtitle_pad": 0.99,
+        "subtitle_weight": "normal",
+        
+        "x_label_fn": "Arial",
+        "x_label_fs": 8,
+        "x_label_pad": 2,
+        "x_label_weight": "bold",
+        
+        "y_label_fn": "Arial",
+        "y_label_fs": 8,
+        "y_label_pad": 3,
+        "y_label_weight": "bold",
+        "y_label_rot":90,
+        
+        "x_ticks_pad": 2,
+        "x_ticks_len": 2,
+        "x_ticks_fn": "monospace",
+        "x_ticks_fs": 6,
+        "x_ticks_rot": 90,
+        "x_ticks_weight": "normal",
+        "x_ticks_color_flag":True,
+        
+        "y_ticks_fn": "Arial",
+        "y_ticks_fs": 6,
+        "y_ticks_rot": 0,
+        "y_ticks_pad": 1,
+        "y_ticks_weight": "normal",
+        "y_ticks_len": 2,
+        
+        "y_grid_flag": True,
+        "y_grid_color": "lightgrey",
+        "y_grid_linestyle": "-",
+        "y_grid_linewidth": 0.2,
+        "y_grid_alpha": 0.8,
+        
+        "theo_pre_color": "red",
+        "theo_pre_lw": 1.0,
+        
+        "tag_cartoon_color": "black",
+        "tag_cartoon_lw": 1.0,
+        "tag_cartoon_ls": "-",
+        
+        "measured_color": "black",
+        "missing_color": "red",
+        "unassigned_color": "lightgrey",
+        
+        "bar_width": 0.8,
+        "bar_alpha": 1,
+        "bar_linewidth": 0,
+        
+        "threshold_flag": True,
+        "threshold_color": "red",
+        "threshold_linewidth": 0.5,
+        "threshold_alpha": 0.8,
+        "threshold_zorder":10,
+        
+        "mark_fontsize": 4,
+        "mark_prolines_flag": True,
+        "mark_prolines_symbol": "P",
+        "mark_user_details_flag": True,
+        "color_user_details_flag": True,
+        "user_marks_dict": {
+            "foo": "f",
+            "mal": "m",
+            "bem": "b"
+        },
+        "user_bar_colors_dict": {
+            "foo": "green",
+            "mal": "yellow",
+            "bem": "magenta"
+        },
+
+        "fig_height": 11.69,
+        "fig_width": 8.69,
+        "hspace": 0.5,
+        "wspace": 0.5
+    }
+    
     def __init__(self,
             data,
             data_info,
-            config,
+            config=None,
             data_extra=None,
             partype="",
             exp_names="",
@@ -78,7 +165,6 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
         super().__init__(
             data,
             data_info,
-            config,
             partype=partype,
             exp_names=exp_names,
             **kwargs
@@ -87,11 +173,13 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("BarExtendedHorizontal initiated")
         
+        if config:
+            self.config = config
+        else:
+            self.config = self.default_config.copy()
+        self.logger.debug("Configuration dictionary \n{}".format(self.config))
+        
         self.data_extra = data_extra
-    
-    def plot_subplots(self):
-        super().plot_subplots()
-        self.figure.subplots_adjust(hspace=self.config["vspace"])
     
     def subplot(self, i, data_array, data_info, data_extra=None):
         """Configures subplot."""
@@ -356,92 +444,6 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
 if __name__ == "__main__":
     import os
     
-    config = {
-        "cols_page": 1,
-        "rows_page": 6,
-        
-        "y_lims":(0,0.3),
-        "ylabel":"CSPs",
-        
-        "subtitle_fn": "Arial",
-        "subtitle_fs": 8,
-        "subtitle_pad": 0.99,
-        "subtitle_weight": "normal",
-        
-        "x_label_fn": "Arial",
-        "x_label_fs": 8,
-        "x_label_pad": 2,
-        "x_label_weight": "bold",
-        
-        "y_label_fn": "Arial",
-        "y_label_fs": 8,
-        "y_label_pad": 3,
-        "y_label_weight": "bold",
-        "y_label_rot":90,
-        
-        "x_ticks_pad": 2,
-        "x_ticks_len": 2,
-        "x_ticks_fn": "monospace",
-        "x_ticks_fs": 6,
-        "x_ticks_rot": 90,
-        "x_ticks_weight": "normal",
-        "x_ticks_color_flag":True,
-        
-        "y_ticks_fn": "Arial",
-        "y_ticks_fs": 6,
-        "y_ticks_rot": 0,
-        "y_ticks_pad": 1,
-        "y_ticks_weight": "normal",
-        "y_ticks_len": 2,
-        
-        "y_grid_flag": True,
-        "y_grid_color": "lightgrey",
-        "y_grid_linestyle": "-",
-        "y_grid_linewidth": 0.2,
-        "y_grid_alpha": 0.8,
-        
-        "theo_pre_color": "red",
-        "theo_pre_lw": 1.0,
-        
-        "tag_cartoon_color": "black",
-        "tag_cartoon_lw": 1.0,
-        "tag_cartoon_ls": "-",
-        
-        "measured_color": "black",
-        "missing_color": "red",
-        "unassigned_color": "lightgrey",
-        
-        "bar_width": 0.8,
-        "bar_alpha": 1,
-        "bar_linewidth": 0,
-        
-        "threshold_flag": True,
-        "threshold_color": "red",
-        "threshold_linewidth": 0.5,
-        "threshold_alpha": 0.8,
-        "threshold_zorder":10,
-        
-        "mark_fontsize": 4,
-        "mark_prolines_flag": True,
-        "mark_prolines_symbol": "P",
-        "mark_user_details_flag": True,
-        "color_user_details_flag": True,
-        "user_marks_dict": {
-            "foo": "f",
-            "mal": "m",
-            "bem": "b"
-        },
-        "user_bar_colors_dict": {
-            "foo": "green",
-            "mal": "yellow",
-            "bem": "magenta"
-        },
-
-        "fig_height": 11.69,
-        "fig_width": 8.69,
-        "vspace": 0.5
-    }
-    
     file_name = os.path.realpath(__file__)
     
     ######################################################################## 1
@@ -475,7 +477,6 @@ if __name__ == "__main__":
     plot = BarExtendedHorizontal(
         full_data_set[:,:,21].astype(float),
         full_data_set[:,:,[0,1,2,3,4,11,12,15]],
-        config,
         partype='ppm',
         exp_names=["0","25","50","100","200","400","500"],
         PRE_loaded=False
@@ -486,17 +487,15 @@ if __name__ == "__main__":
     
     ################################## 1.2
     
-    config["y_lims"] = (-0.3,0.3)
-    
     plot = BarExtendedHorizontal(
         full_data_set[:,:,19].astype(float),
         full_data_set[:,:,[0,1,2,3,4,11,12,15]],
-        config,
         partype='ppm',
         exp_names=["0","25","50","100","200","400","500"],
         PRE_loaded=False
         )
     
+    plot.config["y_lims"] = (-0.3,0.3)
     plot.plot()
     plot.save_figure("1H_delta.pdf")
     
@@ -532,18 +531,16 @@ if __name__ == "__main__":
         "para_name":"para"
         }
     
-    config["y_lims"] = (0, 1.1)
-    
     plot = BarExtendedHorizontal(
         full_data_set[:,:,19].astype(float),
         full_data_set[:,:,[0,1,2,3,4,11,12,15]],
-        config,
         data_extra=full_data_set[:,:,[21, 22]],
         partype='ratio',
         exp_names=["dia", "para"],
         **pre_args
         )
- 
+    
+    plot.config["y_lims"] = (0, 1.1)
     plot.plot()
     plot.save_figure("dpre.pdf")
     
@@ -579,17 +576,15 @@ if __name__ == "__main__":
         "para_name":"para"
         }
     
-    config["y_lims"] = (0, 1.1)
-    
     plot = BarExtendedHorizontal(
         full_data_set[:,:,19].astype(float),
         full_data_set[:,:,[0,1,2,3,4,11,12,15]],
-        config,
         data_extra=full_data_set[:,:,[21, 22]],
         partype='ratio',
         exp_names=["dia", "para"],
         **pre_args
         )
- 
+    
+    plot.config["y_lims"] = (0, 1.1)
     plot.plot()
     plot.save_figure("dpre_not_complete.pdf")
