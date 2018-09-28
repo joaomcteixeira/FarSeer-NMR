@@ -32,7 +32,7 @@ from core.fslibs.WetHandler import WetHandler as fsw
 
 class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
     """
-    Extended Bar plotting template.
+    Horizontal Extended Bar plotting template.
     
     Parameters:
         - data (np.array(dtype=int) of shape [z,y,x]): multidimensional array
@@ -457,12 +457,12 @@ if __name__ == "__main__":
         "fig_file_type": "pdf",
         "fig_height": 11.69,
         "fig_width": 8.69,
-        "y_lims":(-0.30,0.3),
+        "y_lims":(0,0.3),
         "ylabel":"CSPs"
     }
     
     plot = BarExtendedHorizontal(
-        full_data_set[:,:,19].astype(float),
+        full_data_set[:,:,21].astype(float),
         full_data_set[:,:,[0,1,2,3,4,11,12,15]],
         config,
         partype='ppm',
