@@ -73,3 +73,19 @@ class ExperimentPlot(PlottingBase):
         self.logger.debug("Experiment names: {}".format(self.experiment_names))
         
         return
+    
+    def _calcs_numsubplots(self):
+        """
+        Calculates the total number of subplots to be plotted
+        based on the user data.
+        
+        Returns:
+            - None
+            
+        Stores:
+            - self.num_subplots (int)
+        """
+        self.num_subplots = self.data.shape[0]
+        self.logger.debug("Number of subplots: {}".format(self.num_subplots))
+        
+        return

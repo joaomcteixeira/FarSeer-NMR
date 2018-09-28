@@ -20,9 +20,7 @@ You should have received a copy of the GNU General Public License
 along with Farseer-NMR. If not, see <http://www.gnu.org/licenses/>.
 """
 import numpy as np
-import pandas as pd
 from matplotlib import pyplot as plt
-from math import ceil
 
 import core.fslibs.Logger as Logger
 from core.fslibs.plotting.PlottingBase import PlottingBase

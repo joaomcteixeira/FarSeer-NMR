@@ -109,22 +109,6 @@ class PlottingBase:#(metaclass=ABCMeta):
         """
         pass
     
-    def _calcs_numsubplots(self):
-        """
-        Calculates the total number of subplots to be plotted
-        based on the user data.
-        
-        Returns:
-            - None
-            
-        Stores:
-            - self.num_subplots (int)
-        """
-        self.num_subplots = self.data.shape[0]
-        self.logger.debug("Number of subplots: {}".format(self.num_subplots))
-        
-        return
-    
     def _config_fig(self):
         """
         Calculates number of subplot rows per page based on
@@ -172,10 +156,9 @@ class PlottingBase:#(metaclass=ABCMeta):
         self.axs = self.axs.ravel()
         self.len_axs = len(self.axs)
         plt.tight_layout(
-            rect=[0.01,0.01,0.995,0.995],
-            h_pad=real_fig_height/self.config["rows_page"]
+            rect=[0.01,0.01,0.995,0.995]
             )
-        
+        #h_pad=real_fig_height/self.config["rows_page"]
         return
     
     # @abstractmethod
