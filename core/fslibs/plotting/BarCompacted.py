@@ -90,7 +90,11 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
         self.logger.debug("BarCompacted initiated")
         
         self.data_extra = data_extra
-
+    
+    def plot_subplots(self):
+        super().plot_subplots()
+        self.figure.subplots_adjust(hspace=self.config["vspace"])
+    
     def subplot(self, i, data_array, data_info, data_extra=None):
         """Configures subplot."""
         
@@ -445,6 +449,8 @@ if __name__ == "__main__":
     
     print("### testing {}".format(file_name))
     
+    ######################################################################## 1
+    
     dataset_path = os.path.join(
         os.path.dirname(file_name),
         'testing',
@@ -481,7 +487,23 @@ if __name__ == "__main__":
     plot.plot()
     plot.save_figure("csps.pdf")
     
-    ######################################################################## 1
+    ########################################### 1.5
+    
+    config["y_lims"] = (-0.3,0.3)
+    
+    plot = BarCompacted(
+        full_data_set[:,:,19].astype(float),
+        full_data_set[:,:,[0,1,2,3,4,11,12,15]],
+        config,
+        partype='ppm',
+        exp_names=["0","25","50","100","200","400","500"],
+        PRE_loaded=False
+        )
+    
+    plot.plot()
+    plot.save_figure("1H_delta.pdf")
+    
+    ######################################################################## 2
     
     dataset_path = os.path.join(
         os.path.dirname(file_name),
@@ -528,7 +550,7 @@ if __name__ == "__main__":
     plot.plot()
     plot.save_figure("dpre.pdf")
     
-    ######################################################################## 2
+    ######################################################################## 3
     
     dataset_path = os.path.join(
         os.path.dirname(file_name),
