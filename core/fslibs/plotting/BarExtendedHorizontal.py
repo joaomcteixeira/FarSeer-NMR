@@ -30,7 +30,7 @@ from core.fslibs.plotting.ExperimentPlot import ExperimentPlot
 from core.fslibs.plotting.BarPlotBase import BarPlotBase
 from core.fslibs.WetHandler import WetHandler as fsw
 
-class BarExtended(ExperimentPlot, BarPlotBase):
+class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
     """
     Extended Bar plotting template.
     
@@ -487,7 +487,7 @@ if __name__ == "__main__":
         "ylabel":"CSPs"
     }
     
-    plot = BarExtended(
+    plot = BarExtendedHorizontal(
         full_data_set[:,:,21].astype(float),
         full_data_set[:,:,[0,1,2,3,4,11,12,15]],
         config,
@@ -531,7 +531,7 @@ if __name__ == "__main__":
     
     config["y_lims"] = (0, 1.1)
     
-    plot = BarExtended(
+    plot = BarExtendedHorizontal(
         full_data_set[:,:,19].astype(float),
         full_data_set[:,:,[0,1,2,3,4,11,12,15]],
         config,
