@@ -1,6 +1,5 @@
 """
 Copyright © 2017-2018 Farseer-NMR
-Simon P. Skinner and João M.C. Teixeira
 
 @ResearchGate https://goo.gl/z8dPJU
 @Twitter https://twitter.com/farseer_nmr
@@ -27,9 +26,10 @@ from math import ceil
 
 import core.fslibs.Logger as Logger
 from core.fslibs.plotting.PlottingBase import PlottingBase
+from core.fslibs.plotting.BarPlotBase import BarPlotBase
 from core.fslibs.WetHandler import WetHandler as fsw
 
-class BarExtended(PlottingBase):
+class BarExtended(PlottingBase, BarPlotBase):
     """Extended Bar plotting template."""
     
     def __init__(self,
@@ -180,34 +180,15 @@ class BarExtended(PlottingBase):
             
         self.figure.subplots_adjust(hspace=self.config["vspace"])
     
-    def _set_item_colors(self, items, series, d):
-        """
-        Translates the 'Peak Status' col to a dict of colours.
-        
-        Parameters:
-            items (matplotlib obj): either plot bars, ticks, etc...
-        
-            series (pd.Series): containing the 'Peak Status' information.
-        
-            d (dict): keys are series values, and values are colours.
-        
-        Returns:
-            None, series are changed in place.
-        """
-        
-        for i, it in zip(range(series.size), items):
-            if str(series[i]) in d.keys():
-                it.set_color(d[str(series[i])])
-            
-            else:
-                continue
-        return
-    
     def subplot(self, i, data_array, data_info, data_extra=None):
         """Configures subplot."""
         
         c = self.config
         col = self.info_cols
+        self.logger.debug("Starting Subplot ###### {}".format(self.experiment_names[i]))
+        self.logger.debug(data_array)
+        self.logger.debug(data_info)
+        self.logger.debug(data_extra)
         
         number_of_residues_to_plot = data_array.shape[0]
         self.logger.debug(
@@ -343,7 +324,7 @@ class BarExtended(PlottingBase):
             rotation=0
             )
         self.axs[i].set_ylabel(
-            ylabel,
+            c["ylabel"],
             fontsize=c["y_label_fs"],
             labelpad=c["y_label_pad"],
             fontname=c["y_label_fn"],
@@ -353,7 +334,7 @@ class BarExtended(PlottingBase):
         self.logger.debug("Configured X and Y labels")
         
         # Adds grid
-        if y_grid_flag:
+        if c["y_grid_flag"]:
             self.axs[i].yaxis.grid(
                 color=c["y_grid_color"],
                 linestyle=c["y_grid_linestyle"],
@@ -365,6 +346,7 @@ class BarExtended(PlottingBase):
         
         # Adds red line to identify significant changes.
         if c["threshold_flag"] and self.ppm_data:
+            self.logger.debug("... Starting Threshold draw")
             self._plot_threshold(
                 self.axs[i],
                 data_array,
@@ -376,6 +358,7 @@ class BarExtended(PlottingBase):
             self.logger.debug("Threshold: OK")
         
         if c["mark_prolines_flag"]:
+            self.logger.debug("... Starting Prolines Mark")
             self._text_marker(
                 self.axs[i],
                 bars,
@@ -387,6 +370,7 @@ class BarExtended(PlottingBase):
             self.logger.debug("Prolines Marked: OK")
         
         if c["mark_user_details_flag"]:
+            self.logger.debug("... Starting User Details Mark")
             self._text_marker(
                 self.axs[i],
                 bars,
@@ -398,6 +382,7 @@ class BarExtended(PlottingBase):
             self.logger.debug("User marks: OK")
         
         if c["color_user_details_flag"]:
+            self.logger.debug("... Starting User Colors Mark")
             self._set_item_colors(
                 bars,
                 data_info[:,col["Details"]],
@@ -406,6 +391,7 @@ class BarExtended(PlottingBase):
             self.logger.debug("Color user details: OK")
         
         if self.kwargs["PRE_loaded"] and self.ratio_data:
+            self.logger.debug("... Starting Theoretical PRE Plot")
             self._plot_theo_pre(
                 self.axs[i],
                 self.experiment_names[i],
@@ -417,7 +403,7 @@ class BarExtended(PlottingBase):
                 tag_ls=c["tag_cartoon_ls"],
                 tag_lw=c["tag_cartoon_lw"]
                 )
-            self.logger.debug("DeltaPRE plotted: OK")
+            self.logger.debug("Theoretical PRE plotted: OK")
         
         return
 
@@ -465,6 +451,7 @@ if __name__ == "__main__":
         "y_label_fs": 8,
         "y_label_pad": 3,
         "y_label_weight": "bold",
+        "y_label_rot":90,
         "x_ticks_pad": 2,
         "x_ticks_len": 2,
         "y_ticks_fn": "Arial",
@@ -495,16 +482,21 @@ if __name__ == "__main__":
         "threshold_color": "red",
         "threshold_linewidth": 0.5,
         "threshold_alpha": 0.8,
-        "mark_fontsize": 3,
-        "mark_prolines_flag": False,
+        "threshold_zorder":10,
+        "mark_fontsize": 4,
+        "mark_prolines_flag": True,
         "mark_prolines_symbol": "P",
-        "mark_user_details_flag": False,
-        "color_user_details_flag": False,
+        "mark_user_details_flag": True,
+        "color_user_details_flag": True,
         "user_marks_dict": {
-            "mark": "m"
+            "foo": "f",
+            "mal": "m",
+            "bem": "b"
         },
         "user_bar_colors_dict": {
-            "mark": "khaki"
+            "foo": "green",
+            "mal": "yellow",
+            "bem": "magenta"
         },
         "cols_page": 1,
         "rows_page": 6,
@@ -517,15 +509,17 @@ if __name__ == "__main__":
         "fig_file_type": "pdf",
         "fig_height": 11.69,
         "fig_width": 8.69,
-        "y_lims":(0,0.6)
+        "y_lims":(0,0.3),
+        "ylabel":"CSPs"
     }
     
     plot = BarExtended(
-        full_data_set[:,:,21],
+        full_data_set[:,:,21].astype(float),
         full_data_set[:,:,[0,1,2,3,4,11,12,15]],
         config,
         partype='ppm',
-        exp_names=["0","25","50","100","200","400","500"]
+        exp_names=["0","25","50","100","200","400","500"],
+        PRE_loaded=False
         )
     
     plot.plot()

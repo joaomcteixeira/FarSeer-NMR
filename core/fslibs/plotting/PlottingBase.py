@@ -172,6 +172,7 @@ class PlottingBase(metaclass=ABCMeta):
         
         path = path or "plot.pdf"
         self.figure.savefig(path)
+        self.logger.info("Saved {}".format(path))
         
         return
     
