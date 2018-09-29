@@ -181,17 +181,17 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
         
         self.data_extra = data_extra
     
-    def subplot(self, ax, data_array, data_info, exp_name, data_extra=None):
+    def subplot(self, ax, data, data_info, exp_name, data_extra=None):
         """Configures subplot."""
         
         c = self.config
         col = self.info_cols
         self.logger.debug("Starting Subplot ###### {}".format(exp_name))
-        self.logger.debug(data_array)
+        self.logger.debug(data)
         self.logger.debug(data_info)
         self.logger.debug(data_extra)
         
-        number_of_residues_to_plot = data_array.shape[0]
+        number_of_residues_to_plot = data.shape[0]
         
         self.logger.debug(
             "Number of residues to plot: {}".format(number_of_residues_to_plot)
@@ -199,7 +199,7 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
         
         bars = ax.barh(
             range(number_of_residues_to_plot),
-            data_array,
+            data,
             height=c["bar_width"],
             align='center',
             alpha=c["bar_alpha"],
@@ -358,7 +358,7 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
             self.logger.debug("... Starting Threshold draw")
             self._plot_threshold(
                 ax,
-                data_array,
+                data,
                 c["threshold_color"],
                 c["threshold_linewidth"],
                 c["threshold_alpha"],
@@ -372,7 +372,7 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
             self._text_marker(
                 ax,
                 range(number_of_residues_to_plot),
-                data_array,
+                data,
                 data_info[:,col['1-letter']],
                 {'P':c["mark_prolines_symbol"]},
                 fs=c["mark_fontsize"],
@@ -385,7 +385,7 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
             self._text_marker(
                 ax,
                 range(number_of_residues_to_plot),
-                data_array,
+                data,
                 data_info[:,col['Details']],
                 c["user_marks_dict"],
                 fs=c["mark_fontsize"],
@@ -402,59 +402,9 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
                 )
             self.logger.debug("Color user details: OK")
                
-        if (self.kwargs["PRE_loaded"] and self.ratio_data):
+        if (self.kwargs.get("PRE_loaded") and self.ratio_data):
             
-            self.logger.debug("...Starting Theoretical PRE Plot")
-            
-            self.logger.debug("series_axis: {}".format(self.kwargs["series_axis"]))
-            self.logger.debug("para_name: {}".format(self.kwargs["para_name"]))
-            self.logger.debug("exp name: {}".format(exp_name))
-            
-            is_valid_for_PRE_plot_calc = \
-                self.kwargs["series_axis"] == 'along_z' \
-                    and self.kwargs["para_name"] == exp_name
-            
-            is_valid_for_PRE_plot_comp = \
-                self.kwargs["series_axis"] == 'Cz' \
-                    and (self.kwargs["next_dim"] in self.kwargs["paramagnetic_names"] \
-                        or self.kwargs["prev_dim"] in self.kwargs["paramagnetic_names"])
-            
-            is_valid_for_PRE_plot = \
-                is_valid_for_PRE_plot_calc or is_valid_for_PRE_plot_comp
-            
-            if is_valid_for_PRE_plot:
-                # plot theoretical PRE
-                self.logger.debug("... Starting Theoretical PRE Plot")
-                
-                self.logger.debug("data extra {}".format(data_extra[:,1]))
-                where_tag = np.where(data_extra[:,1]=="*")
-                self.logger.debug("where position: {}".format(where_tag))
-                tag_position = list(range(number_of_residues_to_plot))[where_tag[0][0]]
-                self.logger.debug("tag position: {}".format(tag_position))
-                
-                self._plot_theo_pre(
-                    ax,
-                    range(number_of_residues_to_plot),
-                    data_extra[:,0],
-                    plottype='v',
-                    pre_color=c["theo_pre_color"],
-                    pre_lw=c["theo_pre_lw"]
-                    )
-                self.logger.debug("Theoretical PRE plotted: OK")
-                
-                self._draw_paramagnetic_tag(
-                    ax,
-                    tag_position,
-                    c["y_lims"][1],
-                    plottype='v',
-                    tag_color=c["tag_cartoon_color"],
-                    tag_ls=c["tag_cartoon_ls"],
-                    tag_lw=c["tag_cartoon_lw"]
-                    )
-                
-                self.logger.debug("Paramagnetic Tag drawn")
-            else:
-                self.logger.debug("Data is not valid for PRE Plot")
+            self._plot_pre_info(ax, data, data_info, data_extra, exp_name, orientation='v')
         
         return
 

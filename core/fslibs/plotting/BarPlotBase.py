@@ -69,6 +69,72 @@ class BarPlotBase:
         # useful for some subplots
         return i
     
+    def _plot_pre_info(
+            self,
+            ax,
+            data,
+            data_info,
+            data_extra,
+            exp_name,
+            orientation='h'
+            ):
+        
+        c = self.config
+        col = self.info_cols        
+        
+        self.logger.debug("...Starting Theoretical PRE Plot")
+        
+        self.logger.debug("series_axis: {}".format(self.kwargs["series_axis"]))
+        self.logger.debug("para_name: {}".format(self.kwargs["para_name"]))
+        self.logger.debug("exp name: {}".format(exp_name))
+        
+        is_valid_for_PRE_plot_calc = \
+            self.kwargs["series_axis"] == 'along_z' \
+                and self.kwargs["para_name"] == exp_name
+        
+        is_valid_for_PRE_plot_comp = \
+            self.kwargs["series_axis"] == 'Cz' \
+                and (self.kwargs["next_dim"] in self.kwargs["paramagnetic_names"] \
+                    or self.kwargs["prev_dim"] in self.kwargs["paramagnetic_names"])
+        
+        is_valid_for_PRE_plot = \
+            is_valid_for_PRE_plot_calc or is_valid_for_PRE_plot_comp
+        
+        if is_valid_for_PRE_plot:
+            # plot theoretical PRE
+            self.logger.debug("... Starting Theoretical PRE Plot")
+            
+            self.logger.debug("data extra {}".format(data_extra[:,1]))
+            where_tag = np.where(data_extra[:,1]=="*")
+            self.logger.debug("where position: {}".format(where_tag))
+            tag_position = list(range(data.size))[where_tag[0][0]]
+            self.logger.debug("tag position: {}".format(tag_position))
+            
+            self._plot_theo_pre(
+                ax,
+                range(data.size),
+                data_extra[:,0],
+                plottype=orientation,
+                pre_color=c["theo_pre_color"],
+                pre_lw=c["theo_pre_lw"]
+                )
+            self.logger.debug("Theoretical PRE plotted: OK")
+            
+            self._draw_paramagnetic_tag(
+                ax,
+                tag_position,
+                c["y_lims"][1],
+                plottype=orientation,
+                tag_color=c["tag_cartoon_color"],
+                tag_ls=c["tag_cartoon_ls"],
+                tag_lw=c["tag_cartoon_lw"]
+                )
+            
+            self.logger.debug("Paramagnetic Tag drawn")
+            
+        else:
+            self.logger.debug("Data is not valid for PRE Plot")
+    
     def _draw_paramagnetic_tag(
             self,
             ax,
