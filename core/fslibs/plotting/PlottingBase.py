@@ -58,7 +58,8 @@ class PlottingBase:#(metaclass=ABCMeta):
         "Merit":4,
         "Fit Method":5,
         "Vol. Method":6,
-        "Details":7
+        "Details":7,
+        "ATOM":8
         }
     
     def __init__(self, data, data_info, **kwargs):
