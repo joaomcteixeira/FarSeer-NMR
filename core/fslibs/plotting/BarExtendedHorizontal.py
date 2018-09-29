@@ -35,7 +35,7 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
     Parameters:
         - data (np.array(dtype=int) of shape [z,y,x]): multidimensional array
             containain the dataset to be plot. Where:
-                X) is the column containing the calculated or observed NMR
+                X) length=1. Is the column containing the calculated or observed NMR
                     parameter to be used as Y axis in plots,
                 Y) are rows containing the X information for each residue
                 Z) is [Y,X] for each experiment.

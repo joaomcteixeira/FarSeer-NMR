@@ -153,11 +153,14 @@ class ChemicalShiftScatterPlot(ResiduePlot):
         
         if config:
             self.config = {**self.default_config, **config}
+            self.logger.debug("Config updated with: {}".format(config))
         else:
             self.config = self.default_config.copy()
+            self.logger.debug("Default config in use.")
         self.logger.debug("Configuration dictionary \n{}".format(self.config))
         
         self.data_extra = data_extra
+        self.logger.debug("Data extra saved as {}".format(data_extra)))
         
         return
     
