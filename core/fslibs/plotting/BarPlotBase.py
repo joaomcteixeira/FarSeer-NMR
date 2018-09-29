@@ -64,6 +64,10 @@ class BarPlotBase:
                 self.experiment_names[i],
                 data_extra=data_extra
                 )
+        
+        # returns the final index
+        # useful for some subplots
+        return i
     
     def _draw_paramagnetic_tag(
             self,
@@ -136,11 +140,14 @@ class BarPlotBase:
                 markersize=2
                 )
         
-        elif plottype == 'hm':
+        elif plottype == 'heatmap':
+            
+            tag_line = 2
+            
             ax.vlines(
                 tag_position,
                 0,
-                y_lim,
+                tag_line,
                 colors=tag_color,
                 linestyle=tag_ls,
                 linewidth=tag_lw,
