@@ -21,7 +21,6 @@ along with Farseer-NMR. If not, see <http://www.gnu.org/licenses/>.
 """
 import itertools as it
 import numpy as np
-import pandas as pd
 from matplotlib import pyplot as plt
 from math import ceil
 
