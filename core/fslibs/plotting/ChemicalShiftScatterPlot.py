@@ -19,7 +19,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Farseer-NMR. If not, see <http://www.gnu.org/licenses/>.
 """
-
+import itertools as it
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -34,7 +34,7 @@ class ChemicalShiftScatterPlot(ResiduePlot):
     for each residue separately.
     
     Parameters:
-        - data (np.array(dtype=int) of shape [z,y,x]): multidimensional array
+        - data (np.array(dtype=float) of shape [z,y,x]): multidimensional array
             containain the dataset to be plot. Where:
                 x) of length 2. Two columns containing the calculated or observed NMR
                     parameters to be used as for X and Y axis in plots.
@@ -70,7 +70,6 @@ class ChemicalShiftScatterPlot(ResiduePlot):
         "cols_page": 5,
         "rows_page": 8,
         
-        "y_lims":(0,0.3),
         "hspace": 0.5,
         "wspace": 0.5,
         
@@ -87,7 +86,7 @@ class ChemicalShiftScatterPlot(ResiduePlot):
         
         "y_label_fn": "Arial",
         "y_label_fs": 6,
-        "y_label_pad": 2,
+        "y_label_pad": 10,
         "y_label_weight": "normal",
         "y_label": "15N (ppm)",
         
@@ -106,7 +105,9 @@ class ChemicalShiftScatterPlot(ResiduePlot):
         "y_ticks_len":2,
         
         "ticks_nbins": 5,
+        "scale": 0.01,
         
+        "marker_type": "color",
         "markers": [
             "^",
             ">",
@@ -120,8 +121,6 @@ class ChemicalShiftScatterPlot(ResiduePlot):
             "D"
         ],
         "marker_size": 20,
-        "scale": 0.01,
-        "marker_type": "color",
         "marker_start_color": "#696969",
         "marker_end_color": "#000000",
         "marker_color": ["none"],
@@ -161,6 +160,176 @@ class ChemicalShiftScatterPlot(ResiduePlot):
         self.data_extra = data_extra
         
         return
+    
+    def _hex_to_RGB(self, hexx):
+        """
+        This function was taken from:
+        Copyright 2017 Ben Southgate
+        https://github.com/bsouthga/blog
+        
+        The MIT License (MIT)
+        
+        Permission is hereby granted, free of charge,
+        to any person obtaining a copy of this software and associated
+        documentation files (the "Software"), to deal in the Software
+        without restriction, including without limitation the rights to
+        use, copy, modify, merge, publish, distribute, sublicense,
+        and/or sell copies of the Software, and to permit persons to
+        whom the Software is furnished to do so, subject to the
+        following conditions:
+
+        The above copyright notice and this permission notice shall be
+        included in all copies or substantial portions of the Software.
+
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+        EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+        OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+        NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+        HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+        WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+        FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+        OTHER DEALINGS IN THE SOFTWARE.
+
+        "#FFFFFF" -> [255,255,255]
+        """
+        # if clause not part of the original function, added for the Farseer-NMR Project.
+        if not(hexx.startswith("#") and len(hexx) == 7):
+            msg = "The input colour is not in HEX format."
+            self._abort(fsw(msg_title="ERROR", msg=msg, wet_num=27))
+        # Pass 16 to the integer function for change of base
+        return [int(hexx[i:i+2], 16) for i in range(1,6,2)]
+
+    def _RGB_to_hex(self, RGB):
+        """
+        This function was taken verbatim from:
+        Copyright 2017 Ben Southgate
+        https://github.com/bsouthga/blog
+        
+        The MIT License (MIT)
+        
+        Permission is hereby granted, free of charge,
+        to any person obtaining a copy of this software and associated
+        documentation files (the "Software"), to deal in the Software
+        without restriction, including without limitation the rights to
+        use, copy, modify, merge, publish, distribute, sublicense,
+        and/or sell copies of the Software, and to permit persons to
+        whom the Software is furnished to do so, subject to the
+        following conditions:
+
+        The above copyright notice and this permission notice shall be
+        included in all copies or substantial portions of the Software.
+
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+        EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+        OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+        NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+        HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+        WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+        FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+        OTHER DEALINGS IN THE SOFTWARE.
+        
+        [255,255,255] -> "#FFFFFF"
+        """
+        # Components need to be integers for hex to make sense
+        RGB = [int(x) for x in RGB]
+        hexx = "#"+"".join(
+            ["0{0:x}".format(v) if v < 16 else "{0:x}".format(v) for v in RGB]
+            )
+        return hexx
+    
+    def _color_dict(self, gradient):
+        """
+        This function was taken verbatim from:
+        Copyright 2017 Ben Southgate
+        https://github.com/bsouthga/blog
+        
+        The MIT License (MIT)
+        
+        Permission is hereby granted, free of charge,
+        to any person obtaining a copy of this software and associated
+        documentation files (the "Software"), to deal in the Software
+        without restriction, including without limitation the rights to
+        use, copy, modify, merge, publish, distribute, sublicense,
+        and/or sell copies of the Software, and to permit persons to
+        whom the Software is furnished to do so, subject to the
+        following conditions:
+
+        The above copyright notice and this permission notice shall be
+        included in all copies or substantial portions of the Software.
+
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+        EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+        OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+        NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+        HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+        WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+        FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+        OTHER DEALINGS IN THE SOFTWARE.
+        
+        Takes in a list of RGB sub-lists and returns dictionary of
+        colors in RGB and hex form for use in a graphing function
+        defined later on.
+        """
+        d = {
+            "hex":[self._RGB_to_hex(RGB) for RGB in gradient],
+            "r":[RGB[0] for RGB in gradient],
+            "g":[RGB[1] for RGB in gradient],
+            "b":[RGB[2] for RGB in gradient]
+            }
+        
+        return d
+    
+    
+    def _linear_gradient(self, start_hex, finish_hex="#FFFFFF", n=10):
+        """
+        This function was taken verbatim from:
+        Copyright 2017 Ben Southgate
+        https://github.com/bsouthga/blog
+        
+        The MIT License (MIT)
+        
+        Permission is hereby granted, free of charge,
+        to any person obtaining a copy of this software and associated
+        documentation files (the "Software"), to deal in the Software
+        without restriction, including without limitation the rights to
+        use, copy, modify, merge, publish, distribute, sublicense,
+        and/or sell copies of the Software, and to permit persons to
+        whom the Software is furnished to do so, subject to the
+        following conditions:
+
+        The above copyright notice and this permission notice shall be
+        included in all copies or substantial portions of the Software.
+
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+        EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+        OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+        NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+        HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+        WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+        FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+        OTHER DEALINGS IN THE SOFTWARE.
+        
+        returns a gradient list of (n) colors between
+        two hex colors. start_hex and finish_hex
+        should be the full six-digit color string,
+        inlcuding the number sign ("#FFFFFF")
+        """
+        # Starting and ending colors in RGB form
+        s = self._hex_to_RGB(start_hex)
+        f = self._hex_to_RGB(finish_hex)
+        # Initilize a list of the output colors with the starting color
+        RGB_list = [s]
+        # Calcuate a color at each evenly spaced value of t from 1 to n
+        for t in range(1, n):
+            # Interpolate RGB vector for color at the current value of t
+            curr_vector = [
+                int(s[j] + (float(t)/(n-1))*(f[j]-s[j]))
+                for j in range(3)
+            ]
+            # Add it to our list of output colors
+            RGB_list.append(curr_vector)
+        
+        return self._color_dict(RGB_list)
     
     def subplot(self, ax, data, data_info):
         """
@@ -237,11 +406,12 @@ class ChemicalShiftScatterPlot(ResiduePlot):
             )
         ## Configure YY ticks/label
         ax.set_ylabel(
-            c"[y_label"],
+            c["y_label"],
             fontsize=c["y_label_fs"],
             labelpad=c["y_label_pad"],
             fontname=c["y_label_fn"],
-            weight=c["y_label_weight"]
+            weight=c["y_label_weight"],
+            rotation=-90
             )
         
         # check assignment
@@ -281,20 +451,23 @@ class ChemicalShiftScatterPlot(ResiduePlot):
             return
         
         # Plots data
-        if c["mk_type"] == 'shape':
+        if c["marker_type"] == 'shape':
             # represents the points in different shapes
             mcycle = it.cycle(c["markers"])
             ccycle = it.cycle(c["marker_color"])
             cedge = it.cycle(c["marker_edgecolors"])
             
             for i in range(data.shape[0]):
-                if data_info[i,c["Peak Status"]] in ['missing', 'unassigned'] \
+                print('here')
+                if data_info[i,col["Peak Status"]] in ['missing', 'unassigned'] \
                         and c["hide_missing"]:
                     next(mcycle)
                     next(ccycle)
                     next(cedge)
+                    print('hiding_missing')
                 
-                elif data_info[i,c['Peak Status']] == 'missing':
+                elif data_info[i,col['Peak Status']] == 'missing':
+                    print('elif1')
                     ax.scatter(
                         data[i,0],
                         data[i,1],
@@ -306,9 +479,10 @@ class ChemicalShiftScatterPlot(ResiduePlot):
                     next(cedge)
                 
                 else:
+                    print('else')
                     ax.scatter(
                         data[i,0],
-                        self.ix[i,1],
+                        data[i,1],
                         marker=next(mcycle),
                         s=c["marker_size"],
                         c=next(ccycle),
@@ -326,8 +500,10 @@ class ChemicalShiftScatterPlot(ResiduePlot):
             # of colouring in red the missing peaks.
             mccycle = it.cycle(mk_color['hex'])
             
-            for j in data.shape[0]:
+            for j in range(data.shape[0]):
                 if data_info[j,col['Peak Status']] == 'missing':
+                    if c["hide_missing"]:
+                        continue
                     ax.scatter(
                         data[j,0],
                         data[j,1],
@@ -392,7 +568,7 @@ class ChemicalShiftScatterPlot(ResiduePlot):
         ax.hlines(
             0,
             -c["scale"],
-            c["scale",
+            c["scale"],
             colors='darkblue',
             linestyles='-',
             linewidth=1
@@ -412,4 +588,59 @@ if __name__ == "__main__":
     
     import os
     
+    file_name = os.path.realpath(__file__)
     
+    ######################################################################## 1
+    
+    print("### testing {}".format(file_name))
+    
+    dataset_path = os.path.join(
+        os.path.dirname(file_name),
+        'testing',
+        'csps'
+        )
+        
+    print("testing dataset: {}".format(dataset_path))
+    
+    a = []
+    for f in sorted(os.listdir(dataset_path)):
+        print("reading: {}".format(f))
+        a.append(
+            np.genfromtxt(
+                os.path.join(dataset_path, f),
+                delimiter=',',
+                skip_header=1,
+                dtype=str,
+                missing_values='NaN'
+                )
+            )
+    
+    full_data_set = np.stack(a, axis=0)
+    print("dataset shape: {}".format(full_data_set.shape))
+    
+    plot = ChemicalShiftScatterPlot(
+        full_data_set[:,:,[19,20]].astype(float),
+        full_data_set[:,:,[0,1,2,3,4,11,12,15]],
+        exp_names=["0","25","50","100","200","400","500"]
+        )
+    
+    plot.plot()
+    plot.save_figure('cs_scatter.pdf')
+    
+    c = {
+        "marker_type": "color",
+        "marker_start_color": "#e5ff00",
+        "marker_end_color": "#021056",
+        "marker_missing_color": "magenta",
+        "hide_missing": True
+    }
+    
+    plot = ChemicalShiftScatterPlot(
+        full_data_set[:,:,[19,20]].astype(float),
+        full_data_set[:,:,[0,1,2,3,4,11,12,15]],
+        config=c,
+        exp_names=["0","25","50","100","200","400","500"]
+        )
+    
+    plot.plot()
+    plot.save_figure('cs_scatter_color.pdf')
