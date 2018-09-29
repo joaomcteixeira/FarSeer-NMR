@@ -166,6 +166,16 @@ class ResEvoPlot(ResiduePlot):
         return
     
     def subplot(self, ax, data, data_info):
+        """
+        Encloses subplot architecture.
+        
+        - Parameters:
+            - ax: matplotlib axis single object
+            - data (np.ndarray, dtype float): with data for Y axis
+            - data_info (np.ndarray, dtype str): with all other relevant
+                information in the form where cols are described by
+                self.info_cols.
+        """
         
         c = self.config
         col = self.info_cols
