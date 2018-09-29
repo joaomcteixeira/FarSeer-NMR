@@ -54,6 +54,21 @@ class ResEvoPlot(ResiduePlot):
         - exp_names (opt, sequence of str): names of each experiment
         
         - additional kwargs can be passed as **kwargs.
+    
+    Other parameters required:
+    
+        To plot fitting results the following kwargs should be passed
+        as arguments:
+            - calccol: The column name of the data fitted
+            - series_axis: the axis name of the series presenting the data:
+                {"along_x", "along_y", "along_z"}
+            - fit_performed (bool): whether fitting data is being presented
+            - fit_okay (sequence of bool): sequence order should be the 
+                residue order. Indicates if the fit performed correctly
+                for the given residue.
+            - xfit (sequence): fitting X axis values
+            - fit_plot_ydata (sequence): fitting Y axis values
+            - fit_plot_text (str): text to be plotted in each subplot
     """
     
     default_config = {
@@ -141,7 +156,7 @@ class ResEvoPlot(ResiduePlot):
         self.logger.debug("ResEvoPlot initiated")
         
         if config:
-            self.config = config
+            self.config = {**self.default_config, **config}
         else:
             self.config = self.default_config.copy()
         self.logger.debug("Configuration dictionary \n{}".format(self.config))

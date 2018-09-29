@@ -174,7 +174,7 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
         self.logger.debug("BarExtendedHorizontal initiated")
         
         if config:
-            self.config = config
+            self.config = {**self.default_config, **config}
         else:
             self.config = self.default_config.copy()
         self.logger.debug("Configuration dictionary \n{}".format(self.config))

@@ -177,7 +177,7 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
         self.logger.debug("BarCompacted initiated")
         
         if config:
-            self.config = config
+            self.config = {**self.default_config, **config}
         else:
             self.config = self.default_config.copy()
         self.logger.debug("Configuration dictionary \n{}".format(self.config))
@@ -583,11 +583,11 @@ if __name__ == "__main__":
         full_data_set[:,:,19].astype(float),
         full_data_set[:,:,[0,1,2,3,4,11,12,15]],
         data_extra=full_data_set[:,:,[21, 22]],
+        config={"y_lims":(0,1.1)},
         partype='ratio',
         exp_names=["dia", "para"],
         **pre_args
         )
     
-    plot.config["y_lims"] = (0, 1.1)
     plot.plot()
     plot.save_figure("dpre_not_complete.pdf")

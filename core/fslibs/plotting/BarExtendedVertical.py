@@ -178,7 +178,7 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
         self.logger.debug("BarExtendedVertical initiated")
         
         if config:
-            self.config = config
+            self.config = {**self.default_config, **config}
         else:
             self.config = self.default_config.copy()
         self.logger.debug("Configuration dictionary \n{}".format(self.config))
