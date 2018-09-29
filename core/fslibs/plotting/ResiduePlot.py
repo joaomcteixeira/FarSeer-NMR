@@ -90,13 +90,6 @@ class ResiduePlot(PlottingBase):
                 )
         
         return
-    
-    def adjust_subplots(self):
-        self.figure.subplots_adjust(
-            hspace=self.config["hspace"],
-            wspace=self.config["wspace"]
-            )
-        return
 
 if __name__ == "__main__":
     

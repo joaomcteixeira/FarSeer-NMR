@@ -78,7 +78,7 @@ class PlottingBase:#(metaclass=ABCMeta):
         self.axs = None
         self.len_axs = None
         
-        super().__init__()
+        #super().__init__()
     
     def _hex_to_RGB(self, hexx):
         """
@@ -333,6 +333,12 @@ class PlottingBase:#(metaclass=ABCMeta):
         self.logger.debug("Length Axes: {}".format(self.len_axs))
         for i in range(self.num_subplots, self.len_axs):
             self.axs[i].remove()
+    
+    def adjust_subplots(self):
+        self.figure.subplots_adjust(
+            hspace=self.config["hspace"],
+            wspace=self.config["wspace"]
+            )
     
     def save_figure(self, path=''):
         """Saves figure to path"""

@@ -65,12 +65,6 @@ class BarPlotBase:
                 data_extra=data_extra
                 )
     
-    def adjust_subplots(self):
-        self.figure.subplots_adjust(
-            hspace=self.config["hspace"],
-            wspace=self.config["wspace"]
-            )
-    
     def _draw_paramagnetic_tag(
             self,
             ax,

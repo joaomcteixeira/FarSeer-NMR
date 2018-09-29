@@ -24,7 +24,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 import core.fslibs.Logger as Logger
-from core.fslibs.plotting.PlottingBase import PlottingBase
 from core.fslibs.plotting.ResiduePlot import ResiduePlot
 from core.fslibs.WetHandler import WetHandler as fsw
 
