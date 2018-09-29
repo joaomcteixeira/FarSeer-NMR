@@ -48,13 +48,10 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
             but for columns ResNo, 1-letter, 3-letter, Peak Status, Merit,
             Fit Method, Vol. Method, Details; in this order.
         
-        - config (dict): a dictionary containing all the configuration
-            parameters required for this plotting routine.
-            Mandatory keys:
-                - fig_height (float, inches)
-                - fig_width (float, inches)
-                - cols_per_page (int): columns of subplots per figure page
-                - rows_per_page (int): rows of subplots per figure page
+        - config (opt, dict): a dictionary containing all the configuration
+            parameters required for this plotting routine. If None provided
+            uses the default configuraton. Access the default configuration
+            via the default_config class attribute.
         
         - data_extra (opt, np.ndarray of shape [z,y,x]): extra ndarray to help
             on plotting the data passed as <data>.
