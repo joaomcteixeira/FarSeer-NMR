@@ -106,7 +106,7 @@ class ChemicalShiftScatterPlot(ResiduePlot):
         "ticks_nbins": 5,
         "scale": 0.01,
         
-        "marker_type": "color",
+        "mk_type": "color",
         "markers": [
             "^",
             ">",
@@ -119,12 +119,12 @@ class ChemicalShiftScatterPlot(ResiduePlot):
             "*",
             "D"
         ],
-        "marker_size": 20,
-        "marker_start_color": "#696969",
-        "marker_end_color": "#000000",
-        "marker_color": ["none"],
-        "marker_edgecolors": ["black"],
-        "marker_missing_color": "red",
+        "mk_size": 20,
+        "mk_start_color": "#696969",
+        "mk_end_color": "#000000",
+        "mk_color": ["none"],
+        "mk_edgecolors": ["black"],
+        "mk_missing_color": "red",
         "hide_missing": False,
         
         "fig_height": 11.69,
@@ -283,11 +283,11 @@ class ChemicalShiftScatterPlot(ResiduePlot):
             return
         
         # Plots data
-        if c["marker_type"] == 'shape':
+        if c["mk_type"] == 'shape':
             # represents the points in different shapes
             mcycle = it.cycle(c["markers"])
-            ccycle = it.cycle(c["marker_color"])
-            cedge = it.cycle(c["marker_edgecolors"])
+            ccycle = it.cycle(c["mk_color"])
+            cedge = it.cycle(c["mk_edgecolors"])
             
             for i in range(data.shape[0]):
                 print('here')
@@ -304,9 +304,9 @@ class ChemicalShiftScatterPlot(ResiduePlot):
                         data[i,0],
                         data[i,1],
                         marker=next(mcycle),
-                        s=c["marker_size"],
+                        s=c["mk_size"],
                         c=next(ccycle),
-                        edgecolors=c["marker_missing_color"]
+                        edgecolors=c["mk_missing_color"]
                         )
                     next(cedge)
                 
@@ -316,16 +316,16 @@ class ChemicalShiftScatterPlot(ResiduePlot):
                         data[i,0],
                         data[i,1],
                         marker=next(mcycle),
-                        s=c["marker_size"],
+                        s=c["mk_size"],
                         c=next(ccycle),
                         edgecolors=next(cedge)
                         )
         
-        elif c["marker_type"] == 'color':
+        elif c["mk_type"] == 'color':
             # represents the points as circles with a gradient of color
             mk_color = self._linear_gradient(
-                c["marker_start_color"],
-                finish_hex=c["marker_end_color"],
+                c["mk_start_color"],
+                finish_hex=c["mk_end_color"],
                 n=data.shape[0]
                 )
             # this is used instead of passing a list to .scatter because
@@ -340,8 +340,8 @@ class ChemicalShiftScatterPlot(ResiduePlot):
                         data[j,0],
                         data[j,1],
                         marker='o',
-                        s=c["marker_size"],
-                        c=c["marker_missing_color"],
+                        s=c["mk_size"],
+                        c=c["mk_missing_color"],
                         edgecolors='none'
                         )
                 
@@ -350,7 +350,7 @@ class ChemicalShiftScatterPlot(ResiduePlot):
                         data[j,0],
                         data[j,1],
                         marker='o',
-                        s=c["marker_size"],
+                        s=c["mk_size"],
                         c=next(mccycle),
                         edgecolors='none'
                         )
@@ -460,10 +460,10 @@ if __name__ == "__main__":
     plot.save_figure('cs_scatter.pdf')
     
     c = {
-        "marker_type": "color",
-        "marker_start_color": "#e5ff00",
-        "marker_end_color": "#021056",
-        "marker_missing_color": "magenta",
+        "mk_type": "color",
+        "mk_start_color": "#e5ff00",
+        "mk_end_color": "#021056",
+        "mk_missing_color": "magenta",
         "hide_missing": True
     }
     
