@@ -184,12 +184,12 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
         
         self.data_extra = data_extra
     
-    def subplot(self, i, data_array, data_info, data_extra=None):
+    def subplot(self, ax, data_array, data_info, exp_name, data_extra=None):
         """Configures subplot."""
         
         c = self.config
         col = self.info_cols
-        self.logger.debug("Starting Subplot ###### {}".format(self.experiment_names[i]))
+        self.logger.debug("Starting Subplot ###### {}".format(exp_name))
         self.logger.debug(data_array)
         self.logger.debug(data_info)
         self.logger.debug(data_extra)
@@ -200,7 +200,7 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
             "Number of residues to plot: {}".format(number_of_residues_to_plot)
             )
         
-        bars = self.axs[i].bar(
+        bars = ax.bar(
             range(number_of_residues_to_plot),
             data_array,
             width=c["bar_width"],
@@ -227,7 +227,7 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
             )
         self.logger.debug("Setting xticks: {}".format([a for a in xticks]))
         # -1 needs to be given because xticks star from 0
-        self.axs[i].set_xticks(xticks)
+        ax.set_xticks(xticks)
         self.logger.debug("set_xticks: OK")
         
         # xtick labels
@@ -239,7 +239,7 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
         self.logger.debug("xticklabels: {}".format(xticklabels))
         
         ## https://github.com/matplotlib/matplotlib/issues/6266
-        self.axs[i].set_xticklabels(
+        ax.set_xticklabels(
             xticklabels,
             fontname=c["x_ticks_fn"],
             fontsize=c["x_ticks_fs"],
@@ -255,7 +255,7 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
             for res, m in enumerate(unassignedmask):
                 if m:
                     res -= 0.5
-                    self.axs[i].axvspan(
+                    ax.axvspan(
                         res,
                         res+1,
                         color=c["unassigned_color"],
@@ -264,8 +264,8 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
                         )
         
         # Set subplot titles
-        self.axs[i].set_title(
-            self.experiment_names[i],
+        ax.set_title(
+            exp_name,
             y=c["subtitle_pad"],
             fontsize=c["subtitle_fs"],
             fontname=c["subtitle_fn"],
@@ -286,16 +286,16 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
         self.logger.debug("set_item_colors: OK")
         
         # configures spines
-        self.axs[i].spines['bottom'].set_zorder(10)
-        self.axs[i].spines['top'].set_zorder(10)
+        ax.spines['bottom'].set_zorder(10)
+        ax.spines['top'].set_zorder(10)
         self.logger.debug("Spines set: OK")
         # cConfigures YY ticks
-        self.axs[i].set_ylim(c["y_lims"][0], c["y_lims"][1])
-        self.axs[i].locator_params(axis='y', tight=True, nbins=8)
+        ax.set_ylim(c["y_lims"][0], c["y_lims"][1])
+        ax.locator_params(axis='y', tight=True, nbins=8)
         self.logger.debug("Set Y limits: OK")
         
-        self.axs[i].set_yticklabels(
-            ['{:.2f}'.format(yy) for yy in self.axs[i].get_yticks()],
+        ax.set_yticklabels(
+            ['{:.2f}'.format(yy) for yy in ax.get_yticks()],
             fontname=c["y_ticks_fn"],
             fontsize=c["y_ticks_fs"],
             fontweight=c["y_ticks_weight"],
@@ -304,14 +304,14 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
         self.logger.debug("Set Y tick labels: OK")
         
         # configures tick params
-        self.axs[i].margins(x=0.01)
-        self.axs[i].tick_params(
+        ax.margins(x=0.01)
+        ax.tick_params(
             axis='x',
             pad=c["x_ticks_pad"],
             length=c["x_ticks_len"],
             direction='out'
             )
-        self.axs[i].tick_params(
+        ax.tick_params(
             axis='y',
             pad=c["y_ticks_pad"],
             length=c["y_ticks_len"],
@@ -320,7 +320,7 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
         self.logger.debug("Configured X and Y tick params: OK")
             
         # Set axes labels
-        self.axs[i].set_xlabel(
+        ax.set_xlabel(
             'Residue',
             fontname=c["x_label_fn"],
             fontsize=c["x_label_fs"],
@@ -328,7 +328,7 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
             weight=c["x_label_weight"],
             rotation=0
             )
-        self.axs[i].set_ylabel(
+        ax.set_ylabel(
             c["ylabel"],
             fontsize=c["y_label_fs"],
             labelpad=c["y_label_pad"],
@@ -340,7 +340,7 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
         
         # Adds grid
         if c["y_grid_flag"]:
-            self.axs[i].yaxis.grid(
+            ax.yaxis.grid(
                 color=c["y_grid_color"],
                 linestyle=c["y_grid_linestyle"],
                 linewidth=c["y_grid_linewidth"],
@@ -353,7 +353,7 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
         if c["threshold_flag"] and self.ppm_data:
             self.logger.debug("... Starting Threshold draw")
             self._plot_threshold(
-                self.axs[i],
+                ax,
                 data_array,
                 c["threshold_color"],
                 c["threshold_linewidth"],
@@ -365,7 +365,7 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
         if c["mark_prolines_flag"]:
             self.logger.debug("... Starting Prolines Mark")
             self._text_marker(
-                self.axs[i],
+                ax,
                 range(number_of_residues_to_plot),
                 data_array,
                 data_info[:,col['1-letter']],
@@ -377,7 +377,7 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
         if c["mark_user_details_flag"]:
             self.logger.debug("... Starting User Details Mark")
             self._text_marker(
-                self.axs[i],
+                ax,
                 range(number_of_residues_to_plot),
                 data_array,
                 data_info[:,col['Details']],
@@ -401,11 +401,11 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
             
             self.logger.debug("series_axis: {}".format(self.kwargs["series_axis"]))
             self.logger.debug("para_name: {}".format(self.kwargs["para_name"]))
-            self.logger.debug("exp name: {}".format(self.experiment_names[i]))
+            self.logger.debug("exp name: {}".format(exp_name))
             
             is_valid_for_PRE_plot_calc = \
                 self.kwargs["series_axis"] == 'along_z' \
-                    and self.kwargs["para_name"] == self.experiment_names[i]
+                    and self.kwargs["para_name"] == exp_name
             
             is_valid_for_PRE_plot_comp = \
                 self.kwargs["series_axis"] == 'Cz' \
@@ -426,19 +426,27 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
                 self.logger.debug("tag position: {}".format(tag_position))
                 
                 self._plot_theo_pre(
-                    self.axs[i],
+                    ax,
                     range(number_of_residues_to_plot),
                     data_extra[:,0],
-                    tag_position,
-                    c["y_lims"][1]*0.05,
-                    bartype='h',
+                    plottype='h',
                     pre_color=c["theo_pre_color"],
-                    pre_lw=c["theo_pre_lw"],
+                    pre_lw=c["theo_pre_lw"]
+                    )
+                self.logger.debug("Theoretical PRE plotted: OK")
+                
+                self._draw_paramagnetic_tag(
+                    ax,
+                    tag_position,
+                    c["y_lims"][1],
+                    plottype='h',
                     tag_color=c["tag_cartoon_color"],
                     tag_ls=c["tag_cartoon_ls"],
                     tag_lw=c["tag_cartoon_lw"]
                     )
-                self.logger.debug("Theoretical PRE plotted: OK")
+                
+                self.logger.debug("Paramagnetic Tag drawn")
+                
             else:
                 self.logger.debug("Data is not valid for PRE Plot")
         

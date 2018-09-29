@@ -185,12 +185,12 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
         
         self.data_extra = data_extra
     
-    def subplot(self, i, data_array, data_info, data_extra=None):
+    def subplot(self, ax, data_array, data_info, exp_name, data_extra=None):
         """Configures subplot."""
         
         c = self.config
         col = self.info_cols
-        self.logger.debug("Starting Subplot ###### {}".format(self.experiment_names[i]))
+        self.logger.debug("Starting Subplot ###### {}".format(exp_name))
         self.logger.debug(data_array)
         self.logger.debug(data_info)
         self.logger.debug(data_extra)
@@ -201,7 +201,7 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
             "Number of residues to plot: {}".format(number_of_residues_to_plot)
             )
         
-        bars = self.axs[i].barh(
+        bars = ax.barh(
             range(number_of_residues_to_plot),
             data_array,
             height=c["bar_width"],
@@ -213,11 +213,11 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
         
         self.logger.debug("Created bar plot: OK")
         
-        self.axs[i].invert_yaxis()
+        ax.invert_yaxis()
         # Set subplot titles
         
-        self.axs[i].set_title(
-            self.experiment_names[i],
+        ax.set_title(
+            exp_name,
             y=c["subtitle_pad"],
             fontsize=c["subtitle_fs"],
             fontname=c["subtitle_fn"],
@@ -226,10 +226,10 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
         self.logger.debug("Set title: OK")
         
         # configures spines
-        self.axs[i].spines['bottom'].set_zorder(10)
-        self.axs[i].spines['top'].set_zorder(10)
-        self.axs[i].spines['left'].set_zorder(10)
-        self.axs[i].spines['right'].set_zorder(10)
+        ax.spines['bottom'].set_zorder(10)
+        ax.spines['top'].set_zorder(10)
+        ax.spines['left'].set_zorder(10)
+        ax.spines['right'].set_zorder(10)
         ## Configure XX ticks and Label
         self.logger.debug("Spines set: OK")
         
@@ -257,11 +257,11 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
         self.logger.debug("X Tick Labels. {}".format(ticklabels))
         
         # Configure XX ticks and Label
-        self.axs[i].set_yticks(range(number_of_residues_to_plot))
+        ax.set_yticks(range(number_of_residues_to_plot))
         self.logger.debug("set_yticks: OK")
         
         ## https://github.com/matplotlib/matplotlib/issues/6266
-        self.axs[i].set_yticklabels(
+        ax.set_yticklabels(
             ticklabels,
             fontname=c["x_ticks_fn"],
             fontsize=c["x_ticks_fs"],
@@ -270,13 +270,11 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
             )
         self.logger.debug("set_yticklabels: OK")
         
-        
-        
         # defines xticks colors
         if c["x_ticks_color_flag"]:
             self.logger.debug("Configuring x_ticks_color_flag...")
             self._set_item_colors(
-                self.axs[i].get_yticklabels(),
+                ax.get_yticklabels(),
                 data_info[0::xtick_spacing,col['Peak Status']],
                 {
                     'measured':c["measured_color"],
@@ -300,12 +298,12 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
         
         
         # cConfigures YY ticks
-        self.axs[i].set_xlim(c["y_lims"][0], c["y_lims"][1])
-        self.axs[i].locator_params(axis='x', tight=True, nbins=8)
+        ax.set_xlim(c["y_lims"][0], c["y_lims"][1])
+        ax.locator_params(axis='x', tight=True, nbins=8)
         self.logger.debug("Set Y limits: OK")
         
-        self.axs[i].set_xticklabels(
-            ['{:.2f}'.format(xx) for xx in self.axs[i].get_xticks()],
+        ax.set_xticklabels(
+            ['{:.2f}'.format(xx) for xx in ax.get_xticks()],
             fontname=c["y_ticks_fn"],
             fontsize=c["y_ticks_fs"],
             fontweight=c["y_ticks_weight"],
@@ -314,14 +312,14 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
         self.logger.debug("Set Y tick labels: OK")
         
         # configures tick params
-        self.axs[i].margins(y=0.01)
-        self.axs[i].tick_params(
+        ax.margins(y=0.01)
+        ax.tick_params(
             axis='y',
             pad=c["x_ticks_pad"],
             length=c["x_ticks_len"],
             direction='out'
             )
-        self.axs[i].tick_params(
+        ax.tick_params(
             axis='x',
             pad=c["y_ticks_pad"],
             length=c["y_ticks_len"],
@@ -330,7 +328,7 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
         self.logger.debug("Configured X and Y tick params: OK")
             
         # Set axes labels
-        self.axs[i].set_ylabel(
+        ax.set_ylabel(
             'Residue',
             fontname=c["x_label_fn"],
             fontsize=c["x_label_fs"],
@@ -338,7 +336,7 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
             weight=c["x_label_weight"],
             rotation=c["x_label_rot"]
             )
-        self.axs[i].set_xlabel(
+        ax.set_xlabel(
             c["ylabel"],
             fontsize=c["y_label_fs"],
             labelpad=c["y_label_pad"],
@@ -350,7 +348,7 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
         
         # Adds grid
         if c["y_grid_flag"]:
-            self.axs[i].xaxis.grid(
+            ax.xaxis.grid(
                 color=c["y_grid_color"],
                 linestyle=c["y_grid_linestyle"],
                 linewidth=c["y_grid_linewidth"],
@@ -363,7 +361,7 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
         if c["threshold_flag"] and self.ppm_data:
             self.logger.debug("... Starting Threshold draw")
             self._plot_threshold(
-                self.axs[i],
+                ax,
                 data_array,
                 c["threshold_color"],
                 c["threshold_linewidth"],
@@ -376,7 +374,7 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
         if c["mark_prolines_flag"]:
             self.logger.debug("... Starting Prolines Mark")
             self._text_marker(
-                self.axs[i],
+                ax,
                 range(number_of_residues_to_plot),
                 data_array,
                 data_info[:,col['1-letter']],
@@ -389,7 +387,7 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
         if c["mark_user_details_flag"]:
             self.logger.debug("... Starting User Details Mark")
             self._text_marker(
-                self.axs[i],
+                ax,
                 range(number_of_residues_to_plot),
                 data_array,
                 data_info[:,col['Details']],
@@ -414,11 +412,11 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
             
             self.logger.debug("series_axis: {}".format(self.kwargs["series_axis"]))
             self.logger.debug("para_name: {}".format(self.kwargs["para_name"]))
-            self.logger.debug("exp name: {}".format(self.experiment_names[i]))
+            self.logger.debug("exp name: {}".format(exp_name))
             
             is_valid_for_PRE_plot_calc = \
                 self.kwargs["series_axis"] == 'along_z' \
-                    and self.kwargs["para_name"] == self.experiment_names[i]
+                    and self.kwargs["para_name"] == exp_name
             
             is_valid_for_PRE_plot_comp = \
                 self.kwargs["series_axis"] == 'Cz' \
@@ -439,19 +437,26 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
                 self.logger.debug("tag position: {}".format(tag_position))
                 
                 self._plot_theo_pre(
-                    self.axs[i],
+                    ax,
                     range(number_of_residues_to_plot),
                     data_extra[:,0],
-                    tag_position,
-                    c["y_lims"][1]*0.05,
-                    bartype='v',
+                    plottype='v',
                     pre_color=c["theo_pre_color"],
-                    pre_lw=c["theo_pre_lw"],
+                    pre_lw=c["theo_pre_lw"]
+                    )
+                self.logger.debug("Theoretical PRE plotted: OK")
+                
+                self._draw_paramagnetic_tag(
+                    ax,
+                    tag_position,
+                    c["y_lims"][1],
+                    plottype='v',
                     tag_color=c["tag_cartoon_color"],
                     tag_ls=c["tag_cartoon_ls"],
                     tag_lw=c["tag_cartoon_lw"]
                     )
-                self.logger.debug("Theoretical PRE plotted: OK")
+                
+                self.logger.debug("Paramagnetic Tag drawn")
             else:
                 self.logger.debug("Data is not valid for PRE Plot")
         

@@ -58,9 +58,10 @@ class BarPlotBase:
                 data_extra = None
             
             self.subplot(
-                i,
+                self.axs[i],
                 self.data[i],
                 self.data_info[i],
+                self.experiment_names[i],
                 data_extra=data_extra
                 )
     
@@ -70,19 +71,97 @@ class BarPlotBase:
             wspace=self.config["wspace"]
             )
     
-    def _plot_theo_pre(
+    def _draw_paramagnetic_tag(
             self,
-            axs,
-            values_x,
-            values_y,
+            ax,
             tag_position,
             y_lim,
-            bartype='h',
-            pre_color='lightblue',
-            pre_lw=1,
+            plottype='h',
             tag_color='red',
             tag_ls='-',
             tag_lw=0.1
+            ):
+        """
+        Draws paramagnetic tag tick on functionalized residue.
+        
+        Parameters:
+            axs (matplotlib subplot axis): where values are plot.
+            
+            tag_position (int): the residue number where the paramagnetic
+                tag is placed.
+            
+            y_lim (float): plot's y axis limit
+            
+            plottype (str): {'h', 'v', 'hm'}, whether plot of type 
+                horizontal, vertical or Heat Map. Defaults: 'h'.
+            
+            tag_color (str): the colour of the tag cartoon
+            
+            tag_ls (str): matplotlib linestyle kwarg for the tag tick
+            
+            tag_lw (float): tag tick line width.
+        """
+        
+        y_lim = y_lim*0.1
+        
+        if plottype in ['h', 'DPRE_plot']:
+            ax.vlines(
+                tag_position,
+                0,
+                y_lim,
+                colors=tag_color,
+                linestyle=tag_ls,
+                linewidth=tag_lw,
+                zorder=10
+                )
+            ax.plot(
+                tag_position,
+                y_lim,
+                'o',
+                zorder=10,
+                color='red',
+                markersize=2
+                )
+        
+        elif plottype == 'v':
+            ax.hlines(
+                tag_position,
+                0,
+                y_lim,
+                colors=tag_color,
+                linestyle=tag_ls,
+                linewidth=tag_lw,
+                zorder=10
+                )
+            ax.plot(
+                y_lim,
+                tag_position,
+                'o',
+                zorder=10,
+                color='red',
+                markersize=2
+                )
+        
+        elif plottype == 'hm':
+            ax.vlines(
+                tag_position,
+                0,
+                y_lim,
+                colors=tag_color,
+                linestyle=tag_ls,
+                linewidth=tag_lw,
+                zorder=10
+                )
+        return
+    
+    def _plot_theo_pre(
+            self,
+            ax,
+            values_x,
+            values_y,
+            plottype='h',
+            pre_color='lightblue',
+            pre_lw=1
             ):
         """
         Plots theoretical PRE.
@@ -94,33 +173,17 @@ class BarPlotBase:
             
             values_y (np.adrray): Y values to plot
             
-            tag_position (int): the residue number where the paramagnetic
-                tag is placed.
-            
-            y_lim (float): plot's y axis limit
-            
-            bartype (str): {'h', 'v', 'hm'}, whether plot of type 
+            plottype (str): {'h', 'v'}, whether plot of type 
                 horizontal, vertical or Heat Map. Defaults: 'h'.
             
             pre_color (str): the colour of plot line
             
             pre_lw (int): line width
             
-            tag_color (str): the colour of the tag cartoon
-            
-            tag_ls (str): matplotlib linestyle kwarg for the tag tick
-            
-            tag_lw (float): tag tick line width.
         """
-            
-        # x_axis_values = np.arange(
-            # float(self.loc[exp,:,'ResNo'].head(n=1))-1,
-            # float(self.loc[exp,:,'ResNo'].tail(n=1)),
-            # 1,
-            # )
         
-        if bartype == 'v':
-            axs.plot(
+        if plottype == 'v':
+            ax.plot(
                 values_y,
                 values_x,
                 zorder=9,
@@ -128,8 +191,8 @@ class BarPlotBase:
                 lw=pre_lw
                 )
         
-        elif bartype == 'h':
-            axs.plot(
+        elif plottype == 'h':
+            ax.plot(
                 values_x,
                 values_y,
                 zorder=9,
@@ -137,56 +200,7 @@ class BarPlotBase:
                 lw=pre_lw
                 )
         
-        xtag = tag_position# - 1
-        
-        if bartype in ['h', 'DPRE_plot']:
-            axs.vlines(
-                xtag,
-                0,
-                y_lim,
-                colors=tag_color,
-                linestyle=tag_ls,
-                linewidth=tag_lw,
-                zorder=10
-                )
-            axs.plot(
-                xtag,
-                y_lim,
-                'o',
-                zorder=10,
-                color='red',
-                markersize=2
-                )
-        
-        elif bartype == 'v':
-            axs.hlines(
-                xtag,
-                0,
-                y_lim,
-                colors=tag_color,
-                linestyle=tag_ls,
-                linewidth=tag_lw,
-                zorder=10
-                )
-            axs.plot(
-                y_lim,
-                xtag,
-                'o',
-                zorder=10,
-                color='red',
-                markersize=2
-                )
-        
-        elif bartype == 'hm':
-            axs.vlines(
-                xtag,
-                0,
-                y_lim,
-                colors=tag_color,
-                linestyle=tag_ls,
-                linewidth=tag_lw,
-                zorder=10
-                )
+        return
     
     def _plot_threshold(
             self,
