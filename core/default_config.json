@@ -550,8 +550,9 @@
         "xlim":1,
         "ylim":1,
         
-        "mksize": 8,
-        
+        "mk_size": 8,
+        "x_label": "1H (ppm)",
+        "y_label": "15N (ppm)",
         "color_grad": true,
         "mk_start_color": "#696969",
         "mk_end_color": "#000000",

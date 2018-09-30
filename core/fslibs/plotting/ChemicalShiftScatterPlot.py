@@ -119,7 +119,7 @@ class ChemicalShiftScatterPlot(ResiduePlot):
             "*",
             "D"
         ],
-        "mk_size": 20,
+        "mksize": 20,
         "mk_start_color": "#696969",
         "mk_end_color": "#000000",
         "mk_color": ["none"],
@@ -254,7 +254,8 @@ class ChemicalShiftScatterPlot(ResiduePlot):
             ax.invert_yaxis()
             return
         
-        elif not(np.any(data[:,0].any())) and not(np.any(data[:,1])):
+        elif not(np.any(data[:,0].any())) and not(np.any(data[:,1])) \
+                or not(np.any(data_info[:,col['Peak Status']] == 'measured')):
             ax.text(
                 0,
                 0,
@@ -345,6 +346,7 @@ class ChemicalShiftScatterPlot(ResiduePlot):
                         )
         
         measured = data_info[:,col['Peak Status']] == 'measured'
+        self.logger.debug("Measured mask: {}".format(measured))
         xlimmin = \
             -c["scale"]*2 \
             if np.ndarray.min(np.nan_to_num(data[measured,0])) > -c["scale"] \

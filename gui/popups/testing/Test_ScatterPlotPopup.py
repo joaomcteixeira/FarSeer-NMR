@@ -37,7 +37,7 @@ class Test_ScatterPlotPopup(unittest.TestCase):
         self.assertEqual(self.popup.cs_scatter_y_label.field.text(),
                          self.defaults["y_label"])
         self.assertEqual(self.popup.cs_scatter_mksize.field.value(),
-                         self.defaults["mksize"])
+                         self.defaults["mk_size"])
         self.assertEqual(self.popup.cs_scatter_scale.field.value(),
                          self.defaults["scale"])
         self.assertEqual(self.popup.cs_scatter_mk_type.fields.currentText(),
@@ -113,7 +113,7 @@ class Test_ScatterPlotPopup(unittest.TestCase):
                          self.popup.variables["cs_scatter_settings"][
                              "y_label"])
         self.assertEqual(self.popup.cs_scatter_mksize.field.value(),
-                         self.popup.variables["cs_scatter_settings"]["mksize"])
+                         self.popup.variables["cs_scatter_settings"]["mk_size"])
         self.assertEqual(self.popup.cs_scatter_scale.field.value(),
                          self.popup.variables["cs_scatter_settings"]["scale"])
         self.assertEqual(self.popup.cs_scatter_mk_type.fields.currentText(),
@@ -198,7 +198,7 @@ class Test_ScatterPlotPopup(unittest.TestCase):
                                 "y_label"])
         self.assertNotEqual(self.popup.cs_scatter_mksize.field.value(),
                             self.popup.variables["cs_scatter_settings"][
-                                "mksize"])
+                                "mk_size"])
         self.assertNotEqual(self.popup.cs_scatter_scale.field.value(),
                             self.popup.variables["cs_scatter_settings"][
                                 "scale"])

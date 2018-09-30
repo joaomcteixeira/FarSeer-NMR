@@ -388,9 +388,9 @@ class BarPlotBase:
             None, series are changed in place.
         """
         
+        self.logger.debug("Setting colours: {}".format(values))
         for v, it in zip(values, items):
             if str(v) in d.keys():
-                self.logger.debug("Setting color: {}".format(d[str(v)]))
                 it.set_color(d[str(v)])
             
             else:

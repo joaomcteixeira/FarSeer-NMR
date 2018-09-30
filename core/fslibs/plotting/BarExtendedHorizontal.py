@@ -179,12 +179,14 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
         c = self.config
         col = self.info_cols
         self.logger.debug("Starting Subplot ###### {}".format(exp_name))
+        
+        data = np.nan_to_num(data)
+        
         self.logger.debug(data)
-        self.logger.debug(data_info)
+        #self.logger.debug(data_info)
         self.logger.debug(data_extra)
         
         number_of_residues_to_plot = data.shape[0]
-        
         self.logger.debug(
             "Number of residues to plot: {}".format(number_of_residues_to_plot)
             )
@@ -199,6 +201,8 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
             zorder=4
             )
         
+        self.logger.debug("Number of bars: {}".format(len(bars)))
+        
         self.logger.debug("Created bar plot: OK")
         
         # ticks positions:
@@ -211,12 +215,10 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
             xtick_spacing = 1
         
         self.logger.debug("xtick_spacing set to: {}".format(xtick_spacing))
-        
         self.logger.debug("data ResNo: {}".format(data_info[0::xtick_spacing,col['ResNo']]))
         self.logger.debug("data 1-letter: {}".format(data_info[0::xtick_spacing,col['1-letter']]))
         
         ticklabels = self._set_tick_labels_extended_bar(data_info, xtick_spacing, col)
-        
         self.logger.debug("Number of xticklabels: {}".format(len(ticklabels)))
         self.logger.debug("X Tick Labels. {}".format(ticklabels))
         
@@ -289,7 +291,7 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
         self.logger.debug("Set Y tick labels: OK")
         
         # configures tick params
-        ax.margins(x=0.01)
+        ax.margins(x=0.01, tight=True)
         ax.tick_params(
             axis='x',
             pad=c["x_ticks_pad"],

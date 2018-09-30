@@ -82,7 +82,7 @@ class PlottingBase:#(metaclass=ABCMeta):
         
         self.logger.debug("Shape of data matrix: {}".format(self.data.shape))
         self.logger.debug("Shape of data info: {}".format(self.data_info.shape))
-        self.logger.debug("Kwargs: {}".format(self.kwargs))
+        #self.logger.debug("Kwargs: {}".format(self.kwargs))
         
         if config:
             self.config = {

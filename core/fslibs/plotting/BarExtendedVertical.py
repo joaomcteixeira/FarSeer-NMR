@@ -182,6 +182,9 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
         c = self.config
         col = self.info_cols
         self.logger.debug("Starting Subplot ###### {}".format(exp_name))
+        
+        data = np.nan_to_num(data)
+        
         self.logger.debug(data)
         self.logger.debug(data_info)
         self.logger.debug(data_extra)

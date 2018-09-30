@@ -1234,6 +1234,7 @@ Nothing to calculate here.')
                         'DPRE_plot',
                         {
                             **self.fsuv["DPRE_plot_settings"],
+                            **self.fsuv["series_plot_settings"],
                             "fig_height":self.fsuv["general_settings"]["fig_height"],
                             "fig_width":self.fsuv["general_settings"]["fig_width"],
                             "fig_dpi":self.fsuv["general_settings"]["fig_dpi"]
@@ -1395,6 +1396,8 @@ Nothing to calculate here.')
                             'bar_extended',
                             config={
                                 **self.fsuv["extended_bar_settings"],
+                                **self.fsuv["bar_plot_settings"],
+                                **self.fsuv["series_plot_settings"],
                                 "ylabel":self.fsuv["restraint_settings"].loc[restraint,'plt_y_axis_lbl'],
                                 "y_lims":self.fsuv["restraint_settings"].loc[restraint,'plt_y_axis_scl'],
                                 "figure_dpi":fig_dpi,
@@ -1411,6 +1414,8 @@ Nothing to calculate here.')
                             'bar_compacted',
                             config={
                                 **self.fsuv["compact_bar_settings"],
+                                **self.fsuv["bar_plot_settings"],
+                                **self.fsuv["series_plot_settings"],
                                 "ylabel":self.fsuv["restraint_settings"].loc[restraint,'plt_y_axis_lbl'],
                                 "y_lims":self.fsuv["restraint_settings"].loc[restraint,'plt_y_axis_scl'],
                                 "figure_dpi":fig_dpi,
@@ -1427,6 +1432,8 @@ Nothing to calculate here.')
                             'bar_vertical',
                             config={
                                 **self.fsuv["vert_bar_settings"],
+                                **self.fsuv["bar_plot_settings"],
+                                **self.fsuv["series_plot_settings"],
                                 "ylabel":self.fsuv["restraint_settings"].loc[restraint,'plt_y_axis_lbl'],
                                 "y_lims":self.fsuv["restraint_settings"].loc[restraint,'plt_y_axis_scl'],
                                 "figure_dpi":fig_dpi,
@@ -1464,6 +1471,7 @@ Nothing to calculate here.')
                         'res_evo',
                         config={
                             **self.fsuv["res_evo_settings"],
+                            **self.fsuv["revo_settings"],
                             "ylabel":self.fsuv["restraint_settings"].loc[restraint,'plt_y_axis_lbl'],
                             "y_lims":self.fsuv["restraint_settings"].loc[restraint,'plt_y_axis_scl'],
                             "figure_dpi":fig_dpi,
@@ -1482,6 +1490,7 @@ Nothing to calculate here.')
                 'cs_scatter',
                 config={
                     **self.fsuv["cs_scatter_settings"],
+                    **self.fsuv["revo_settings"],
                     "figure_dpi":fig_dpi,
                     "fig_height": fig_height,
                     "fig_width": fig_width
@@ -1498,6 +1507,7 @@ Nothing to calculate here.')
                 'cs_scatter_flower',
                 config={
                     **self.fsuv["cs_scatter_flower_settings"],
+                    **self.fsuv["revo_settings"],
                     "ylabel":"15N (ppm)",
                     "figure_dpi":fig_dpi,
                     "fig_height": fig_height,

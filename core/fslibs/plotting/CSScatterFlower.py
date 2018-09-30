@@ -45,7 +45,7 @@ class CSScatterFlower(SinglePlot):
         "xlim":1,
         "ylim":1,
         
-        "mksize": 8,
+        "mk_size": 8,
         
         "color_grad": True,
         "mk_start_color": "#696969",
@@ -141,7 +141,7 @@ class CSScatterFlower(SinglePlot):
 This is because a NaN value was identified in the chemical shift information.\
 This can be explained if this residues was missing in the reference peaklist \
 but measured in a subsequent peaklist".\
-                    format(np.array2string(data_info[mesmask,residue,c['ResNo']]))
+                    format(np.array2string(data_info[mesmask,residue,col['ResNo']]))
                 
                 wet36 = fsw(msg_title='NOTE', msg=msg, wet_num=36)
                 self.logger.info(wet36.wet)
@@ -151,7 +151,7 @@ but measured in a subsequent peaklist".\
                 data[mesmask,residue,0],
                 data[mesmask,residue,1],
                 c=mk_color,
-                s=c["mksize"],
+                s=c["mk_size"],
                 zorder=9
                 )
             ax.text(
