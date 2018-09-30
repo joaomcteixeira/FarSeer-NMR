@@ -447,8 +447,7 @@ if __name__ == "__main__":
         full_data_set[:,:,19].astype(float),
         full_data_set[:,:,[0,1,2,3,4,11,12,15]],
         partype='ppm',
-        exp_names=["0","25","50","100","200","400","500"],
-        PRE_loaded=False
+        exp_names=["0","25","50","100","200","400","500"]
         )
     
     plot.config["y_lims"] = (-0.3,0.3)

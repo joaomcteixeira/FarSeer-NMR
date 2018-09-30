@@ -54,7 +54,7 @@ class DeltaPREHeatmap(ExperimentPlot, BarPlotBase):
         - data_extra (opt, np.ndarray of shape [z,y,x]): extra ndarray to help
             on plotting the data passed as <data>.
                 In the case of plotting theoretical PRE data, data_extra
-                columns should be [Theo PRE, tag position].
+                columns should be [tag position].
         
         - partype (opt {'ppm', 'ratio'}, defaults None): 
             indicates the type of data that is being plotted, so that

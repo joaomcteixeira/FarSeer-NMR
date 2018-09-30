@@ -32,8 +32,10 @@ from math import ceil
 from matplotlib import pyplot as plt
 import datetime 
 
+import core.fslibs.plotting as fsplot
 import core.fslibs.Logger as Logger
 from core.fslibs.WetHandler import WetHandler as fsw
+
 
 class FarseerSeries(pd.Panel):
     """
@@ -157,6 +159,20 @@ class FarseerSeries(pd.Panel):
         # affects plot_res_evo()
         self.fit_performed = False 
         self.PRE_loaded = False  # True after .load_theoretical_PRE
+        
+        self.info_export = {
+            "series_axis":self.series_axis,
+            "series_datapoints":self.series_datapoints,
+            "next_dim":self.next_dim,
+            "prev_dim":self.prev_dim,
+            "dim_comparison":self.dim_comparison,
+            "para_name":self.para_name,
+            "fit_plot_text":self.fit_plot_text,
+            "fit_plot_ydata":self.fit_plot_ydata,
+            "fit_okay":self.fit_okay,
+            "fit_performed":self.fit_performed,
+            "PRE_loaded":self.PRE_loaded
+            }
         
         # defines the path to store the calculations
         # if stores the result of a calculation
@@ -2878,8 +2894,9 @@ but measured in a subsequent peaklist".\
         return
     
     def plot_base(
-            self, calccol,
-            plot_type, plot_style,
+            self,
+            calccol,
+            plot_style,
             param_dict,
             par_ylims=(0,1),
             ylabel='ppm or ratio',
@@ -2915,133 +2932,270 @@ but measured in a subsequent peaklist".\
         # this to allow folder change in PRE_analysis
         folder = calccol
         
-        if plot_type == 'exp':
-            num_subplots = len(self.items)
+        config = {
+            **param_dict,
+            "y_lims":par_ylims,
+            "cols_page":cols_per_page,
+            "rows_page":rows_page,
+            "fig_height":fig_height,
+            "fig_width":fig_width,
+            "hspace":hspace,
+            "y_label":y_label
+            }
         
-        elif plot_type == 'res':
-            num_subplots = len(self.major_axis)
-        
-        elif plot_type == 'single':
-            num_subplots = 1
-        
-        else:
-            raise ValueError('Not a valid Farseer plot type')
-        
-        numrows = ceil(num_subplots/cols_per_page) + 1 
-        real_fig_height = (fig_height / rows_per_page) * numrows
-        # http://stackoverflow.com/questions/17210646/python-subplot-within-a-loop-first-panel-appears-in-wrong-position
-        fig, axs = plt.subplots(
-            nrows=numrows,
-            ncols=cols_per_page,
-            figsize=(fig_width, real_fig_height)
-            )
-        axs = axs.ravel()
-        plt.tight_layout(
-            rect=[0.01,0.01,0.995,0.995],
-            h_pad=fig_height/rows_per_page
-            )
-        # Plots yy axis title
-        # http://www.futurile.net/2016/03/01/text-handling-in-matplotlib/
-        if plot_style in ['bar_extended', 'bar_compacted']:
-            for i, experiment in enumerate(self):
-                self.plot_bar_horizontal(
-                    plot_style,
-                    calccol,
-                    axs,
-                    i,
-                    experiment,
-                    y_lims=par_ylims,
-                    ylabel=ylabel,
-                    **param_dict
-                    )
-                fig.subplots_adjust(hspace=hspace)
+        if resonance_type == 'Backbone':
             
-            else:
-                self._clean_subplots(axs, num_subplots, len(axs))
+            col_labels = [
+                "ResNo",
+                "1-letter",
+                "3-letter",
+                "Peak Status",
+                "Merit",
+                "Fit Method",
+                "Vol. Method",
+                "Details"
+                ]
         
-        elif plot_style == 'bar_vertical':
-            for i, experiment in enumerate(self):
-                self.plot_bar_vertical(
-                    calccol,
-                    axs,
-                    i,
-                    experiment,
-                    y_lims=par_ylims,
-                    ylabel=ylabel,
-                    **param_dict
-                    )
+        elif resonance_type == 'Sidechains':
             
-            else:
-                self._clean_subplots(axs, num_subplots, len(axs))
+            col_labels = [
+                "ResNo",
+                "1-letter",
+                "3-letter",
+                "Peak Status",
+                "Merit",
+                "Fit Method",
+                "Vol. Method",
+                "Details",
+                "ATOM"
+                ]
+            
+        data_info = np.array(self.loc[:,:,col_labels])
         
-        elif plot_style == 'res_evo':
-            for i, row_number in enumerate(self.major_axis):
-                self.plot_res_evo(
-                    calccol,
-                    axs,
-                    i,
-                    row_number,
-                    y_lims=par_ylims,
-                    y_label=ylabel,
-                    **param_dict
-                    )
+        if plot_style in ['bar_extended', 'bar_compacted', 'bar_vertical']:
+            if calccol in ["H1_delta", "N15_delta", "CSP"]:
+                partype = 'ppm'
+            elif calccol in ["Height_ratio", "Vol_ratio"]:
+                partype = 'ratio'
             
-            else:
-                self._clean_subplots(axs, num_subplots, len(axs))
+            if self.PRE_loaded:
+                self.info_export["data_extra"] = \
+                    np.numpy(self.loc[:,:,["Theo PRE","tag"]])
+            
+            data = np.array(self.loc[:,:,calccol]).astype(float)
+            
+            if resonance_type == 'Sidechains':
+                
+                fsplot.BarExtendedSideChains(
+                    data,
+                    data_info,
+                    partype=partype,
+                    config=config,
+                    exp_names=self.items,
+                    **self.info_export
+                    )
+            elif resonance_type == 'Backbone':
+                
+                if plot_style == 'bar_extended':
+                    
+                    fsplot.BarExtendedHorizontal(
+                        data,
+                        data_info,
+                        partype=partype,
+                        config=config,
+                        exp_names=self.items,
+                        **self.info_export
+                        )
+                
+                elif plot_style == 'bar_compacted':
+                    
+                    fsplot.BarCompacted(
+                        data,
+                        data_info,
+                        config=config,
+                        partype=partype,
+                        exp_names=self.items,
+                        **self.info_export
+                        )
+                
+                elif plot_style == 'bar_vertical':
+                    fsplot.BarExtendedVertical(
+                        data,
+                        data_info,
+                        config=config,
+                        partype=partype,
+                        exp_names=self.items,
+                        **self.info_export
+                        )
+        
+        elif plot_style == 'resevo':
+            fsplot.ResEvoPlot(
+                data,
+                data_info,
+                config=config,
+                exp_names=self.items,
+                **self.info_export
+                )
         
         elif plot_style == 'cs_scatter':
-            for i, row_number in enumerate(self.major_axis):
-                self.plot_cs_scatter(axs, i, row_number, **param_dict)
-            
-            else:
-                self._clean_subplots(axs, num_subplots, len(axs))
+            fsplot.ChemicalShiftScatterPlot(
+                np.array(self.loc[:,:,["H1_delta","N15_delta"]]).astype(float),
+                data_info,
+                config=config,
+                exp_names=self.items,
+                **self.info_export
+                )
         
         elif plot_style == 'cs_scatter_flower':
-            self.plot_cs_scatter_flower(axs, **param_dict)
-            self._clean_subplots(axs, 1, len(axs))
+            fsplot.CSScatterFlower(
+                np.array(self.loc[:,:,["H1_delta","N15_delta"]]).astype(float),
+                data_info,
+                config=config,
+                exp_names=self.items,
+                **self.info_export
+                )
         
         elif plot_style == 'heat_map':
-            for i, experiment in enumerate(self):
-                self.plot_DPRE_heatmap(
-                    calccol,
-                    fig,
-                    axs,
-                    i,
-                    experiment,
-                    y_lims=par_ylims,
-                    ylabel=ylabel,
-                    **param_dict
-                    )
-            else:
-                self._clean_subplots(axs, num_subplots, len(axs))
             
-            # to write all the PRE_analysis in the same folder
-            folder='PRE_analysis'
+            self.info_export["data_extra"] = \
+                np.array(self.loc[:,:,"tag"])
             
-        elif plot_style == 'DPRE_plot':
-            dp_colors = self._linear_gradient(
-                param_dict['color_init'],
-                param_dict['color_end'],
-                n=self.shape[0]
+            fsplot.DeltaPREHeatmap(
+                np.array(self.loc[:,:,calccol]).astype(float),
+                data_info,
+                config=config,
+                exp_names=self.items,
+                **self.info_export
                 )
-            dp_color = it.cycle(dp_colors['hex'])
+        
+        elif plot_style == 'DPRE_plot':
             
-            for i, experiment in enumerate(self):
-                self.plot_DPRE_plot(
-                    calccol,
-                    axs,
-                    i,
-                    experiment,
-                    color=next(dp_color),
-                    **param_dict
-                    )
+            smooth = "{}_smooth".format(calccol)
             
-            else:
-                self._clean_subplots(axs, num_subplots, len(axs))
+            self.info_export["data_extra"] = \
+                np.array(self.loc[:,:,["tag",smooth]])
             
-            # to write all the PRE_analysis in the same folder
+            fsplot.DeltaPREPlot(
+                np.array(self.loc[:,:,calccol]).astype(float),
+                data_info,
+                config=config,
+                exp_names=self.items,
+                **self.info_export
+                )
+                
             folder='PRE_analysis'
             header_fontsize = 3.5
+        
+        else:
+            msg = "You asked for some plot definitions that can't be done."
+            wet = fsw(msg=msg, msg_title="WARNING", wet_num=99)
+            self.logger.info(wet.wet)
+        
+        
+        
+        
+        # # Plots yy axis title
+        # # http://www.futurile.net/2016/03/01/text-handling-in-matplotlib/
+        # if plot_style in ['bar_extended', 'bar_compacted']:
+            # for i, experiment in enumerate(self):
+                # self.plot_bar_horizontal(
+                    # plot_style,
+                    # calccol,
+                    # axs,
+                    # i,
+                    # experiment,
+                    # y_lims=par_ylims,
+                    # ylabel=ylabel,
+                    # **param_dict
+                    # )
+                # fig.subplots_adjust(hspace=hspace)
+            
+            # else:
+                # self._clean_subplots(axs, num_subplots, len(axs))
+        
+        # elif plot_style == 'bar_vertical':
+            # for i, experiment in enumerate(self):
+                # self.plot_bar_vertical(
+                    # calccol,
+                    # axs,
+                    # i,
+                    # experiment,
+                    # y_lims=par_ylims,
+                    # ylabel=ylabel,
+                    # **param_dict
+                    # )
+            
+            # else:
+                # self._clean_subplots(axs, num_subplots, len(axs))
+        
+        # elif plot_style == 'res_evo':
+            # for i, row_number in enumerate(self.major_axis):
+                # self.plot_res_evo(
+                    # calccol,
+                    # axs,
+                    # i,
+                    # row_number,
+                    # y_lims=par_ylims,
+                    # y_label=ylabel,
+                    # **param_dict
+                    # )
+            
+            # else:
+                # self._clean_subplots(axs, num_subplots, len(axs))
+        
+        # elif plot_style == 'cs_scatter':
+            # for i, row_number in enumerate(self.major_axis):
+                # self.plot_cs_scatter(axs, i, row_number, **param_dict)
+            
+            # else:
+                # self._clean_subplots(axs, num_subplots, len(axs))
+        
+        # elif plot_style == 'cs_scatter_flower':
+            # self.plot_cs_scatter_flower(axs, **param_dict)
+            # self._clean_subplots(axs, 1, len(axs))
+        
+        # elif plot_style == 'heat_map':
+            # for i, experiment in enumerate(self):
+                # self.plot_DPRE_heatmap(
+                    # calccol,
+                    # fig,
+                    # axs,
+                    # i,
+                    # experiment,
+                    # y_lims=par_ylims,
+                    # ylabel=ylabel,
+                    # **param_dict
+                    # )
+            # else:
+                # self._clean_subplots(axs, num_subplots, len(axs))
+            
+            # # to write all the PRE_analysis in the same folder
+            # folder='PRE_analysis'
+            
+        # elif plot_style == 'DPRE_plot':
+            # dp_colors = self._linear_gradient(
+                # param_dict['color_init'],
+                # param_dict['color_end'],
+                # n=self.shape[0]
+                # )
+            # dp_color = it.cycle(dp_colors['hex'])
+            
+            # for i, experiment in enumerate(self):
+                # self.plot_DPRE_plot(
+                    # calccol,
+                    # axs,
+                    # i,
+                    # experiment,
+                    # color=next(dp_color),
+                    # **param_dict
+                    # )
+            
+            # else:
+                # self._clean_subplots(axs, num_subplots, len(axs))
+            
+            # # to write all the PRE_analysis in the same folder
+            # folder='PRE_analysis'
+            # header_fontsize = 3.5
         
         self._write_plot(
             fig,
