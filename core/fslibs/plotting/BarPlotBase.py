@@ -156,6 +156,10 @@ class BarPlotBase:
         Sets xtick labels for extended bar plots by combining
         ResNo and 1-letter information.
         """
+        
+        self.logger.debug("data ResNo: {}".format(data_info[0::xtick_spacing,col['ResNo']]))
+        self.logger.debug("data 1-letter: {}".format(data_info[0::xtick_spacing,col['1-letter']]))
+        
         tmp = np.core.defchararray.add(
             np.copy(data_info[0::xtick_spacing,col['ResNo']]).astype(str),
             np.copy(data_info[0::xtick_spacing,col['1-letter']]).astype(str)

@@ -238,17 +238,15 @@ class BarExtendedVertical(ExperimentPlot, BarPlotBase):
         
         self.logger.debug("xtick_spacing set to: {}".format(xtick_spacing))
         
-        self.logger.debug("data ResNo: {}".format(data_info[0::xtick_spacing,col['ResNo']]))
-        self.logger.debug("data 1-letter: {}".format(data_info[0::xtick_spacing,col['1-letter']]))
+        where_ticks = np.array(range(number_of_residues_to_plot))[0::xtick_spacing]
+        self.logger.debug("Tick will be placed in: {}".format(where_ticks))
+        # Configure XX ticks and Label
+        ax.set_yticks(where_ticks)
+        self.logger.debug("set_xticks: OK")
         
         ticklabels = self._set_tick_labels_extended_bar(data_info, xtick_spacing, col)
-        
         self.logger.debug("Number of xticklabels: {}".format(len(ticklabels)))
         self.logger.debug("X Tick Labels. {}".format(ticklabels))
-        
-        # Configure XX ticks and Label
-        ax.set_yticks(range(number_of_residues_to_plot))
-        self.logger.debug("set_yticks: OK")
         
         ## https://github.com/matplotlib/matplotlib/issues/6266
         ax.set_yticklabels(
