@@ -191,11 +191,6 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
             "Number of residues to plot: {}".format(number_of_residues_to_plot)
             )
         
-        
-        
-        
-        
-        
         bars = ax.bar(
             range(number_of_residues_to_plot),
             data,

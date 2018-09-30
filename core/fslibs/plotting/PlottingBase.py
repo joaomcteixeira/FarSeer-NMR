@@ -1,6 +1,5 @@
 """
 Copyright © 2017-2018 Farseer-NMR
-Simon P. Skinner and João M.C. Teixeira
 
 @ResearchGate https://goo.gl/z8dPJU
 @Twitter https://twitter.com/farseer_nmr
@@ -46,6 +45,11 @@ class PlottingBase:
         - data_info (np.array(dtype=str) of shape [z,y,x]): same as <data>
             but for columns ResNo, 1-letter, 3-letter, Peak Status, Merit,
             Fit Method, Vol. Method, Details; in this order.
+        
+        - config (opt, dict): a dictionary containing all the configuration
+            parameters required for this plotting routine. If None provided
+            uses the default configuration. Access the default configuration
+            via the plotbase_config class attribute.
         
         - additional kwargs can be passed as **kwargs.
     """
