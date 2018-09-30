@@ -28,7 +28,7 @@ from matplotlib import pyplot as plt
 import core.fslibs.Logger as Logger
 
 
-class PlottingBase:#(metaclass=ABCMeta):
+class PlottingBase:
     """
     Plotting base class with methods common to all plots.
     
@@ -327,32 +327,6 @@ class PlottingBase:#(metaclass=ABCMeta):
         self.logger.debug("Figure drawn correctly")
         
         return
-    
-    # @abstractmethod
-    # def plot_subplots(self):
-        # """
-        # Sends the specific data to each subplot.
-        
-        # The way data is sliced from the whole data to plot matrix
-        # depends on the nature of the subplots.
-        
-        # Returns:
-            # - None
-        # """
-        # pass
-    
-    # @abstractmethod
-    # def subplot(self):
-        # """The routine that defines each subplot."""
-        # pass
-    
-    # def plot(self):
-        # """Runs all operations to plot."""
-        # self.data_select()
-        # self.draw_figure()
-        # self.plot_subplots()
-        # self.clean_subplots()
-        # return
     
     def clean_subplots(self):
         """ Removes unsed subplots."""

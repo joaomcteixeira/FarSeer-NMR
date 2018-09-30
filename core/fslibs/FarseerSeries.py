@@ -734,19 +734,19 @@ recipient: residues
         The main function that calls and builds the different plots.
         
         Parameters:
-            calccol (str): the column to plot.
-            
-            plot_type (str): {'exp', 'res', 'single'}. 
-                'exp' if one subplot for each experiment in series;
-                'res' if one subplot per residue;
-                'single' if a single plot.
+            calccol (str): the column to plot selected from the dataframe.
             
             plot_style (str): {'bar_extended', 'bar_compacted',
                 'bar_vertical', 'res_evo', 'cs_scatter',
                 'cs_scatter_flower', 'heat_map', 'DPRE_plot'}
             
-            param_dict (dict): kwargs to be passed to each plotting
-                function.
+            config (dict): config dictionary passed to the plotting function.
+                Updates the default plotting config.
+            
+            header_fontsize (int): the font size of the information header
+                printed to the plot.
+            
+            fig_file_type (str): file type of the saved plot file.
         """
         
         self.logs('**Plotting** {} for {}...'.format(plot_style, calccol))
@@ -847,6 +847,7 @@ recipient: residues
                     exp_names=list(self.items),
                     **kwargs
                     )
+            
             elif resonance_type == 'Backbone':
                 
                 if plot_style == 'bar_extended':
