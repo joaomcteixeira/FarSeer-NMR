@@ -724,18 +724,11 @@ recipient: residues
             self,
             calccol,
             plot_style,
-            param_dict,
-            par_ylims=(0,1),
-            ylabel='ppm or ratio',
-            hspace=0.5,
-            rows_per_page=5,
-            cols_per_page=1,
+            config={"dummy":"var"},
             resonance_type='Backbone',
-            fig_height=11.69,
-            fig_width=8.69,
-            fig_file_type='pdf',
-            fig_dpi=300,
-            header_fontsize=5):
+            header_fontsize=5,
+            fig_file_type='pdf'
+            ):
         """
         The main function that calls and builds the different plots.
         
@@ -791,18 +784,10 @@ recipient: residues
         header = self._create_header(file_path=file_path)
         
         config = {
-            **param_dict,
-            "y_label":ylabel,
-            "y_lims":par_ylims,
-            "cols_page":cols_per_page,
-            "rows_page":rows_per_page,
-            "hspace":hspace,
+            **config,
             "figure_header":header,
             "header_fontsize":header_fontsize,
-            "figure_path":file_path,
-            "figure_dpi":fig_dpi,
-            "fig_height": fig_height,
-            "fig_width": fig_width
+            "figure_path":file_path
             }
         
         if resonance_type == 'Backbone':
@@ -962,6 +947,7 @@ recipient: residues
         
         plot.plot()
         plot.save_figure()
+        plt.close(plot.figure)
         
         return
     

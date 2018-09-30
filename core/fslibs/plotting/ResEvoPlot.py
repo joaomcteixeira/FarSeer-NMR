@@ -204,7 +204,7 @@ variable or confirm you have not forgot any peaklist [{}].".\
                     format(c["titration_x_values"], data)
                 
                 wet = fsw(msg_title='ERROR', msg=msg, wet_num=5)
-                wet.abort()
+                wet.abort(wet.wet)
             
             x = np.array(c["titration_x_values"])
             xmin = x[0]

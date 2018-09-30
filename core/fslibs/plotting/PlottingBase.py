@@ -324,6 +324,8 @@ class PlottingBase:#(metaclass=ABCMeta):
             rect=[0.01,0.01,0.995,0.995]
             )
         
+        self.logger.debug("Figure drawn correctly")
+        
         return
     
     # @abstractmethod
