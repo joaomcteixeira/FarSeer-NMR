@@ -60,6 +60,8 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
             indicates the type of data that is being plotted, so that
             special option can be activated.
         
+        - exp_names (opt, sequence type): list of the experiment names.
+        
         - additional kwargs can be passed as **kwargs.
     
     """
@@ -145,9 +147,7 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
         },
         "unassigned_shade": True,
         "unassigned_shade_alpha": 0.5,
-
-        "fig_height": 11.69,
-        "fig_width": 8.69,
+        
         "hspace": 0.5,
         "wspace": 0.5
     }
@@ -164,6 +164,7 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
         super().__init__(
             data,
             data_info,
+            config=config,
             partype=partype,
             exp_names=exp_names,
             **kwargs
@@ -171,12 +172,6 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("BarCompacted initiated")
-        
-        if config:
-            self.config = {**self.default_config, **config}
-        else:
-            self.config = self.default_config.copy()
-        self.logger.debug("Configuration dictionary \n{}".format(self.config))
         
         self.data_extra = data_extra
     

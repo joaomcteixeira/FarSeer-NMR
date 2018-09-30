@@ -79,9 +79,6 @@ class CSScatterFlower(SinglePlot):
         "y_ticks_weight": "normal",
         "y_ticks_rot": 0,
         
-        "fig_height": 11.69,
-        "fig_width": 8.69,
-        
         "hspace": 0.1,
         "wspace": 0.1
     }
@@ -95,13 +92,13 @@ class CSScatterFlower(SinglePlot):
             **kwargs
             ):
         
-        super().__init__(data, data_info, data_extra=data_extra, **kwargs)
-        
-        if config:
-            self.config = {**self.default_config, **config}
-        else:
-            self.config = self.default_config.copy()
-        self.logger.debug("Configuration dictionary \n{}".format(self.config))
+        super().__init__(
+            data,
+            data_info,
+            config=config,
+            data_extra=data_extra,
+            **kwargs
+            )
         
         return
     

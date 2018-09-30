@@ -60,6 +60,8 @@ class DeltaPREHeatmap(ExperimentPlot, BarPlotBase):
             indicates the type of data that is being plotted, so that
             special option can be activated.
         
+        - exp_names (opt, sequence of str): names of each experiment.
+        
         - additional kwargs can be passed as **kwargs.
     
     """
@@ -92,9 +94,6 @@ class DeltaPREHeatmap(ExperimentPlot, BarPlotBase):
         "tag_line_color": "red",
         "tag_line_ls": "-",
         "tag_line_lw": 0.8,
-
-        "fig_height": 11.69,
-        "fig_width": 8.69,
         
         "hspace": 0,
         "rightspace": 0.3
@@ -113,6 +112,7 @@ class DeltaPREHeatmap(ExperimentPlot, BarPlotBase):
         super().__init__(
             data,
             data_info,
+            config=config,
             exp_names=exp_names,
             **kwargs
             )
@@ -120,11 +120,6 @@ class DeltaPREHeatmap(ExperimentPlot, BarPlotBase):
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("BarExtendedVertical initiated")
         
-        if config:
-            self.config = {**self.default_config, **config}
-        else:
-            self.config = self.default_config.copy()
-        self.logger.debug("Configuration dictionary \n{}".format(self.config))
         
         self.data_extra = data_extra
     
@@ -165,24 +160,23 @@ class DeltaPREHeatmap(ExperimentPlot, BarPlotBase):
         ax.spines['bottom'].set_zorder(10)
         ax.spines['top'].set_zorder(10)
         
-        self.logger.debug("tag: {}".format(data_extra))
-        where_tag = np.where(data_extra=="*")
-        self.logger.debug("where position: {}".format(where_tag))
-        tag_position = list(range(data.size))[where_tag[0][0]]
-        self.logger.debug("tag position: {}".format(tag_position))
+        is_valid = self._validades_for_PRE_data(exp_name)
         
-        # position is shifts 0.5 units
-        tag_position -= 0.5
+        if is_valid:
+            print(data_extra)
+            tag_position = self._finds_para_tag(data_extra)
+            # position is shifts 0.5 units
+            tag_position -= 0.5
         
-        self._draw_paramagnetic_tag(
-            ax,
-            tag_position,
-            2,
-            plottype = 'heatmap',
-            tag_color=c["tag_line_color"],
-            tag_ls=c["tag_line_ls"],
-            tag_lw=c["tag_line_lw"]
-            )
+            self._draw_paramagnetic_tag(
+                ax,
+                tag_position,
+                2,
+                plottype = 'heatmap',
+                tag_color=c["tag_line_color"],
+                tag_ls=c["tag_line_ls"],
+                tag_lw=c["tag_line_lw"]
+                )
         
         return
     

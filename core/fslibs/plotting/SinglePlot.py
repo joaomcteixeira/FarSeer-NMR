@@ -33,11 +33,12 @@ class SinglePlot(PlottingBase):
             self,
             data,
             data_info,
+            config=None,
             data_extra=None,
             **kwargs
             ):
         
-        super().__init__(data, data_info, **kwargs)
+        super().__init__(data, data_info, config=config, **kwargs)
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("ExperimentPlot initiated")

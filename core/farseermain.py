@@ -1207,7 +1207,6 @@ Nothing to calculate here.')
                 if self.fsuv["restraint_settings"].loc[sourcecol,'calcs_restraint_flg']:
                     farseer_series.plot_base(
                         targetcol, 
-                        'exp', 
                         'heat_map',
                         self.fsuv["heat_map_settings"],
                         par_ylims=\
@@ -1222,7 +1221,8 @@ Nothing to calculate here.')
                         fig_height=self.fsuv["general_settings"]["fig_height"],
                         fig_width=self.fsuv["general_settings"]["fig_width"],
                         fig_file_type=self.fsuv["general_settings"]["fig_file_type"],
-                        fig_dpi=self.fsuv["general_settings"]["fig_dpi"]
+                        fig_dpi=self.fsuv["general_settings"]["fig_dpi"],
+                        hspace=0
                         )
         
         # plots the DeltaPRE analysis only for <Cz> comparison.
@@ -1237,7 +1237,6 @@ Nothing to calculate here.')
                 if self.fsuv["restraint_settings"].loc[sourcecol,'calcs_restraint_flg']:
                     farseer_series.plot_base(
                         targetcols,
-                        'exp',
                         'DPRE_plot',
                         {
                             **self.fsuv["series_plot_settings"], 
@@ -1403,7 +1402,6 @@ Nothing to calculate here.')
                     if self.fsuv["plotting_flags"]["do_ext_bar"]:
                         farseer_series.plot_base(
                             restraint,
-                            'exp',
                             'bar_extended',
                             {
                                 **self.fsuv["series_plot_settings"],
@@ -1431,7 +1429,6 @@ Nothing to calculate here.')
                     if self.fsuv["plotting_flags"]["do_comp_bar"]:
                         farseer_series.plot_base(
                             restraint,
-                            'exp',
                             'bar_compacted',
                             {
                                 **self.fsuv["series_plot_settings"],
@@ -1459,7 +1456,6 @@ Nothing to calculate here.')
                     if self.fsuv["plotting_flags"]["do_vert_bar"]:
                         farseer_series.plot_base(
                             restraint,
-                            'exp',
                             'bar_vertical',
                             {
                                 **self.fsuv["series_plot_settings"],
@@ -1486,7 +1482,6 @@ Nothing to calculate here.')
                         or self.fsuv["plotting_flags"]["do_comp_bar"]):
                     farseer_series.plot_base(
                         restraint,
-                        'exp',
                         'bar_extended',
                         {
                             **self.fsuv["series_plot_settings"],
@@ -1513,7 +1508,6 @@ Nothing to calculate here.')
                 if self.fsuv["plotting_flags"]["do_res_evo"]:
                     farseer_series.plot_base(
                         restraint,
-                        'res',
                         'res_evo',
                         {**self.fsuv["revo_settings"], **self.fsuv["res_evo_settings"]},
                         par_ylims=\
@@ -1536,11 +1530,11 @@ Nothing to calculate here.')
                 or self.fsuv["csp_settings"]["calcs_CSP"]):
             farseer_series.plot_base(
                 '15N_vs_1H',
-                'res',
                 'cs_scatter',
                 {**self.fsuv["revo_settings"], **self.fsuv["cs_scatter_settings"]},
                 cols_per_page=self.fsuv["cs_scatter_settings"]["cols_page"],
                 rows_per_page=self.fsuv["cs_scatter_settings"]["rows_page"],
+                ylabel="15N (ppm)",
                 fig_height=fig_height,
                 fig_width=fig_width,
                 fig_file_type=fig_file_type,
@@ -1553,9 +1547,9 @@ Nothing to calculate here.')
                 or self.fsuv["csp_settings"]["calcs_CSP"]):
             farseer_series.plot_base(
                 '15N_vs_1H',
-                'single',
                 'cs_scatter_flower',
                 {**self.fsuv["revo_settings"], **self.fsuv["cs_scatter_flower_settings"]},
+                ylabel="15N (ppm)",
                 cols_per_page=2,
                 rows_per_page=3,
                 fig_height=fig_height,
@@ -1568,7 +1562,6 @@ Nothing to calculate here.')
             if self.fsuv["observables_settings"].loc[obs,"obs_flags"]:
                 farseer_series.plot_base(
                 obs,
-                'res',
                 'res_evo',
                 {**self.fsuv["revo_settings"], **self.fsuv["res_evo_settings"]},
                 par_ylims=self.fsuv["observables_settings"].loc[obs,"obs_yaxis_scl"],

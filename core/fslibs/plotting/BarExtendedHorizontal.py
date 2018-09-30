@@ -59,6 +59,8 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
             indicates the type of data that is being plotted, so that
             special option can be activated.
         
+        - exp_names (opt, sequence type): list of the experiment names.
+        
         - additional kwargs can be passed as **kwargs.
     
     """
@@ -144,8 +146,6 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
             "bem": "magenta"
         },
 
-        "fig_height": 11.69,
-        "fig_width": 8.69,
         "hspace": 0.5,
         "wspace": 0.5
     }
@@ -162,6 +162,7 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
         super().__init__(
             data,
             data_info,
+            config=config,
             partype=partype,
             exp_names=exp_names,
             **kwargs
@@ -169,12 +170,6 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("BarExtendedHorizontal initiated")
-        
-        if config:
-            self.config = {**self.default_config, **config}
-        else:
-            self.config = self.default_config.copy()
-        self.logger.debug("Configuration dictionary \n{}".format(self.config))
         
         self.data_extra = data_extra
     
@@ -220,11 +215,7 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
         self.logger.debug("data ResNo: {}".format(data_info[0::xtick_spacing,col['ResNo']]))
         self.logger.debug("data 1-letter: {}".format(data_info[0::xtick_spacing,col['1-letter']]))
         
-        ticklabels = \
-            np.core.defchararray.add(
-                np.copy(data_info[0::xtick_spacing,col['ResNo']]),
-                np.copy(data_info[0::xtick_spacing,col['1-letter']])
-                )
+        ticklabels = self._set_tick_labels_extended_bar(data_info, xtick_spacing, col)
         
         self.logger.debug("Number of xticklabels: {}".format(len(ticklabels)))
         self.logger.debug("X Tick Labels. {}".format(ticklabels))

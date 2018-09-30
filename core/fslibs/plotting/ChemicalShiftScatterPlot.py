@@ -125,12 +125,8 @@ class ChemicalShiftScatterPlot(ResiduePlot):
         "mk_color": ["none"],
         "mk_edgecolors": ["black"],
         "mk_missing_color": "red",
-        "hide_missing": False,
-        
-        "fig_height": 11.69,
-        "fig_width": 8.69
-        
-    }
+        "hide_missing": False
+        }
     
     def __init__(self,
             data,
@@ -143,20 +139,13 @@ class ChemicalShiftScatterPlot(ResiduePlot):
         super().__init__(
             data,
             data_info,
+            config=config,
             exp_names=exp_names,
             **kwargs
             )
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("ChemicalShiftScatter initiated")
-        
-        if config:
-            self.config = {**self.default_config, **config}
-            self.logger.debug("Config updated with: {}".format(config))
-        else:
-            self.config = self.default_config.copy()
-            self.logger.debug("Default config in use.")
-        self.logger.debug("Configuration dictionary \n{}".format(self.config))
         
         self.data_extra = data_extra
         self.logger.debug("Data extra saved as {}".format(data_extra))

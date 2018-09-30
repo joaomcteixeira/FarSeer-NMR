@@ -69,6 +69,21 @@ class BarPlotBase:
         # useful for some subplots
         return i
     
+    def _validades_for_PRE_data(self, exp_name):
+        is_valid_for_PRE_plot_calc = \
+            self.kwargs["series_axis"] == 'along_z' \
+                and self.kwargs["para_name"] == exp_name
+        
+        is_valid_for_PRE_plot_comp = \
+            self.kwargs["series_axis"] == 'Cz' \
+                and (self.kwargs["next_dim"] in self.kwargs["paramagnetic_names"] \
+                    or self.kwargs["prev_dim"] in self.kwargs["paramagnetic_names"])
+        
+        is_valid_for_PRE_plot = \
+            is_valid_for_PRE_plot_calc or is_valid_for_PRE_plot_comp
+        
+        return is_valid_for_PRE_plot
+    
     def _plot_pre_info(
             self,
             ax,
@@ -87,28 +102,14 @@ class BarPlotBase:
         self.logger.debug("series_axis: {}".format(self.kwargs["series_axis"]))
         self.logger.debug("para_name: {}".format(self.kwargs["para_name"]))
         self.logger.debug("exp name: {}".format(exp_name))
+
+        is_valid = self._validades_for_PRE_data(exp_name)
         
-        is_valid_for_PRE_plot_calc = \
-            self.kwargs["series_axis"] == 'along_z' \
-                and self.kwargs["para_name"] == exp_name
-        
-        is_valid_for_PRE_plot_comp = \
-            self.kwargs["series_axis"] == 'Cz' \
-                and (self.kwargs["next_dim"] in self.kwargs["paramagnetic_names"] \
-                    or self.kwargs["prev_dim"] in self.kwargs["paramagnetic_names"])
-        
-        is_valid_for_PRE_plot = \
-            is_valid_for_PRE_plot_calc or is_valid_for_PRE_plot_comp
-        
-        if is_valid_for_PRE_plot:
+        if is_valid:
             # plot theoretical PRE
             self.logger.debug("... Starting Theoretical PRE Plot")
             
-            self.logger.debug("data extra {}".format(data_extra[:,1]))
-            where_tag = np.where(data_extra[:,1]=="*")
-            self.logger.debug("where position: {}".format(where_tag))
-            tag_position = list(range(data.size))[where_tag[0][0]]
-            self.logger.debug("tag position: {}".format(tag_position))
+            tag_position = self._finds_para_tag(data_extra[:,1])
             
             self._plot_theo_pre(
                 ax,
@@ -134,6 +135,29 @@ class BarPlotBase:
             
         else:
             self.logger.debug("Data is not valid for PRE Plot")
+
+    def _finds_para_tag(self,tag_data):
+        
+        print(tag_data)
+        
+        self.logger.debug("data extra {}".format(tag_data))
+        where_tag = np.where(tag_data=="*")
+        self.logger.debug("where position: {}".format(where_tag))
+        tag_position = list(range(tag_data.size))[where_tag[0][0]]
+        self.logger.debug("tag position: {}".format(tag_position))
+        
+        return tag_position
+    
+    def _set_tick_labels_extended_bar(self, data_info, xtick_spacing, col):
+        """
+        Sets xtick labels for extended bar plots by combining
+        ResNo and 1-letter information.
+        """
+        tmp = np.core.defchararray.add(
+            np.copy(data_info[0::xtick_spacing,col['ResNo']]).astype(str),
+            np.copy(data_info[0::xtick_spacing,col['1-letter']]).astype(str)
+            )
+        return tmp
     
     def _draw_paramagnetic_tag(
             self,

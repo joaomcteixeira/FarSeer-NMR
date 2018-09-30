@@ -35,11 +35,12 @@ class ExperimentPlot(PlottingBase):
     def __init__(self,
             data,
             data_info,
+            config=None,
             partype="",
             exp_names="",
             **kwargs
             ):
-        super().__init__(data, data_info, **kwargs)
+        super().__init__(data, data_info, config=config, **kwargs)
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("ExperimentPlot initiated")

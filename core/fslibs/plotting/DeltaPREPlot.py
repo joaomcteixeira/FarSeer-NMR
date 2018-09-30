@@ -57,6 +57,8 @@ class DeltaPREPlot(ExperimentPlot, BarPlotBase):
             uses the default configuraton. Access the default configuration
             via the default_config class attribute.
         
+        - exp_names (opt, sequence of str): names of each experiment.
+        
         - additional kwargs can be passed as **kwargs.
     """
     
@@ -135,8 +137,6 @@ class DeltaPREPlot(ExperimentPlot, BarPlotBase):
         "res_highlight_fs": 4,
         "res_highlight_y": 0.9,
         
-        "fig_height": 11.69,
-        "fig_width": 8.69,
         "hspace": 0.5,
         "wspace": 0.5
     }
@@ -152,6 +152,7 @@ class DeltaPREPlot(ExperimentPlot, BarPlotBase):
         super().__init__(
             data,
             data_info,
+            config=config,
             exp_names=exp_names,
             **kwargs
             )
@@ -159,11 +160,6 @@ class DeltaPREPlot(ExperimentPlot, BarPlotBase):
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("DeltaPREPlot initiated")
         
-        if config:
-            self.config = {**self.default_config, **config}
-        else:
-            self.config = self.default_config.copy()
-        self.logger.debug("Configuration dictionary \n{}".format(self.config))
         
         self.data_extra = data_extra
     

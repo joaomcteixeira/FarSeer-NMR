@@ -171,7 +171,8 @@ class FarseerSeries(pd.Panel):
             "fit_plot_ydata":self.fit_plot_ydata,
             "fit_okay":self.fit_okay,
             "fit_performed":self.fit_performed,
-            "PRE_loaded":self.PRE_loaded
+            "PRE_loaded":self.PRE_loaded,
+            "paramagnetic_names":self.paramagnetic_names
             }
         
         # defines the path to store the calculations
@@ -2930,17 +2931,52 @@ but measured in a subsequent peaklist".\
         
         self.logs('**Plotting** {} for {}...'.format(plot_style, calccol))
         # this to allow folder change in PRE_analysis
-        folder = calccol
+        
+        kwargs = {
+            **self.info_export,
+            "calccol":calccol
+            }
+        
+        self.logger.debug("...Preparing figure information")
+        if plot_style in ["DPRE_plot"]:
+            folder='PRE_analysis'
+        else:
+            folder = calccol
+        
+        plot_folder = os.path.join(
+            self.tables_and_plots_folder,
+            folder
+            )
+        
+        if not(os.path.exists(plot_folder)):
+            os.makedirs(plot_folder)
+        
+        file_name = '{}_{}.{}'.format(
+            calccol,
+            plot_style,
+            fig_file_type
+            )
+        
+        file_path = os.path.join(
+            plot_folder,
+            file_name
+            )
+        
+        header = self._create_header(file_path=file_path)
         
         config = {
             **param_dict,
+            "y_label":ylabel,
             "y_lims":par_ylims,
             "cols_page":cols_per_page,
-            "rows_page":rows_page,
-            "fig_height":fig_height,
-            "fig_width":fig_width,
+            "rows_page":rows_per_page,
             "hspace":hspace,
-            "y_label":y_label
+            "figure_header":header,
+            "header_fontsize":header_fontsize,
+            "figure_path":file_path,
+            "figure_dpi":fig_dpi,
+            "fig_height": fig_height,
+            "fig_width": fig_width
             }
         
         if resonance_type == 'Backbone':
@@ -2970,9 +3006,14 @@ but measured in a subsequent peaklist".\
                 "ATOM"
                 ]
             
-        data_info = np.array(self.loc[:,:,col_labels])
+        data_info = np.array(self.loc[:,:,col_labels].fillna('NaN').astype(str))
         
-        if plot_style in ['bar_extended', 'bar_compacted', 'bar_vertical']:
+        if plot_style in [
+                'bar_extended',
+                'bar_compacted',
+                'bar_vertical',
+                'res_evo'
+                ]:
             if calccol in ["H1_delta", "N15_delta", "CSP"]:
                 partype = 'ppm'
             elif calccol in ["Height_ratio", "Vol_ratio"]:
@@ -2980,118 +3021,121 @@ but measured in a subsequent peaklist".\
             
             if self.PRE_loaded:
                 self.info_export["data_extra"] = \
-                    np.numpy(self.loc[:,:,["Theo PRE","tag"]])
+                    np.array(self.loc[:,:,["Theo PRE","tag"]].fillna('NaN'))
             
-            data = np.array(self.loc[:,:,calccol]).astype(float)
+            data = np.array(self.loc[:,:,calccol]).astype(float).T
             
             if resonance_type == 'Sidechains':
                 
-                fsplot.BarExtendedSideChains(
+                plot = fsplot.BarExtendedSideChains(
                     data,
                     data_info,
                     partype=partype,
                     config=config,
-                    exp_names=self.items,
-                    **self.info_export
+                    exp_names=list(self.items),
+                    **kwargs
                     )
             elif resonance_type == 'Backbone':
                 
                 if plot_style == 'bar_extended':
                     
-                    fsplot.BarExtendedHorizontal(
+                    plot = fsplot.BarExtendedHorizontal(
                         data,
                         data_info,
                         partype=partype,
                         config=config,
-                        exp_names=self.items,
-                        **self.info_export
+                        exp_names=list(self.items),
+                        **kwargs
                         )
                 
                 elif plot_style == 'bar_compacted':
                     
-                    fsplot.BarCompacted(
+                    plot = fsplot.BarCompacted(
                         data,
                         data_info,
                         config=config,
                         partype=partype,
-                        exp_names=self.items,
-                        **self.info_export
+                        exp_names=list(self.items),
+                        **kwargs
                         )
                 
                 elif plot_style == 'bar_vertical':
-                    fsplot.BarExtendedVertical(
+                    plot = fsplot.BarExtendedVertical(
                         data,
                         data_info,
                         config=config,
                         partype=partype,
-                        exp_names=self.items,
-                        **self.info_export
+                        exp_names=list(self.items),
+                        **kwargs
                         )
         
-        elif plot_style == 'resevo':
-            fsplot.ResEvoPlot(
-                data,
-                data_info,
-                config=config,
-                exp_names=self.items,
-                **self.info_export
-                )
+                elif plot_style == 'res_evo':
+                    plot = fsplot.ResEvoPlot(
+                        data,
+                        data_info,
+                        config=config,
+                        exp_names=list(self.items),
+                        **kwargs
+                        )
         
         elif plot_style == 'cs_scatter':
-            fsplot.ChemicalShiftScatterPlot(
+            plot = fsplot.ChemicalShiftScatterPlot(
                 np.array(self.loc[:,:,["H1_delta","N15_delta"]]).astype(float),
                 data_info,
                 config=config,
-                exp_names=self.items,
-                **self.info_export
+                exp_names=list(self.items),
+                **kwargs
                 )
         
         elif plot_style == 'cs_scatter_flower':
-            fsplot.CSScatterFlower(
+            plot = fsplot.CSScatterFlower(
                 np.array(self.loc[:,:,["H1_delta","N15_delta"]]).astype(float),
                 data_info,
                 config=config,
-                exp_names=self.items,
-                **self.info_export
+                exp_names=list(self.items),
+                **kwargs
                 )
         
         elif plot_style == 'heat_map':
             
-            self.info_export["data_extra"] = \
-                np.array(self.loc[:,:,"tag"])
+            kwargs["data_extra"] = \
+                np.array(self.loc[:,:,"tag"].fillna('NaN')).T
             
-            fsplot.DeltaPREHeatmap(
-                np.array(self.loc[:,:,calccol]).astype(float),
+            config["header_fontsize"] = 3.5
+            
+            plot = fsplot.DeltaPREHeatmap(
+                np.array(self.loc[:,:,calccol]).astype(float).T,
                 data_info,
                 config=config,
-                exp_names=self.items,
-                **self.info_export
+                exp_names=list(self.items),
+                **kwargs
                 )
         
         elif plot_style == 'DPRE_plot':
             
+            config["header_fontsize"] = 3.5
+            
             smooth = "{}_smooth".format(calccol)
             
-            self.info_export["data_extra"] = \
+            kwargs["data_extra"] = \
                 np.array(self.loc[:,:,["tag",smooth]])
             
-            fsplot.DeltaPREPlot(
-                np.array(self.loc[:,:,calccol]).astype(float),
+            plot = fsplot.DeltaPREPlot(
+                np.array(self.loc[:,:,calccol]).astype(float).T,
                 data_info,
                 config=config,
-                exp_names=self.items,
-                **self.info_export
+                exp_names=list(self.items),
+                **kwargs
                 )
                 
-            folder='PRE_analysis'
-            header_fontsize = 3.5
         
         else:
-            msg = "You asked for some plot definitions that can't be done."
+            msg = "You asked for some plot definitions that can't be done. Plot_tyle {}".format(plot_style)
             wet = fsw(msg=msg, msg_title="WARNING", wet_num=99)
-            self.logger.info(wet.wet)
+            self._abort(wet)
         
-        
+        plot.plot()
+        plot.save_figure()
         
         
         # # Plots yy axis title
@@ -3197,16 +3241,16 @@ but measured in a subsequent peaklist".\
             # folder='PRE_analysis'
             # header_fontsize = 3.5
         
-        self._write_plot(
-            fig,
-            header_fontsize,
-            plot_style,
-            folder,
-            calccol,
-            fig_file_type,
-            fig_dpi
-            )
-        plt.close('all')
+        # self._write_plot(
+            # fig,
+            # header_fontsize,
+            # plot_style,
+            # folder,
+            # calccol,
+            # fig_file_type,
+            # fig_dpi
+            # )
+        # plt.close('all')
         
         return
     
@@ -3306,7 +3350,8 @@ but measured in a subsequent peaklist".\
             "fit_plot_ydata":self.fit_plot_ydata,
             "fit_okay":self.fit_okay
             }
-            
+        
+        self.info_export.update(self.fit_data_dict)
         
         return
     

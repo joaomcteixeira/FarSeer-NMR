@@ -131,10 +131,7 @@ class ResEvoPlot(ResiduePlot):
         "perform_resevo_fitting": False,
         "fit_line_color": "black",
         "fit_line_width": 1,
-        "fit_line_style": "-",
-        
-        "fig_height": 11.69,
-        "fig_width": 8.69
+        "fit_line_style": "-"
     }
     
     def __init__(self,
@@ -148,18 +145,13 @@ class ResEvoPlot(ResiduePlot):
         super().__init__(
             data,
             data_info,
+            config=config,
             exp_names=exp_names,
             **kwargs
             )
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("ResEvoPlot initiated")
-        
-        if config:
-            self.config = {**self.default_config, **config}
-        else:
-            self.config = self.default_config.copy()
-        self.logger.debug("Configuration dictionary \n{}".format(self.config))
         
         self.data_extra = data_extra
         

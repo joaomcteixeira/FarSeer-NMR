@@ -35,10 +35,11 @@ class ResiduePlot(PlottingBase):
     def __init__(self,
             data,
             data_info,
+            config=None,
             exp_names=None,
             **kwargs
             ):
-        super().__init__(data, data_info, **kwargs)
+        super().__init__(data, data_info, config=config, **kwargs)
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("ResiduePlot initiated")
