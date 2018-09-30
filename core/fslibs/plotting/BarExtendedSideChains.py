@@ -223,7 +223,12 @@ class BarExtendedSideChains(ExperimentPlot, BarPlotBase):
         ticklabels = \
             np.core.defchararray.add(
                 np.copy(data_info[0::xtick_spacing,col['ResNo']]).astype(str),
-                np.copy(data_info[0::xtick_spacing,col['1-letter']]).astype(str),
+                np.copy(data_info[0::xtick_spacing,col['1-letter']]).astype(str)
+                )
+                
+        ticklabels = \
+            np.core.defchararray.add(
+                ticklabels,
                 np.copy(data_info[0::xtick_spacing,col['ATOM']]).astype(str)
                 )
         
