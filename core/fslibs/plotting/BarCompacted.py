@@ -385,9 +385,12 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
                 c["user_bar_colors_dict"]
                 )
             self.logger.debug("Color user details: OK")
-               
+        
+        self.logger.debug("PRE_Loaded Flag: {}".format(self.kwargs.get("PRE_loaded")))
+        self.logger.debug("Partype to be evaluated: {}".format(self.ratio_data))
         if (self.kwargs.get("PRE_loaded") and self.ratio_data):
             
+            self.logger.debug("Passed first PRE test")
             self._plot_pre_info(ax, data, data_info, data_extra, exp_name, orientation='h')
         
         return

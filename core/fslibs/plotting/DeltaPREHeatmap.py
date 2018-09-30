@@ -163,10 +163,10 @@ class DeltaPREHeatmap(ExperimentPlot, BarPlotBase):
         is_valid = self._validades_for_PRE_data(exp_name)
         
         if is_valid:
-            print(data_extra)
+            
             tag_position = self._finds_para_tag(data_extra)
             # position is shifts 0.5 units
-            tag_position -= 0.5
+            tag_position += 0.5
         
             self._draw_paramagnetic_tag(
                 ax,
@@ -290,11 +290,19 @@ if __name__ == "__main__":
     full_data_set = np.stack(a, axis=0)
     print("dataset shape: {}".format(full_data_set.shape))
     
+    pre_args = {
+        "PRE_loaded":True,
+        "series_axis":'Cz',
+        "next_dim":"01_para",
+        "paramagnetic_names":["01_para"]
+        }
+    
     plot = DeltaPREHeatmap(
         full_data_set[:,:,24].astype(float),
         full_data_set[:,:,[0,1,2,3,4,11,12,15]],
         data_extra=full_data_set[:,:,22],
-        exp_names=["ref", "d10", "d20"]
+        exp_names=["ref", "d10", "d20"],
+        **pre_args
         )
     
     plot.plot()

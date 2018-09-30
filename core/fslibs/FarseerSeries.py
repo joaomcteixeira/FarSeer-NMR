@@ -431,6 +431,7 @@ and stacked (compared) along "{}" axis'.format(
                 ))
             return
         self.PRE_loaded = True
+        self.info_export["PRE_loaded"] = self.PRE_loaded
         target_folder = '{}/{}/{}/'.format(spectra_path, self.para_name, datapoint)
         pre_file = glob.glob('{}*.pre'.format(target_folder))
         
@@ -831,9 +832,9 @@ recipient: residues
                 partype = 'ratio'
             
             if self.PRE_loaded:
-                self.info_export["data_extra"] = \
+                kwargs["data_extra"] = \
                     np.array(self.loc[:,:,["Theo PRE","tag"]].fillna('NaN'))
-            
+                
             data = np.array(self.loc[:,:,calccol]).astype(float).T
             
             if resonance_type == 'Sidechains':

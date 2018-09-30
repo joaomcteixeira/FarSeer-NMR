@@ -1208,21 +1208,15 @@ Nothing to calculate here.')
                     farseer_series.plot_base(
                         targetcol, 
                         'heat_map',
-                        self.fsuv["heat_map_settings"],
-                        par_ylims=\
-                            self.fsuv["restraint_settings"].\
-                                loc[sourcecol,'plt_y_axis_scl'],
-                        ylabel=\
-                            self.fsuv["restraint_settings"].\
-                                loc[sourcecol,'plt_y_axis_lbl'],
-                        cols_per_page=1,
-                        rows_per_page=\
-                            self.fsuv["heat_map_settings"]["rows"],
-                        fig_height=self.fsuv["general_settings"]["fig_height"],
-                        fig_width=self.fsuv["general_settings"]["fig_width"],
-                        fig_file_type=self.fsuv["general_settings"]["fig_file_type"],
-                        fig_dpi=self.fsuv["general_settings"]["fig_dpi"],
-                        hspace=0
+                        config={
+                            **self.fsuv["heat_map_settings"],
+                            "y_lims":self.fsuv["restraint_settings"].loc[sourcecol,'plt_y_axis_scl'],
+                            "ylabel":self.fsuv["restraint_settings"].loc[sourcecol,'plt_y_axis_lbl'],
+                            "fig_height":self.fsuv["general_settings"]["fig_height"],
+                            "fig_width":self.fsuv["general_settings"]["fig_width"],
+                            "fig_dpi":self.fsuv["general_settings"]["fig_dpi"]
+                            },
+                        fig_file_type=self.fsuv["general_settings"]["fig_file_type"]
                         )
         
         # plots the DeltaPRE analysis only for <Cz> comparison.
@@ -1239,17 +1233,13 @@ Nothing to calculate here.')
                         targetcols,
                         'DPRE_plot',
                         {
-                            **self.fsuv["series_plot_settings"], 
-                            **self.fsuv["DPRE_plot_settings"]
+                            **self.fsuv["DPRE_plot_settings"],
+                            "fig_height":self.fsuv["general_settings"]["fig_height"],
+                            "fig_width":self.fsuv["general_settings"]["fig_width"],
+                            "fig_dpi":self.fsuv["general_settings"]["fig_dpi"]
                             },
-                        cols_per_page=1,
-                        rows_per_page=self.fsuv["DPRE_plot_settings"]["rows"],
-                        fig_height=self.fsuv["general_settings"]["fig_height"],
-                        fig_width=\
-                            self.fsuv["general_settings"]["fig_width"]/\
-                            self.fsuv["DPRE_plot_settings"]["width"],
-                        fig_file_type=self.fsuv["general_settings"]["fig_file_type"],
-                        fig_dpi=self.fsuv["general_settings"]["fig_dpi"])
+                        fig_file_type=self.fsuv["general_settings"]["fig_file_type"]
+                        )
         
         return None
     

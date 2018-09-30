@@ -82,6 +82,8 @@ class BarPlotBase:
         is_valid_for_PRE_plot = \
             is_valid_for_PRE_plot_calc or is_valid_for_PRE_plot_comp
         
+        self.logger.debug("Is valid PRE: {}".format(is_valid_for_PRE_plot))
+        
         return is_valid_for_PRE_plot
     
     def _plot_pre_info(
@@ -109,6 +111,7 @@ class BarPlotBase:
             # plot theoretical PRE
             self.logger.debug("... Starting Theoretical PRE Plot")
             
+            # finds tag
             tag_position = self._finds_para_tag(data_extra[:,1])
             
             self._plot_theo_pre(

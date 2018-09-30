@@ -159,7 +159,7 @@ class DeltaPREPlotPopup(BasePopup):
 
     def get_defaults(self):
         # value
-        self.DPRE_plot_rows.setValue(self.defaults["rows"])
+        self.DPRE_plot_rows.setValue(self.defaults["rows_page"])
         self.DPRE_plot_width.setValue(self.defaults["width"])
         self.DPRE_plot_y_label_fs.setValue(self.defaults["y_label_fs"])
         self.DPRE_plot_dpre_ms.setValue(self.defaults["dpre_ms"])
@@ -191,7 +191,7 @@ class DeltaPREPlotPopup(BasePopup):
     
     def set_values(self):
         # value
-        self.local_variables["rows"] = self.DPRE_plot_rows.field.value()
+        self.local_variables["rows_page"] = self.DPRE_plot_rows.field.value()
         self.local_variables["width"] = self.DPRE_plot_width.field.value()
         self.local_variables["y_label_fs"] = self.DPRE_plot_y_label_fs.field.value()
         self.local_variables["dpre_ms"] = self.DPRE_plot_dpre_ms.field.value()
@@ -222,7 +222,7 @@ class DeltaPREPlotPopup(BasePopup):
 
     def get_values(self):
         # value
-        self.DPRE_plot_rows.setValue(self.local_variables["rows"])
+        self.DPRE_plot_rows.setValue(self.local_variables["rows_page"])
         self.DPRE_plot_width.setValue(self.local_variables["width"])
         self.DPRE_plot_y_label_fs.setValue(self.local_variables["y_label_fs"])
         self.DPRE_plot_dpre_ms.setValue(self.local_variables["dpre_ms"])

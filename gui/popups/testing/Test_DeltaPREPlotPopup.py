@@ -31,7 +31,7 @@ class Test_DeltaPREPlotPopup(unittest.TestCase):
         """Test popup reads and sets default variables"""
 
         self.assertEqual(self.popup.DPRE_plot_rows.field.value(),
-                         self.defaults["rows"])
+                         self.defaults["rows_page"])
         self.assertEqual(self.popup.DPRE_plot_width.field.value(),
                          self.defaults["width"])
         self.assertEqual(self.popup.DPRE_plot_y_label.field.text(),
@@ -105,7 +105,7 @@ class Test_DeltaPREPlotPopup(unittest.TestCase):
 
         self.assertEqual(self.popup.DPRE_plot_rows.field.value(), 5)
         self.assertEqual(self.popup.DPRE_plot_rows.field.value(),
-                         self.popup.variables["DPRE_plot_settings"]["rows"])
+                         self.popup.variables["DPRE_plot_settings"]["rows_page"])
         self.assertEqual(self.popup.DPRE_plot_width.field.value(), 4)
         self.assertEqual(self.popup.DPRE_plot_width.field.value(),
                          self.popup.variables["DPRE_plot_settings"]["width"])
@@ -232,7 +232,7 @@ class Test_DeltaPREPlotPopup(unittest.TestCase):
         self.assertEqual(self.popup.DPRE_plot_rows.field.value(), 5)
         self.assertNotEqual(self.popup.DPRE_plot_rows.field.value(),
                             self.popup.variables["DPRE_plot_settings"][
-                             "rows"])
+                             "rows_page"])
         self.assertEqual(self.popup.DPRE_plot_width.field.value(), 4)
         self.assertNotEqual(self.popup.DPRE_plot_width.field.value(),
                             self.popup.variables["DPRE_plot_settings"][
