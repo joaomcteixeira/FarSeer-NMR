@@ -33,7 +33,7 @@ class Test_DeltaPREPlotPopup(unittest.TestCase):
         self.assertEqual(self.popup.DPRE_plot_rows.field.value(),
                          self.defaults["rows_page"])
         self.assertEqual(self.popup.DPRE_plot_width.field.value(),
-                         self.defaults["width"])
+                         self.defaults["wspace"])
         self.assertEqual(self.popup.DPRE_plot_y_label.field.text(),
                          self.defaults["y_label"])
         self.assertEqual(self.popup.DPRE_plot_y_label_fs.field.value(),
@@ -79,7 +79,7 @@ class Test_DeltaPREPlotPopup(unittest.TestCase):
                          self.defaults["ymax"])
 
     def test_set_values(self):
-        self.popup.DPRE_plot_rows.setValue(5)
+        self.popup.DPRE_plot_rows.setValue(500)
         self.popup.DPRE_plot_width.setValue(4)
         self.popup.DPRE_plot_y_label.setText("PRE")
         self.popup.DPRE_plot_y_label_fs.setValue(8)
@@ -103,12 +103,12 @@ class Test_DeltaPREPlotPopup(unittest.TestCase):
         self.popup.DPRE_plot_ymax.setValue(0.9)
         self.popup.set_values()
 
-        self.assertEqual(self.popup.DPRE_plot_rows.field.value(), 5)
+        self.assertEqual(self.popup.DPRE_plot_rows.field.value(), 500)
         self.assertEqual(self.popup.DPRE_plot_rows.field.value(),
                          self.popup.variables["DPRE_plot_settings"]["rows_page"])
         self.assertEqual(self.popup.DPRE_plot_width.field.value(), 4)
         self.assertEqual(self.popup.DPRE_plot_width.field.value(),
-                         self.popup.variables["DPRE_plot_settings"]["width"])
+                         self.popup.variables["DPRE_plot_settings"]["wspace"])
         self.assertEqual(self.popup.DPRE_plot_y_label.field.text(), "PRE")
         self.assertEqual(self.popup.DPRE_plot_y_label.field.text(),
                          self.popup.variables["DPRE_plot_settings"]
@@ -206,10 +206,10 @@ class Test_DeltaPREPlotPopup(unittest.TestCase):
                          self.variable_keys)
 
     def test_values_not_set(self):
-        self.popup.DPRE_plot_rows.setValue(5)
+        self.popup.DPRE_plot_rows.setValue(50)
         self.popup.DPRE_plot_width.setValue(4)
         self.popup.DPRE_plot_y_label.setText("PRE")
-        self.popup.DPRE_plot_y_label_fs.setValue(8)
+        self.popup.DPRE_plot_y_label_fs.setValue(80)
         self.popup.DPRE_plot_dpre_ms.setValue(5)
         self.popup.DPRE_plot_dpre_alpha.setValue(0.3)
         self.popup.DPRE_plot_smooth_lw.setValue(2)
@@ -229,19 +229,19 @@ class Test_DeltaPREPlotPopup(unittest.TestCase):
         self.popup.DPRE_plot_rh_y.setValue(0.7)
         self.popup.DPRE_plot_ymax.setValue(0.9)
 
-        self.assertEqual(self.popup.DPRE_plot_rows.field.value(), 5)
+        self.assertEqual(self.popup.DPRE_plot_rows.field.value(), 50)
         self.assertNotEqual(self.popup.DPRE_plot_rows.field.value(),
                             self.popup.variables["DPRE_plot_settings"][
                              "rows_page"])
         self.assertEqual(self.popup.DPRE_plot_width.field.value(), 4)
         self.assertNotEqual(self.popup.DPRE_plot_width.field.value(),
                             self.popup.variables["DPRE_plot_settings"][
-                             "width"])
+                             "wspace"])
         self.assertEqual(self.popup.DPRE_plot_y_label.field.text(), "PRE")
         self.assertNotEqual(self.popup.DPRE_plot_y_label.field.text(),
                             self.popup.variables["DPRE_plot_settings"][
                              "y_label"])
-        self.assertEqual(self.popup.DPRE_plot_y_label_fs.field.value(), 8)
+        self.assertEqual(self.popup.DPRE_plot_y_label_fs.field.value(), 80)
         self.assertNotEqual(self.popup.DPRE_plot_y_label_fs.field.value(),
                             self.popup.variables["DPRE_plot_settings"][
                              "y_label_fs"])

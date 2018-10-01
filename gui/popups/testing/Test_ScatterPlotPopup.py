@@ -147,7 +147,7 @@ class Test_ScatterPlotPopup(unittest.TestCase):
 
     def test_values_not_set(self):
         self.popup.cs_scatter_cols_page.setValue(6)
-        self.popup.cs_scatter_rows_page.setValue(8)
+        self.popup.cs_scatter_rows_page.setValue(80)
         self.popup.cs_scatter_x_label.setText('x label')
         self.popup.cs_scatter_y_label.setText('y label')
         self.popup.cs_scatter_mksize.setValue(25)
@@ -163,7 +163,7 @@ class Test_ScatterPlotPopup(unittest.TestCase):
         self.popup.cs_scatter_hide_missing.setChecked(True)
 
         self.assertEqual(self.popup.cs_scatter_cols_page.field.value(), 6)
-        self.assertEqual(self.popup.cs_scatter_rows_page.field.value(), 8)
+        self.assertEqual(self.popup.cs_scatter_rows_page.field.value(), 80)
         self.assertEqual(self.popup.cs_scatter_x_label.field.text(), "x label")
         self.assertEqual(self.popup.cs_scatter_y_label.field.text(), "y label")
         self.assertEqual(self.popup.cs_scatter_mksize.field.value(), 25)

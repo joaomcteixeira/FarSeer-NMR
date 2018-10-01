@@ -446,7 +446,7 @@
         "y_label_weight": "normal",
         "y_label": "CSPs",
         
-        "set_x_values": true,
+        "set_x_values": false,
         "titration_x_values": [0,10,20,40,80,160],
         "x_ticks_fn": "Arial",
         "x_ticks_fs": 5,
