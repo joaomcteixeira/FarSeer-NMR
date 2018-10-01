@@ -30,7 +30,7 @@ class Test_HeatMapPopup(unittest.TestCase):
         """Test popup reads and sets default variables"""
 
         self.assertEqual(self.popup.heat_map_rows.field.value(),
-                         self.defaults["rows_page"])
+                         self.defaults["rows"])
         self.assertEqual(self.popup.heat_map_vmin.field.value(),
                          self.defaults["vmin"])
         self.assertEqual(self.popup.heat_map_vmax.field.value(),
@@ -95,7 +95,7 @@ class Test_HeatMapPopup(unittest.TestCase):
 
         self.assertEqual(self.popup.heat_map_rows.field.value(), 10)
         self.assertEqual(self.popup.heat_map_rows.field.value(),
-                         self.popup.variables["heat_map_settings"]["rows_page"])
+                         self.popup.variables["heat_map_settings"]["rows"])
         self.assertEqual(self.popup.heat_map_vmin.field.value(), 0.2)
         self.assertEqual(self.popup.heat_map_vmin.field.value(),
                          self.popup.variables["heat_map_settings"]["vmin"])
@@ -197,7 +197,7 @@ class Test_HeatMapPopup(unittest.TestCase):
 
         self.assertEqual(self.popup.heat_map_rows.field.value(), 10)
         self.assertNotEqual(self.popup.heat_map_rows.field.value(),
-                            self.popup.variables["heat_map_settings"]["rows_page"])
+                            self.popup.variables["heat_map_settings"]["rows"])
         self.assertEqual(self.popup.heat_map_vmin.field.value(), 0.2)
         self.assertNotEqual(self.popup.heat_map_vmin.field.value(),
                             self.popup.variables["heat_map_settings"]["vmin"])

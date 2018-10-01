@@ -33,7 +33,7 @@ class Test_ScatterFlowerPlotPopup(unittest.TestCase):
         self.assertEqual(self.popup.y_label.field.text(),
                          self.defaults["y_label"])
         self.assertEqual(self.popup.mksize.field.value(),
-                         self.defaults["mk_size"])
+                         self.defaults["mksize"])
         self.assertEqual(self.popup.color_grad.isChecked(),
                          self.defaults["color_grad"])
         self.assertEqual(
@@ -205,7 +205,7 @@ class Test_ScatterFlowerPlotPopup(unittest.TestCase):
                              "y_label"])
         self.assertEqual(self.popup.mksize.field.value(),
                          self.popup.variables["cs_scatter_flower_settings"][
-                             "mk_size"])
+                             "mksize"])
         self.assertEqual(self.popup.color_grad.isChecked(),
                          self.popup.variables["cs_scatter_flower_settings"][
                              "color_grad"])
@@ -391,7 +391,7 @@ class Test_ScatterFlowerPlotPopup(unittest.TestCase):
                                 "y_label"])
         self.assertNotEqual(self.popup.mksize.field.value(),
                             self.popup.variables["cs_scatter_flower_settings"][
-                                "mk_size"])
+                                "mksize"])
         self.assertNotEqual(
             self.popup.color_grad.isChecked(),
             self.popup.variables["cs_scatter_flower_settings"]["color_grad"])

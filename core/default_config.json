@@ -315,6 +315,9 @@
         },
     
     "DPRE_plot_settings": {
+        "rows":10,
+        "width":3,
+        
         "cols_page": 3,
         "rows_page": 5,
         
@@ -333,7 +336,7 @@
         "x_label_rot": 0,
         
         "y_label_fn": "Arial",
-        "y_label_fs": 8,
+        "y_label_fs": 7,
         "y_label_pad": 3,
         "y_label_weight": "bold",
         "y_label_rot":90,
@@ -483,9 +486,10 @@
         "fit_line_style": "-"
     },
     "cs_scatter_settings": {
+        "mksize":20,
         
         "cols_page": 5,
-        "rows_page": 8,
+        "rows_page": 7,
         
         "hspace": 0.5,
         "wspace": 0.5,
@@ -547,6 +551,8 @@
     },
     
     "cs_scatter_flower_settings": {
+        "mksize":8,
+        
         "xlim":1,
         "ylim":1,
         
@@ -589,6 +595,8 @@
         "wspace": 0.1
     },
     "heat_map_settings": {
+        "rows":20,
+        
         "cols_page": 1,
         "rows_page": 20,
         

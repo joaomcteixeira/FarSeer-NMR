@@ -94,7 +94,33 @@ class FarseerNMR:
         self._update_spectra_dir()
         self._update_output_dir()
         self._config_user_variables()
+        self._parse_keys()
         return None
+    
+    def _parse_keys(self):
+        """
+        Parses keys that will be updated in future versions
+        to maintain retrocompatibility with previous versions.
+        
+        added in v1.3
+        """
+        
+        self.fsuv["DPRE_plot_settings"]["rows_page"] = \
+            self.fsuv["DPRE_plot_settings"]["rows"]
+        
+        self.fsuv["DPRE_plot_settings"]["wspace"] = \
+            self.fsuv["DPRE_plot_settings"]["width"]
+        
+        self.fsuv["heat_map_settings"]["rows_page"] = \
+            self.fsuv["heat_map_settings"]["rows"]
+            
+        self.fsuv["cs_scatter_flower_settings"]["mk_size"] = \
+            self.fsuv["cs_scatter_flower_settings"]["mksize"]
+            
+        self.fsuv["cs_scatter_settings"]["mk_size"] = \
+            self.fsuv["cs_scatter_settings"]["mksize"]
+        
+        return
     
     def _update_output_dir(self):
         """

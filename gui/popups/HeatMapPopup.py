@@ -158,10 +158,7 @@ class HeatMapPopup(BasePopup):
 
     def get_defaults(self):
         # value
-        try:
-            self.heat_map_rows.setValue(self.defaults["rows_page"])
-        except KeyError:
-            self.heat_map_rows.setValue(self.defaults["rows"])
+        self.heat_map_rows.setValue(self.defaults["rows"])
         self.heat_map_vmin.setValue(self.defaults["vmin"])
         self.heat_map_vmax.setValue(self.defaults["vmax"])
         self.heat_map_x_ticks_fs.setValue(self.defaults["x_ticks_fs"])
@@ -184,10 +181,7 @@ class HeatMapPopup(BasePopup):
     
     def set_values(self):
         # value
-        try:
-            self.local_variables["rows_page"] = self.heat_map_rows.field.value()
-        except KeyError:
-            self.local_variables["rows"] = self.heat_map_rows.field.value()
+        self.local_variables["rows"] = self.heat_map_rows.field.value()
         self.local_variables["vmin"] = self.heat_map_vmin.field.value()
         self.local_variables["vmax"] = self.heat_map_vmax.field.value()
         self.local_variables["x_ticks_fs"] = self.heat_map_x_ticks_fs.field.value()
@@ -212,10 +206,7 @@ class HeatMapPopup(BasePopup):
 
     def get_values(self):
         # value
-        try:
-            self.heat_map_rows.setValue(self.local_variables["rows_page"])
-        except KeyError:
-            self.heat_map_rows.setValue(self.local_variables["rows"])
+        self.heat_map_rows.setValue(self.local_variables["rows"])
         self.heat_map_vmin.setValue(self.local_variables["vmin"])
         self.heat_map_vmax.setValue(self.local_variables["vmax"])
         self.heat_map_x_ticks_fs.setValue(self.local_variables["x_ticks_fs"])
