@@ -167,7 +167,10 @@ class ScatterFlowerPlotPopup(BasePopup):
         self.y_label.field.setText(self.defaults["y_label"])
         self.color_list.field.setText(','.join(self.defaults["color_list"]))
         # value
-        self.mksize.setValue(self.defaults["mk_size"])
+        try:
+            self.mksize.setValue(self.defaults["mk_size"])
+        except:
+            self.mksize.setValue(self.defaults["mksize"])
         self.x_label_fs.setValue(self.defaults["x_label_fs"])
         self.x_label_pad.setValue(self.defaults["x_label_pad"])
         self.y_label_fs.setValue(self.defaults["y_label_fs"])
@@ -209,7 +212,10 @@ class ScatterFlowerPlotPopup(BasePopup):
         self.local_variables["y_ticks_fn"] = self.y_ticks_fn.fields.currentText()
         self.local_variables["y_ticks_weight"] = self.y_ticks_weight.fields.currentText()
         # value
-        self.local_variables["mk_size"] = self.mksize.field.value()
+        try:
+            self.local_variables["mk_size"] = self.mksize.field.value()
+        except KeyError:
+            self.local_variables["mksize"] = self.mksize.field.value()
         self.local_variables["x_label_fs"] = self.x_label_fs.field.value()
         self.local_variables["x_label_pad"] = self.x_label_pad.field.value()
         self.local_variables["y_label_fs"] = self.y_label_fs.field.value()
@@ -238,7 +244,10 @@ class ScatterFlowerPlotPopup(BasePopup):
         self.y_label.field.setText(self.local_variables["y_label"])
         self.color_list.field.setText(','.join(self.local_variables["color_list"]))
         # value
-        self.mksize.setValue(self.local_variables["mk_size"])
+        try:
+            self.mksize.setValue(self.local_variables["mk_size"])
+        except KeyError:
+            self.mksize.setValue(self.local_variables["mksize"])
         self.x_label_fs.setValue(self.local_variables["x_label_fs"])
         self.x_label_pad.setValue(self.local_variables["x_label_pad"])
         self.y_label_fs.setValue(self.local_variables["y_label_fs"])
