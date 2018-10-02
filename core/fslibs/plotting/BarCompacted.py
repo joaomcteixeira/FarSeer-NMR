@@ -206,31 +206,28 @@ class BarCompacted(ExperimentPlot, BarPlotBase):
         
         self.logger.debug("Created bar plot: OK")
         
-        # ticks positions:
-        if number_of_residues_to_plot > 100:
-            xtick_spacing = number_of_residues_to_plot//100*10
+        for i in range(100,10000,100):
+            if i>number_of_residues_to_plot:
+                mod_ = i//10
+                break
+        self.logger.debug("tick mod: {}".format(mod_))
         
-        else:
-            xtick_spacing = 10
+        xticks = list()
+        xticklabels = list()
+        for k, m in zip(
+                range(number_of_residues_to_plot),
+                data_info[:,col["ResNo"]]
+                ):
             
-        self.logger.debug("xtick_spacing set to: {}".format(xtick_spacing))
-        xticks = range(
-            xtick_spacing-1,
-            number_of_residues_to_plot,
-            xtick_spacing
-            )
-        self.logger.debug("Setting xticks: {}".format([a for a in xticks]))
-        # -1 needs to be given because xticks star from 0
+            if int(m)%mod_==0:
+                xticks.append(k)
+                xticklabels.append(m)
+        
+        self.logger.debug("Setting xticks: {}".format(xticks))
+        self.logger.debug("xticklabels: {}".format(xticklabels))
+        
         ax.set_xticks(xticks)
         self.logger.debug("set_xticks: OK")
-        
-        # xtick labels
-        initialresidue = int(data_info[0, col['ResNo']])
-        finalresidue = int(data_info[-1, col['ResNo']])
-        
-        first_tick = ceil(initialresidue/10)*xtick_spacing
-        xticklabels = np.arange(first_tick, finalresidue, xtick_spacing)
-        self.logger.debug("xticklabels: {}".format(xticklabels))
         
         ## https://github.com/matplotlib/matplotlib/issues/6266
         ax.set_xticklabels(
@@ -435,8 +432,7 @@ if __name__ == "__main__":
         full_data_set[:,:,21].astype(float),
         full_data_set[:,:,[0,1,2,3,4,11,12,15]],
         partype='ppm',
-        exp_names=["0","25","50","100","200","400","500"],
-        PRE_loaded=False
+        exp_names=["0","25","50","100","200","400","500"]
         )
     
     plot.plot()
@@ -454,6 +450,42 @@ if __name__ == "__main__":
     plot.config["y_lims"] = (-0.3,0.3)
     plot.plot()
     plot.save_figure("1H_delta.pdf")
+    
+    ######################################################################## 1
+    
+    dataset_path = os.path.join(
+        os.path.dirname(file_name),
+        'testing',
+        'csps_not_complete'
+        )
+        
+    print("testing dataset: {}".format(dataset_path))
+    
+    a = []
+    for f in sorted(os.listdir(dataset_path)):
+        print("reading: {}".format(f))
+        a.append(
+            np.genfromtxt(
+                os.path.join(dataset_path, f),
+                delimiter=',',
+                skip_header=1,
+                dtype=str,
+                missing_values='NaN'
+                )
+            )
+    
+    full_data_set = np.stack(a, axis=0)
+    print("dataset shape: {}".format(full_data_set.shape))
+    
+    plot = BarCompacted(
+        full_data_set[:,:,21].astype(float),
+        full_data_set[:,:,[0,1,2,3,4,11,12,15]],
+        partype='ppm',
+        exp_names=["400","500"]
+        )
+    
+    plot.plot()
+    plot.save_figure("csps_not_complete.pdf")
     
     ######################################################################## 2
     
