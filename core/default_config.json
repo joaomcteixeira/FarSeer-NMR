@@ -406,7 +406,7 @@
         "x_label_weight": "normal",
         "y_label_fn": "Arial",
         "y_label_fs": 6,
-        "y_label_pad": 2,
+        "y_label_pad": 10,
         "y_label_weight": "normal",
         "x_ticks_fn": "Arial",
         "x_ticks_fs": 5,
