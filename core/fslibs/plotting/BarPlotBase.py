@@ -141,8 +141,6 @@ class BarPlotBase:
 
     def _finds_para_tag(self,tag_data):
         
-        print(tag_data)
-        
         self.logger.debug("data extra {}".format(tag_data))
         where_tag = np.where(tag_data=="*")
         self.logger.debug("where position: {}".format(where_tag))
