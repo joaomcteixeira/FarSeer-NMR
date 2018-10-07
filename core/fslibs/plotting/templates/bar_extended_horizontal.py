@@ -59,6 +59,7 @@ default_config = {
     "plot_theoretical_pre":False,
     "theo_pre_color": "red",
     "theo_pre_lw": 1.0,
+    "tag_id":"*",
     
     "tag_cartoon_color": "black",
     "tag_cartoon_lw": 1.0,
@@ -123,14 +124,20 @@ def bar_extended_horizontal(
         subtitles=None
         ):
     """
+    Plots the Horizontal Bar Plot template.
+    
+    Subplots have the width of the figure and one subplot is plotted for
+    each experiment. Each value in <values> is represented by a bar and
+    each bar is labeled according to <labels>.
+    
     Parameters:
     
-        - values (np.array shape (z,y,), dtype=str,float): where the third (z)
-            axis encloses the Y data information for each bar and the second
-            (y) axis the evolution of that data along a series.
+        - values (np.array shape (z,y), dtype=str,float): where the second (y)
+            axis encloses the Y data information for each bar and the first
+            (z) axis the evolution of that data along a series of experiments.
             
-        - labels (np.array, dtype=str): Bar labels presented sequentially
-            and synchronized with values.
+        - labels (np.array shape (x,), dtype=str): Bar labels presented
+            sequentially and synchronized with values.
             
         - config (opt, dict): a config dictionary that updates the
             module.default_config. Default values will be used for keys
@@ -423,10 +430,31 @@ def bar_extended_horizontal(
                
         if theo_pre and c["plot_theoretical_pre"]:
             
-            barplot_base.plot_pre_info(
+            barplot_base.plot_theo_pre(
                 ax,
-                ydata,
-                info, data_extra, exp_name, orientation='h')
+                range(num_of_bars),
+                info[:,3],
+                pre_color=c["theo_pre_color"],
+                pre_lw=c["theo_pre_lw"],
+                orientation='h'
+                )
+            
+            tag_position = barplot_base.finds_paramagnetic_tag(
+                bars,
+                info[:,4],
+                identifier=c["tag_id"]
+                )
+            
+            if tag_position:
+                barplot_base.draw_paramagnetic_tag(
+                    ax,
+                    tag_position,
+                    y_max,
+                    plottype='h',
+                    tag_color=c["tag_cartoon_color"],
+                    tag_ls=c["tag_cartoon_ls"],
+                    tag_lw=c["tag_cartoon_lw"]
+                    )
     else:
         plot_base.clean_subplots(num_subplots, len(axs))
         plot_base.save_figure(
