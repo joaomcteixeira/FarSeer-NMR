@@ -1,4 +1,9 @@
 import numpy as np
+from core.fslibs.WetHandler import WetHandler
+import core.fslibs.Logger as Logger
+
+plotting_base_logger = Logger.FarseerLogger(__name__).setup_log()
+plotting_base_logger.debug("Initiated barplot_base module")
 
 def _finds_para_tag(data, tag_data, identifier="*"):
     """

@@ -1,16 +1,22 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-from core.fslibs.plotting import plot_base
-from core.fslibs.plotting import residue_plots_base
+from core.fslibs.plotting import plotting_base
+from core.fslibs.plotting import residue_plot_base
 from core.fslibs.plotting import barplot_base
 from core.fslibs.plotting import plotting_checks
 
 import core.fslibs.Logger as Logger
-from core.utils import aal1tol3
+from core.utils import aal1tol3 as _aal1tol3
 
 
-default_config = {
+logger = Logger.FarseerLogger(__name__).setup_log()
+logger.info("Starting Bar Extended Plot")
+
+residue_plot_base.log()
+plotting_base.log()
+
+_default_config = {
     "cols_page": 1,
     "rows_page": 6,
     
@@ -109,12 +115,20 @@ default_config = {
 
 def _check_data_info_1letter(array):
     for char in array:
-        if not(char in aal1tol3.keys()):
+        if not(char in _aal1tol3.keys()):
             return False
     else:
         return True
     
-    
+
+def print_config():
+    """Prints default configuration dictionary"""
+    import json
+    print(json.dumps(_default_config, ident=4))
+
+def get_config():
+    """Returns default configuration dictionary."""
+    return _default_config
 
 def bar_extended_horizontal(
         values,
@@ -137,16 +151,17 @@ def bar_extended_horizontal(
             (z) axis the evolution of that data along a series of experiments.
             
         - labels (np.array shape (x,), dtype=str): Bar labels presented
-            sequentially and synchronized with values.
+            sequentially and synchronized with <values>.
             
         - config (opt, dict): a config dictionary that updates the
-            module.default_config. Default values will be used for keys
-            not provided.
+            default config values. Default values will be used for keys
+            not provided. Access the default values by .get_defaults()
         
         - data_extra (opt, np.array of shape (z,y,x)): contains additional
             information that can be used to improve data representation.
-            Z and Y axis have the same meaning as for <labels>. X represent
-            information-rich columns. Axis 0 (x, columns) data should be
+            Z and Y axis have the same meaning as for <values> and shape
+            must match.
+            X (axis 0) represent information-rich columns and data should be
             provided according to the order:
                 ["1-letter",
                 "Peak Status",
@@ -157,9 +172,6 @@ def bar_extended_horizontal(
         - subtitles (list of strings): titles of each subplot, length must
             be equal to values.shape[0].
     """
-    
-    logger = Logger.FarseerLogger(__name__).setup_log()
-    logger.info("Starting Bar Extended Plot")
     
     # initiates bool variables
     # set to False until confirmation of validity
@@ -210,7 +222,7 @@ def bar_extended_horizontal(
                 theo_pre = plotting_checks.check_info_theo_pre(info[:,3])
                 logger.debug("Theor. PRE info valid: {}".format(theo_pre))
             
-            logger.debug("Is all info valid?: {}".format(info_valid)
+            logger.debug("Is all info valid?: {}".format(info_valid))
         
         ###################
         # Plots bars

@@ -66,7 +66,7 @@ class PlottingBase:
         "ATOM":8
         }
     
-    plotbase_config = {
+    figure_config = {
         "figure_header":"No header provided",
         "header_fontsize":5,
         "figure_path":"my_plot.pdf",
@@ -75,7 +75,7 @@ class PlottingBase:
         "fig_width": 8.69
         }
     
-    def __init__(self, data, data_info, config=None, **kwargs):
+    def __init__(self, config=None, **kwargs):
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("ExperimentPlot initiated")
@@ -90,14 +90,14 @@ class PlottingBase:
         
         if config:
             self.config = {
-                **self.plotbase_config,
-                **self.default_config,
+                **self.figure_config,
+                **self._default_config,
                 **config
                 }.copy()
         else:
             self.config = {
-                **self.plotbase_config,
-                **self.default_config
+                **self._plotbase_config,
+                **self._default_config
                 }.copy()
         
         self.logger.debug("Configuration dictionary \n{}".format(self.config))

@@ -9,4 +9,7 @@ from core.fslibs.plotting.CSScatterFlower import CSScatterFlower
 from core.fslibs.plotting.DeltaPREHeatmap import DeltaPREHeatmap
 from core.fslibs.plotting.DeltaPREPlot import DeltaPREPlot
 
+
 # user formats
+
+from core.fslibs.plotting.templates import bar_extended_horizontal as beh
