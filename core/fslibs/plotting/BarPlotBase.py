@@ -21,13 +21,280 @@ along with Farseer-NMR. If not, see <http://www.gnu.org/licenses/>.
 """
 import numpy as np
 from math import ceil
+import collections
 
-class BarPlotBase:
+from core.utils import aal1tol3, peak_status_dict
+from core.fslibs.plotting.ExperimentPlot import ExperimentPlot
+
+class BarPlotBase(ExperimentPlot):
     """
     Base class with methods common to all Bar Plot templates.
     
+    Each value in <values> is represented by a bar and each bar is labeled
+    according to <labels>.
+    
     Not functional on its own.
+    
+    PARAMETERS:
+    
+        - values (np.array shape (y,x), dtype=float): where X (axis=1)
+            is the data to plot for each column and Y (axis=0) is the evolution
+            of that data along the titration series.
+            
+        - labels (np.array shape (x,), dtype=str): Bar labels presented
+            sequentially and synchronized with <values>.
+            <labels> axis 0 equals <values> axis 1.
+        
+    OPTIONAL PARAMETERS:
+        
+        - subtitles (iterable type of strings): titles of each subplot,
+            length must be equal to values.shape[0].
+        
+        - letter_code (sequence type): 1-letter code of the protein sequence,
+            should have length equal to <labels>.
+        
+        - peak_status (np.array shape (y,x), dtype=str):
+            Peak status information according to core.utils.peak_status
+            dictionary.
+        
+        - details (np.array shape (y,x), dtype=str): Details information.
+        
+        - theo_pre (np.array shape (y,x), dtype=str):
+            information of theoretical PRE data.
+        
+        - tag_position (np.array shape (y,x), dtype=str):
+            empty strings were tag not present, and "*" denotes the presence
+            of the paramagnetic tag.
+        
     """
+    
+    def __init__(
+            self,
+            values,
+            labels,
+            letter_code=None,
+            peak_status=None,
+            details=None,
+            theo_pre=None,
+            tag_position=None,
+            subtitles=None,
+            **kwargs):
+        
+        # initializes logger
+        self.logger = Logger.FarseerLogger(__name__).setup_log()
+        self.logger.debug("BarPlotBase initialized")
+        
+        super().__init__(**kwargs)
+        
+        # check input
+        self.values = self._check_values(values)
+        self.labels = self._check_labels(labels)
+        # opt
+        self.letter_code = self._check_letter_code(letter_code)
+        self.peak_status = self._check_parameter(peak_status, "peak_status")
+        self.details = self._check_parameter(details, "details")
+        self.theo_pre = self._check_parameter(theo_pre, "theo_pre")
+        self.tag_position = self._check_parameter(tag_position, "tag position")
+        
+        # cretes subtitles
+        if subtitles:
+            self.subtitles = subtitles
+        else:
+            self.subtitles = [str(i) for i in range(self.values.shape[0])]
+        self.logger.debug("Set subtitles to: {}".format(self.subtitles))
+    
+    
+    def _check_letter_code(self, lc):
+        self.logger.debug("Checking integrity for letter_code:")
+        
+        if self._check_exists(lc):
+            
+            if self._check_instance(collections.Iterator, lc):
+                
+                if self._check_equality(len(lc), self.values.shape[1]):
+                    self.logger.debug("...everything *seems* OKAY")
+                    return lc
+        
+        self.logger.debug("letter_code is not correct. Set to FALSE")
+        return False
+    
+    def _check_parameter(self, param, name):
+        self.logger.debug("Checking integrity for {}:".format(name))
+        
+        if self._check_exists(param):
+            
+            if self._check_instance(np.ndarray, param):
+                
+                if self._check_equality(param.shape, self.values.shape)
+                    self.logger.debug("...everything *seems* OKAY")
+                    return para
+        
+        self.logger.debug("{} is not correct. Set to FALSE".format(name))
+        return False
+        
+    
+    def _check_letter_code(self, letter_code):
+        
+        if not(letter_code):
+            return False
+        
+        elif isinstance(letter_code, collections.Iterable):
+            
+            if len(letter_code) == self.values.shape[1]:
+            
+                mask = np.isin(
+                        np.array(letter_code),
+                        list(aal1tol3.keys()),
+                        assume_unique=True
+                        )
+            
+                if np.all(mask):
+                    self.logger.debug("1-letter code argument: OK")
+                    return letter_code
+        
+                 else:
+                    self.logger.info("Not all 1-letter codes provided refer to valid aminoacids")
+                    self.logger.info("This option is deactivated.")
+                    return False
+        
+            else:
+                self.logger.info("The length of <letter_code> does not match <values>.shape[1]")
+                self.logger.info("This option is deactivated.")
+                return False
+                
+        else:
+            self.logger.info("The 1-letter codes provided is not an iterable")
+            self.logger.info("This option is deactivated.")
+            return False
+        
+        return False
+    
+    def _check_against_values_shape(self, opositor, name):
+        """
+        Checks if <opositor> is instace of np.array
+            and shape equals self.values.shape.
+        """
+        
+        self.logger.debug("Checking integrity for {}".format(name))
+        
+        if not(opositor):
+            self.logger.debug("Set <{}>: None".format(name))
+            return False
+        
+        if isinstance(opositor, np.ndarray):
+            self.logger.debug("<{}> is instance of np.ndarray: OK".format(name))
+            
+            if opositor.shape == self.values.shape:
+                self.logger.debug("{}.shape and values.shape: OK".format(name))
+                self.logger.debug("Set {}: OK".format(name))
+                return opositor
+            
+            else:
+                self.logger.info("<{}>.shape and values.shape: WRONG".format(name))
+                self.logger.info("This option is now deactivated.")
+                return False
+        else:
+            self.logger.info("<{}> is instance of np.ndarray: WRONG".format(name))
+            self.logger.info("This option is now deactivated.")
+            return False
+        
+        self.logger.debug("Couldn't find a relationship.")
+        self.logger.info("This option is now deactivated.")
+        return False
+    
+    def _check_theo_pre(self, theo_pre):
+        pass
+    
+    def _check_tag_position(self, tag_position):
+        pass
+    
+    def _check_shape_integrity(self, arr1, arr2):
+        pass
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    def _check_values(self, values):
+        """
+        Checks if values:
+            - is np.array
+            - has shape (y,x)
+            - can be converted to float
+            - convert nan to zero
+        """
+        
+        return checked_values
+        
+    def _check_labels(self, labels):
+        """
+        Checks if labels:
+            - is np.array
+            - has shape (x,)
+        """
+        
+        return checked_labels
+    
+    def _check_extra(self, extra):
+        """
+        Check the different columns in extra.
+            - is np.array shape (y,x,z)
+            - confirm each column:
+                ["1-letter",
+                "Peak Status",
+                "Details" (opt),
+                "Theoretical PRE" (opt),
+                "tag position" (opt)]
+        """
+        if self._config["mark_prolines_flag"] \
+                or self._config["mark_user_details_flag"]:
+        self._check_1letter(extra[:,0])
+        self._check_peakstatus(extra[:,1])
+        self._check_details(extra[:,2])
+        self._check_teoPRE(extra[:,3])
+        self._check_tag(extra[:,4])
+        
+        return checked_extra
+        
+    def _check_all_input_integrity(self):
+        """
+        Confirms shape integrity of self.values, self.labels and self.extra.
+        """
+        
+        return
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     
     def plot(self):
         """Runs all operations to plot."""

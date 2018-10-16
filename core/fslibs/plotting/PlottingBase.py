@@ -66,47 +66,41 @@ class PlottingBase:
         "ATOM":8
         }
     
-    plotbase_config = {
-        "figure_header":"No header provided",
-        "header_fontsize":5,
-        "figure_path":"my_plot.pdf",
-        "figure_dpi":300,
-        "fig_height": 11.69,
-        "fig_width": 8.69
-        }
-    
-    def __init__(self, data, data_info, config=None, **kwargs):
+    def __init__(self, **kwargs):
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
-        self.logger.debug("ExperimentPlot initiated")
+        self.logger.debug("PlottingBase initiated")
         
-        self.data = data
-        self.data_info = data_info
         self.kwargs = kwargs
-        
-        self.logger.debug("Shape of data matrix: {}".format(self.data.shape))
-        self.logger.debug("Shape of data info: {}".format(self.data_info.shape))
-        #self.logger.debug("Kwargs: {}".format(self.kwargs))
-        
-        if config:
-            self.config = {
-                **self.plotbase_config,
-                **self.default_config,
-                **config
-                }.copy()
-        else:
-            self.config = {
-                **self.plotbase_config,
-                **self.default_config
-                }.copy()
-        
-        self.logger.debug("Configuration dictionary \n{}".format(self.config))
-        
         self.figure = None
         self.axs = None
         self.len_axs = None
         
         #super().__init__()
+    
+    def _check_exists(self, obj):
+        """
+        Return obj if obj exists, False otherwise.
+        name describes the object.
+        Writes to logger.
+        """
+        b = bool(obj):
+        self.logger.debug("{} exists: {}".format(type(obj), b))
+        return b
+    
+    def _check_instance(self, instance_, obj):
+        """
+        Check if obj is instance of instance_.
+        Returns True or False accordingly.
+        """
+        b = isinstance(obj, instance_)
+        self.logger.debug("... is {} instance of {}: {}".format(type(obj), instance_, b))
+        return b
+    
+    def _check_equality(self, eq1, eq2):
+        b = eq1 == eq2
+        self.logger.debug("... {} and {} are equal: {}".format(eq1, eq2, b))
+        return b
     
     def _hex_to_RGB(self, hexx):
         """
@@ -225,7 +219,6 @@ class PlottingBase:
             }
         
         return d
-    
     
     def _linear_gradient(self, start_hex, finish_hex="#FFFFFF", n=10):
         """
