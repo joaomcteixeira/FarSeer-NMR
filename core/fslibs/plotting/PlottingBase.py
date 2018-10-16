@@ -26,44 +26,26 @@ from matplotlib import pyplot as plt
 
 import core.fslibs.Logger as Logger
 
-
 class PlottingBase:
     """
     Plotting base class with methods common to all plots.
     
     Not functional on its own.
-    
-    Parameters:
-        - data (np.array(dtype=int) of shape [z,y,x]): multidimensional array
-            containain the dataset to be plot. Where:
-                X) is the column containing the calculated or observed NMR
-                    parameter to be used as Y axis in plots,
-                Y) are rows containing the X information for each residue
-                Z) is [Y,X] for each experiment.
-            Data can be further treated with data_select() method.
-        
-        - data_info (np.array(dtype=str) of shape [z,y,x]): same as <data>
-            but for columns ResNo, 1-letter, 3-letter, Peak Status, Merit,
-            Fit Method, Vol. Method, Details; in this order.
-        
-        - config (opt, dict): a dictionary containing all the configuration
-            parameters required for this plotting routine. If None provided
-            uses the default configuration. Access the default configuration
-            via the plotbase_config class attribute.
-        
-        - additional kwargs can be passed as **kwargs.
     """
     
-    info_cols={
-        "ResNo":0,
-        "1-letter":1,
-        "3-letter":2,
-        "Peak Status":3,
-        "Merit":4,
-        "Fit Method":5,
-        "Vol. Method":6,
-        "Details":7,
-        "ATOM":8
+    _default_config = {
+        "cols_page": 2,
+        "rows_page": 2,
+        "hspace": 0.5,
+        "wspace": 0.5,
+        
+        "figure_header":"No header provided",
+        "header_fontsize":5,
+        
+        "figure_path":"bar_extended_horizontal.pdf",
+        "figure_dpi":300,
+        "fig_height": 11.69,
+        "fig_width": 8.69
         }
     
     def __init__(self, **kwargs):
@@ -74,9 +56,6 @@ class PlottingBase:
         self.kwargs = kwargs
         self.figure = None
         self.axs = None
-        self.len_axs = None
-        
-        #super().__init__()
     
     def _check_exists(self, obj):
         """
@@ -101,6 +80,16 @@ class PlottingBase:
         b = eq1 == eq2
         self.logger.debug("... {} and {} are equal: {}".format(eq1, eq2, b))
         return b
+    
+    def _check_converter(self, func, var, name):
+        try:
+            tmp = func(var)
+        except ValueError as e:
+            msg = "{} can be converted to {}".format(name, func)
+            wet = WetHandler(msg=msg, msg_title="ERROR", wet_num=0)
+            self.logger.info(wet.wet)
+            wet.abort()
+        return tmp
     
     def _hex_to_RGB(self, hexx):
         """
@@ -271,23 +260,36 @@ class PlottingBase:
         
         return self._color_dict(RGB_list)
     
-    def _config_fig(self):
+    def _calc_real_fig_height(self, rows_page, numrows, fig_hgt):
         """
-        Calculates number of subplot rows per page based on
-        user data and settings.
+        Returns real figure height based on the height per page and
+        total number of subplots rows.
+        
+        Paramers:
+            - rows_page (int): wanted number of rows per page
+            - numrows (int): total number of subplot rows based on
+                number of columns
+            - fig_hgt (float): height of page
         
         Returns:
-            - numrows (int): number of total rows
             - real_fig_height (float, inches): final figure height
         """
+
+        rows_page = self._check_converter(int, rows_page, "rows_page")
+        numrows = self._check_converter(int, numrows, "numrows")
+        fig_hgt = self._check_converter(float, fig_hgt, "fig_hgt")
         
-        numrows = ceil(self.num_subplots/self.config["cols_page"]) + 1 
+        return (fig_hgt/rows_page)*numrows
+    
+    def _calc_num_rows(self, num_subplots, cols_page):
+        """
+        Returns the total number of subplot rows calculated based on
+        the number of subplots and the columns per page.
+        """
+        num_subplots = self._check_converter(int, num_subplots, "num_subplots")
+        cols_page = self._check_converter(int, cols_page, "cols_page")
         
-        real_fig_height = \
-            (self.config["fig_height"] / self.config["rows_page"]) \
-                * numrows
-        
-        return numrows, real_fig_height
+        return ceil(num_subplots/cols_page) + 1 
     
     def draw_figure(self):
         """
@@ -301,34 +303,41 @@ class PlottingBase:
         
         Stores :
             - self.figure: Figure object.
-            - self.axs: axes of the figure (in case matplotlib is used).
-            - self.len_axs (int): the number of subplots created in the
-                figure object.
+            - self.axs: axes of the figure (in case matplotlib is used)
         """
-        self._calcs_numsubplots()
         
-        numrows, real_fig_height = self._config_fig()
+        numrows = self._calc_num_rows(
+            self.num_subplots,
+            self._config["cols_page"]
+            )
+        
+        real_fig_height = self._calc_real_fig_height(
+            self._config["rows_page"], 
+            numrows,
+            self._config["fig_height"]
+            )
         
         # http://stackoverflow.com/questions/17210646/python-subplot-within-a-loop-first-panel-appears-in-wrong-position
         self.figure, self.axs = plt.subplots(
             nrows=numrows,
-            ncols=self.config["cols_page"],
-            figsize=(self.config["fig_width"], real_fig_height)
+            ncols=self._config["cols_page"],
+            figsize=(self._config["fig_width"], real_fig_height)
             )        
         self.axs = self.axs.ravel()
-        self.len_axs = len(self.axs)
+        
         plt.tight_layout(
             rect=[0.01,0.01,0.995,0.995]
             )
         
-        self.logger.debug("Figure drawn correctly")
+        self.logger.debug("Figure drawn: OKAY")
         
         return
     
     def clean_subplots(self):
         """ Removes unsed subplots."""
-        self.logger.debug("Length Axes: {}".format(self.len_axs))
-        for i in range(self.num_subplots, self.len_axs):
+        len_axs = len(self.axs)
+        self.logger.debug("Length Axes: {}".format(len_axs))
+        for i in range(self.num_subplots, len_axs):
             self.axs[i].remove()
     
     def adjust_subplots(self):

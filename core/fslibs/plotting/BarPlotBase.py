@@ -23,8 +23,9 @@ import numpy as np
 from math import ceil
 import collections
 
-from core.utils import aal1tol3, peak_status_dict
 from core.fslibs.plotting.ExperimentPlot import ExperimentPlot
+from core.fslibs.WetHandler import WetHandler
+
 
 class BarPlotBase(ExperimentPlot):
     """
@@ -45,525 +46,86 @@ class BarPlotBase(ExperimentPlot):
             sequentially and synchronized with <values>.
             <labels> axis 0 equals <values> axis 1.
         
-    OPTIONAL PARAMETERS:
-        
-        - subtitles (iterable type of strings): titles of each subplot,
-            length must be equal to values.shape[0].
-        
-        - letter_code (sequence type): 1-letter code of the protein sequence,
-            should have length equal to <labels>.
-        
-        - peak_status (np.array shape (y,x), dtype=str):
-            Peak status information according to core.utils.peak_status
-            dictionary.
-        
-        - details (np.array shape (y,x), dtype=str): Details information.
-        
-        - theo_pre (np.array shape (y,x), dtype=str):
-            information of theoretical PRE data.
-        
-        - tag_position (np.array shape (y,x), dtype=str):
-            empty strings were tag not present, and "*" denotes the presence
-            of the paramagnetic tag.
-        
     """
+    _default_config = {}
     
     def __init__(
             self,
             values,
             labels,
-            letter_code=None,
-            peak_status=None,
-            details=None,
-            theo_pre=None,
-            tag_position=None,
-            subtitles=None,
-            **kwargs):
+            **kwargs
+            ):
         
         # initializes logger
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("BarPlotBase initialized")
         
-        super().__init__(**kwargs)
-        
         # check input
         self.values = self._check_values(values)
         self.labels = self._check_labels(labels)
-        # opt
-        self.letter_code = self._check_letter_code(letter_code)
-        self.peak_status = self._check_parameter(peak_status, "peak_status")
-        self.details = self._check_parameter(details, "details")
-        self.theo_pre = self._check_parameter(theo_pre, "theo_pre")
-        self.tag_position = self._check_parameter(tag_position, "tag position")
         
-        # cretes subtitles
-        if subtitles:
-            self.subtitles = subtitles
-        else:
-            self.subtitles = [str(i) for i in range(self.values.shape[0])]
-        self.logger.debug("Set subtitles to: {}".format(self.subtitles))
-    
-    
-    def _check_letter_code(self, lc):
-        self.logger.debug("Checking integrity for letter_code:")
+        super().__init__(**kwargs)
         
-        if self._check_exists(lc):
-            
-            if self._check_instance(collections.Iterator, lc):
-                
-                if self._check_equality(len(lc), self.values.shape[1]):
-                    self.logger.debug("...everything *seems* OKAY")
-                    return lc
-        
-        self.logger.debug("letter_code is not correct. Set to FALSE")
-        return False
-    
-    def _check_parameter(self, param, name):
-        self.logger.debug("Checking integrity for {}:".format(name))
-        
-        if self._check_exists(param):
-            
-            if self._check_instance(np.ndarray, param):
-                
-                if self._check_equality(param.shape, self.values.shape)
-                    self.logger.debug("...everything *seems* OKAY")
-                    return para
-        
-        self.logger.debug("{} is not correct. Set to FALSE".format(name))
-        return False
-        
-    
-    def _check_letter_code(self, letter_code):
-        
-        if not(letter_code):
-            return False
-        
-        elif isinstance(letter_code, collections.Iterable):
-            
-            if len(letter_code) == self.values.shape[1]:
-            
-                mask = np.isin(
-                        np.array(letter_code),
-                        list(aal1tol3.keys()),
-                        assume_unique=True
-                        )
-            
-                if np.all(mask):
-                    self.logger.debug("1-letter code argument: OK")
-                    return letter_code
-        
-                 else:
-                    self.logger.info("Not all 1-letter codes provided refer to valid aminoacids")
-                    self.logger.info("This option is deactivated.")
-                    return False
-        
-            else:
-                self.logger.info("The length of <letter_code> does not match <values>.shape[1]")
-                self.logger.info("This option is deactivated.")
-                return False
-                
-        else:
-            self.logger.info("The 1-letter codes provided is not an iterable")
-            self.logger.info("This option is deactivated.")
-            return False
-        
-        return False
-    
-    def _check_against_values_shape(self, opositor, name):
-        """
-        Checks if <opositor> is instace of np.array
-            and shape equals self.values.shape.
-        """
-        
-        self.logger.debug("Checking integrity for {}".format(name))
-        
-        if not(opositor):
-            self.logger.debug("Set <{}>: None".format(name))
-            return False
-        
-        if isinstance(opositor, np.ndarray):
-            self.logger.debug("<{}> is instance of np.ndarray: OK".format(name))
-            
-            if opositor.shape == self.values.shape:
-                self.logger.debug("{}.shape and values.shape: OK".format(name))
-                self.logger.debug("Set {}: OK".format(name))
-                return opositor
-            
-            else:
-                self.logger.info("<{}>.shape and values.shape: WRONG".format(name))
-                self.logger.info("This option is now deactivated.")
-                return False
-        else:
-            self.logger.info("<{}> is instance of np.ndarray: WRONG".format(name))
-            self.logger.info("This option is now deactivated.")
-            return False
-        
-        self.logger.debug("Couldn't find a relationship.")
-        self.logger.info("This option is now deactivated.")
-        return False
-    
-    def _check_theo_pre(self, theo_pre):
-        pass
-    
-    def _check_tag_position(self, tag_position):
-        pass
-    
-    def _check_shape_integrity(self, arr1, arr2):
-        pass
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     def _check_values(self, values):
         """
         Checks if values:
             - is np.array
             - has shape (y,x)
             - can be converted to float
-            - convert nan to zero
         """
-        
-        return checked_values
+        if self._check_instance(np.ndarray, values):
+            
+            if len(values.shape) == 2:
+            
+                try:
+                    values.astype(float)
+                except ValueError as e:
+                    msg = "A value in <values> can't be converted to type float"
+                    wet = WetHandler(msg=msg, msg_title="ERROR", wet_num=0)
+                    self.logger.info(wet.wet)
+                    wet.abort()
+                except Exception:
+                    msg = "Something is wrong in the input <values>, can't convert to float"
+                    wet = WetHandler(msg=msg, wet_num=0, msg_title="ERROR")
+                    self.logger.info(wet.wet)
+                    wet.abort()
+                
+                return values
+            
+            else:
+                msg = "Input <values> should be of shape (y,x)"
+                wet = WetHandler(msg=msg, wet_num=0, msg_title="ERROR")
+                self.logger.info(wet.wet)
+                wet.abort()
+        else:
+            msg = "Input <values> are not of type numpy.ndarray"
+            wet = WetHandler(msg=msg, wet_num=0, msg_title="ERROR")
+            self.logger.info(wet.wet)
+            wet.abort()
         
     def _check_labels(self, labels):
         """
         Checks if labels:
             - is np.array
             - has shape (x,)
+            - shape length equals self.values axis=1 length.
         """
-        
-        return checked_labels
-    
-    def _check_extra(self, extra):
-        """
-        Check the different columns in extra.
-            - is np.array shape (y,x,z)
-            - confirm each column:
-                ["1-letter",
-                "Peak Status",
-                "Details" (opt),
-                "Theoretical PRE" (opt),
-                "tag position" (opt)]
-        """
-        if self._config["mark_prolines_flag"] \
-                or self._config["mark_user_details_flag"]:
-        self._check_1letter(extra[:,0])
-        self._check_peakstatus(extra[:,1])
-        self._check_details(extra[:,2])
-        self._check_teoPRE(extra[:,3])
-        self._check_tag(extra[:,4])
-        
-        return checked_extra
-        
-    def _check_all_input_integrity(self):
-        """
-        Confirms shape integrity of self.values, self.labels and self.extra.
-        """
-        
-        return
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-    
-    def plot(self):
-        """Runs all operations to plot."""
-        self.draw_figure() # from PlottingBase
-        self.plot_subplots()
-        self.adjust_subplots()
-        self.clean_subplots()
-        return
-    
-    def plot_subplots(self):
-        """
-        Sends the specific data to each subplot.
-        
-        The way data is sliced from the whole data to plot matrix
-        depends on the nature of the subplots.
-        
-        Returns:
-            - None
-        """
-        
-        for i in range(self.data.shape[0]):
-            
-            self.logger.debug("Starting subplot no: {}".format(i))
-            
-            if isinstance(self.data_extra, np.ndarray):
-                data_extra = self.data_extra[i]
+        if self._check_instance(np.ndarray, labels):
+            if len(labels.shape) == 1:
+                if self._check_equality(labels.shape[0], self.values.shape[1]):
+                    return labels
+                
             else:
-                data_extra = None
-            
-            self.subplot(
-                self.axs[i],
-                self.data[i],
-                self.data_info[i],
-                self.experiment_names[i],
-                data_extra=data_extra
-                )
-        
-        # returns the final index
-        # useful for some subplots
-        return i
-    
-    def _validades_for_PRE_data(self, exp_name):
-        is_valid_for_PRE_plot_calc = \
-            self.kwargs["series_axis"] == 'along_z' \
-                and self.kwargs["para_name"] == exp_name
-        
-        is_valid_for_PRE_plot_comp = \
-            self.kwargs["series_axis"] == 'Cz' \
-                and (self.kwargs["next_dim"] in self.kwargs["paramagnetic_names"] \
-                    or self.kwargs["prev_dim"] in self.kwargs["paramagnetic_names"])
-        
-        is_valid_for_PRE_plot = \
-            is_valid_for_PRE_plot_calc or is_valid_for_PRE_plot_comp
-        
-        self.logger.debug("Is valid PRE: {}".format(is_valid_for_PRE_plot))
-        
-        return is_valid_for_PRE_plot
-    
-    def _plot_pre_info(
-            self,
-            ax,
-            data,
-            data_info,
-            data_extra,
-            exp_name,
-            orientation='h'
-            ):
-        
-        c = self.config
-        col = self.info_cols        
-        
-        self.logger.debug("...Starting Theoretical PRE Plot")
-        
-        self.logger.debug("series_axis: {}".format(self.kwargs["series_axis"]))
-        self.logger.debug("para_name: {}".format(self.kwargs["para_name"]))
-        self.logger.debug("exp name: {}".format(exp_name))
-
-        is_valid = self._validades_for_PRE_data(exp_name)
-        
-        if is_valid:
-            # plot theoretical PRE
-            self.logger.debug("... Starting Theoretical PRE Plot")
-            
-            # finds tag
-            tag_position = self._finds_para_tag(data_extra[:,1])
-            
-            self._plot_theo_pre(
-                ax,
-                range(data.size),
-                data_extra[:,0],
-                plottype=orientation,
-                pre_color=c["theo_pre_color"],
-                pre_lw=c["theo_pre_lw"]
-                )
-            self.logger.debug("Theoretical PRE plotted: OK")
-            
-            self._draw_paramagnetic_tag(
-                ax,
-                tag_position,
-                c["y_lims"][1],
-                plottype=orientation,
-                tag_color=c["tag_cartoon_color"],
-                tag_ls=c["tag_cartoon_ls"],
-                tag_lw=c["tag_cartoon_lw"]
-                )
-            
-            self.logger.debug("Paramagnetic Tag drawn")
-            
+                msg = "Input <labels> should be of shape (x,)"
+                wet = WetHandler(msg=msg, wet_num=0, msg_title="ERROR")
+                self.logger.info(wet.wet)
+                wet.abort()
         else:
-            self.logger.debug("Data is not valid for PRE Plot")
-
-    def _finds_para_tag(self,tag_data):
-        
-        self.logger.debug("data extra {}".format(tag_data))
-        where_tag = np.where(tag_data=="*")
-        self.logger.debug("where position: {}".format(where_tag))
-        tag_position = list(range(tag_data.size))[where_tag[0][0]]
-        self.logger.debug("tag position: {}".format(tag_position))
-        
-        return tag_position
-    
-    def _set_tick_labels_extended_bar(self, data_info, xtick_spacing, col):
-        """
-        Sets xtick labels for extended bar plots by combining
-        ResNo and 1-letter information.
-        """
-        
-        self.logger.debug("data ResNo: {}".format(data_info[0::xtick_spacing,col['ResNo']]))
-        self.logger.debug("data 1-letter: {}".format(data_info[0::xtick_spacing,col['1-letter']]))
-        
-        tmp = np.core.defchararray.add(
-            np.copy(data_info[0::xtick_spacing,col['ResNo']]).astype(str),
-            np.copy(data_info[0::xtick_spacing,col['1-letter']]).astype(str)
-            )
-        return tmp
-    
-    def _draw_paramagnetic_tag(
-            self,
-            ax,
-            tag_position,
-            y_lim,
-            plottype='h',
-            tag_color='red',
-            tag_ls='-',
-            tag_lw=0.1
-            ):
-        """
-        Draws paramagnetic tag tick on functionalized residue.
-        
-        Parameters:
-            axs (matplotlib subplot axis): where values are plot.
-            
-            tag_position (int): the residue number where the paramagnetic
-                tag is placed.
-            
-            y_lim (float): plot's y axis limit
-            
-            plottype (str): {'h', 'v', 'hm'}, whether plot of type 
-                horizontal, vertical or Heat Map. Defaults: 'h'.
-            
-            tag_color (str): the colour of the tag cartoon
-            
-            tag_ls (str): matplotlib linestyle kwarg for the tag tick
-            
-            tag_lw (float): tag tick line width.
-        """
-        
-        y_lim = y_lim*0.1
-        
-        if plottype in ['h', 'DPRE_plot']:
-            ax.vlines(
-                tag_position,
-                0,
-                y_lim,
-                colors=tag_color,
-                linestyle=tag_ls,
-                linewidth=tag_lw,
-                zorder=10
-                )
-            ax.plot(
-                tag_position,
-                y_lim,
-                'o',
-                zorder=10,
-                color='red',
-                markersize=2
-                )
-        
-        elif plottype == 'v':
-            ax.hlines(
-                tag_position,
-                0,
-                y_lim,
-                colors=tag_color,
-                linestyle=tag_ls,
-                linewidth=tag_lw,
-                zorder=10
-                )
-            ax.plot(
-                y_lim,
-                tag_position,
-                'o',
-                zorder=10,
-                color='red',
-                markersize=2
-                )
-        
-        elif plottype == 'heatmap':
-            
-            tag_line = 2
-            
-            ax.vlines(
-                tag_position,
-                0,
-                tag_line,
-                colors=tag_color,
-                linestyle=tag_ls,
-                linewidth=tag_lw,
-                zorder=10
-                )
-        return
-    
-    def _plot_theo_pre(
-            self,
-            ax,
-            values_x,
-            values_y,
-            plottype='h',
-            pre_color='lightblue',
-            pre_lw=1
-            ):
-        """
-        Plots theoretical PRE.
-        
-        Parameters:
-            axs (matplotlib subplot axis): where values are plot.
-            
-            values_x (np.ndarray): X values to plot
-            
-            values_y (np.adrray): Y values to plot
-            
-            plottype (str): {'h', 'v'}, whether plot of type 
-                horizontal, vertical or Heat Map. Defaults: 'h'.
-            
-            pre_color (str): the colour of plot line
-            
-            pre_lw (int): line width
-            
-        """
-        
-        if plottype == 'v':
-            ax.plot(
-                values_y,
-                values_x,
-                zorder=9,
-                color=pre_color,
-                lw=pre_lw
-                )
-        
-        elif plottype == 'h':
-            ax.plot(
-                values_x,
-                values_y,
-                zorder=9,
-                color=pre_color,
-                lw=pre_lw
-                )
-        
-        return
+            msg = "Input <labels> are not of type numpy.ndarray"
+            wet = WetHandler(msg=msg, wet_num=0, msg_title="ERROR")
+            self.logger.info(wet.wet)
+            wet.abort()
     
     def _plot_threshold(
             self,
@@ -641,105 +203,40 @@ class BarPlotBase(ExperimentPlot):
         
         return
     
-    def _set_item_colors(self, items, values, d):
-        """
-        Colour codes conditions.
-        
-        Parameters:
-            items (items obj): either plot bars, ticks, etc...
-        
-            values (np.array shape [x]):
-                containing the 'Peak Status' information.
-        
-            d (dict): keys are conditions, and values are colours.
-        
-        Returns:
-            None, series are changed in place.
-        """
-        
-        self.logger.debug("Setting colours: {}".format(values))
-        for v, it in zip(values, items):
-            if str(v) in d.keys():
-                it.set_color(d[str(v)])
-            
-            else:
-                continue
+    def plot(self):
+        """Runs all operations to plot."""
+        self.draw_figure() # from PlottingBase
+        self.plot_subplots() # from self
+        self.adjust_subplots() # from PlottingBase
+        self.clean_subplots() # from PlottingBase
         return
     
-    def _text_marker(
-            self,
-            ax,
-            values_x,
-            values_y,
-            series,
-            d,
-            fs=3,
-            orientation='horizontal'):
+    def plot_subplots(self):
         """
-        Places a text mark over the bars of a Bar Plot.
+        Sends the specific data to each subplot.
+        Requires self.figure and self.axs
         
-        Parameters:
-            ax (matplotlib subplot axis): where maker is written.
-            
-            values_x (np.array): series with X axis information
-            
-            values_y (np.array): series with Y axis information
-            
-            series (np.array): series with information source.
-            
-            d (dict): translates information into marker.
-            
-            fs (int): font size
-            
-            orientation (str): {'horizontal', 'vertical'}
-                wheter plotting in a vertical or horizontal barplot.
+        Returns:
+            - None
         """
-        self.logger.debug("Text marker series: {}".format(series))
+        self.logger.debug("Starting plot activity")
         
-        if orientation == 'vertical':
+        if not(self.figure) and not(self.axs):
+            self.logger.info("figure and axs are not yet created. None is returned")
+            return None
+        
+        for i in range(self.values.shape[0]):
             
-            for s, x, y in zip(series, values_x, values_y):
-                if str(s) in d.keys():
-                    
-                    if np.nan_to_num(y) > 0:
-                        ha='left'
-                        
-                    elif np.nan_to_num(y) < 0:
-                        ha='right'
-                    
-                    else:
-                        ha='center'
-                    
-                    ax.text(
-                        np.nan_to_num(y),
-                        np.nan_to_num(x),
-                        d[str(s)],
-                        ha=ha,
-                        va='center',
-                        fontsize=fs
-                        )
-        
-        elif orientation == 'horizontal':
+            self.logger.debug("Starting subplot no: {}".format(i))
             
-            for s, x, y in zip(series, values_x, values_y):
-                if str(s) in d.keys():
-                    
-                    if np.nan_to_num(y) > 0:
-                        va='bottom'
-                        
-                    elif np.nan_to_num(y) < 0:
-                        va='top'
-                    
-                    else:
-                        va='bottom'
-                    
-                    ax.text(
-                        np.nan_to_num(x),
-                        np.nan_to_num(y),
-                        d[str(s)],
-                        ha='center',
-                        va=va,
-                        fontsize=fs
-                        )
+            self.subplot(
+                self.axs[i],
+                self.values[i],
+                self.subtitles[i],
+                i
+                )
         
-        return
+        # returns the final index
+        # useful for some subplots
+        return i
+    
