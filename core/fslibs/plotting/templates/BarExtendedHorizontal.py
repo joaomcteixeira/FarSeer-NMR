@@ -28,49 +28,50 @@ from core.fslibs.plotting.ExperimentPlot import ExperimentPlot
 from core.fslibs.plotting.BarPlotBase import BarPlotBase
 from core.fslibs.WetHandler import WetHandler as fsw
 
-class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
+class BarExtendedHorizontal(BarPlotBase):
     """
-    Horizontal Extended Bar plotting template.
+    Plots the Horizontal Bar Plot template.
+    
+    Subplots have the width of the figure and one subplot is plotted for
+    each experiment. Each value in <values> is represented by a bar and
+    each bar is labeled according to <labels>.
     
     Parameters:
-        - data (np.array(dtype=int) of shape [z,y,x]): multidimensional array
-            containain the dataset to be plot. Where:
-                X) length=1. Is the column containing the calculated or observed NMR
-                    parameter to be used as Y axis in plots,
-                Y) are rows containing the X information for each residue
-                Z) is [Y,X] for each experiment.
-            Data can be further treated with data_select() method.
-        
-        - data_info (np.array(dtype=str) of shape [z,y,x]): same as <data>
-            but for columns ResNo, 1-letter, 3-letter, Peak Status, Merit,
-            Fit Method, Vol. Method, Details; in this order.
-        
-        - config (opt, dict): a dictionary containing all the configuration
-            parameters required for this plotting routine. If None provided
-            uses the default configuraton. Access the default configuration
-            via the default_config class attribute.
-        
-        - data_extra (opt, np.ndarray of shape [z,y,x]): extra ndarray to help
-            on plotting the data passed as <data>.
-                In the case of plotting theoretical PRE data, data_extra
-                columns should be [Theo PRE, tag position].
-        
-        - partype (opt {'ppm', 'ratio'}, defaults None): 
-            indicates the type of data that is being plotted, so that
-            special option can be activated.
-        
-        - exp_names (opt, sequence type): list of the experiment names.
-        
-        - additional kwargs can be passed as **kwargs.
     
+        - values (np.array shape (y,x), dtype=float): where X (axis=1)
+            is the data to plot for each column and Y (axis=0) is the evolution
+            of that data along the titration series.
+            
+        - labels (np.array shape (x,), dtype=str): Bar labels presented
+            sequentially and synchronized with <values>.
+            <labels> axis 0 equals <values> axis 1.
+        
+        - data_extra (np.array of shape (y,x,z)): contains additional
+            information that can be used to improve data representation.
+            Where X (axis=1) and Y (axis=0) have the same meaning as for
+            <values> and <labels>. Z (axis 2) represent information-rich
+            columns and data should be provided according to the order:
+                ["1-letter",
+                "Peak Status",
+                "Details" (opt),
+                "Theoretical PRE" (opt),
+                "tag position" (opt)]
+        
+        - config (opt, dict): a config dictionary that updates the
+            default config values. Default values will be used for keys
+            not provided. Access the default values by .get_defaults()
+        
+        - subtitles (list of strings): titles of each subplot, length must
+            be equal to values.shape[0].
     """
     
-    default_config = {
+    _default_config = {
         "cols_page": 1,
         "rows_page": 6,
         
         "y_lims":(0,0.3),
-        "ylabel":"CSPs",
+        "x_label":"Residues",
+        "y_label":"your labels goes here",
         
         "subtitle_fn": "Arial",
         "subtitle_fs": 8,
@@ -102,6 +103,7 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
         "y_ticks_pad": 1,
         "y_ticks_weight": "normal",
         "y_ticks_len": 2,
+        "y_ticks_nbins":8,
         
         "y_grid_flag": True,
         "y_grid_color": "lightgrey",
@@ -109,8 +111,10 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
         "y_grid_linewidth": 0.2,
         "y_grid_alpha": 0.8,
         
+        "plot_theoretical_pre":False,
         "theo_pre_color": "red",
         "theo_pre_lw": 1.0,
+        "tag_id":"*",
         
         "tag_cartoon_color": "black",
         "tag_cartoon_lw": 1.0,
@@ -131,45 +135,83 @@ class BarExtendedHorizontal(ExperimentPlot, BarPlotBase):
         "threshold_zorder":10,
         
         "mark_fontsize": 4,
-        "mark_prolines_flag": True,
+        "mark_prolines_flag": False,
         "mark_prolines_symbol": "P",
-        "mark_user_details_flag": True,
-        "color_user_details_flag": True,
+        "mark_user_details_flag": False,
+        "color_user_details_flag": False,
         "user_marks_dict": {
             "foo": "f",
-            "mal": "m",
-            "bem": "b"
+            "bar": "b",
+            "boo": "o"
         },
         "user_bar_colors_dict": {
             "foo": "green",
-            "mal": "yellow",
-            "bem": "magenta"
+            "bar": "yellow",
+            "boo": "magenta"
         },
-
+        
         "hspace": 0.5,
-        "wspace": 0.5
+        "wspace": 0.5,
+        
+        "figure_header":"No header provided",
+        "header_fontsize":5,
+        
+        "figure_path":"bar_extended_horizontal.pdf",
+        "figure_dpi":300,
+        "fig_height": 11.69,
+        "fig_width": 8.69
     }
     
-    def __init__(self,
-            data,
-            data_info,
+    def __init__(
+            self,
+            values,
+            labels,
+            data_extra,
             config=None,
-            data_extra=None,
-            partype="",
-            exp_names="",
+            subtitles="",
             **kwargs
             ):
+        
         super().__init__(
-            data,
-            data_info,
-            config=config,
-            partype=partype,
-            exp_names=exp_names,
+            values,
+            labels,
+            data_extra,
+            subtitles=subtitles,
             **kwargs
             )
         
+        # initializes logger
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("BarExtendedHorizontal initiated")
+        
+        # sets configuration
+        self.logger.debug("Config received: {}".format(config))
+        self._config = self._default_config.update(config).copy()
+        self.logger.debug("Set config: OK")
+        
+        # checks data_extra
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
         
         self.data_extra = data_extra
     
