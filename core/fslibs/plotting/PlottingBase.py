@@ -23,6 +23,7 @@ along with Farseer-NMR. If not, see <http://www.gnu.org/licenses/>.
 
 from math import ceil
 from matplotlib import pyplot as plt
+import numpy as np
 
 import core.fslibs.Logger as Logger
 
@@ -48,7 +49,7 @@ class PlottingBase:
         "fig_width": 8.69
         }
     
-    def __init__(self, **kwargs):
+    def __init__(self, config={}, **kwargs):
         
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("PlottingBase initiated")
@@ -56,6 +57,9 @@ class PlottingBase:
         self.kwargs = kwargs
         self.figure = None
         self.axs = None
+        self._config = PlottingBase._default_config.copy()
+        self._config.update(config)
+        self.logger.debug("Configured configure: {}".format(self._config))
     
     def _check_exists(self, obj):
         """
@@ -63,7 +67,7 @@ class PlottingBase:
         name describes the object.
         Writes to logger.
         """
-        b = bool(obj):
+        b = obj is not None
         self.logger.debug("{} exists: {}".format(type(obj), b))
         return b
     
@@ -335,34 +339,44 @@ class PlottingBase:
     
     def clean_subplots(self):
         """ Removes unsed subplots."""
+        if not self.figure:
+            self.logger.info("Figure not yet created")
+            return None
+        
         len_axs = len(self.axs)
         self.logger.debug("Length Axes: {}".format(len_axs))
         for i in range(self.num_subplots, len_axs):
             self.axs[i].remove()
     
     def adjust_subplots(self):
+        if not self.figure:
+            self.logger.info("Figure not yet created")
+            return None
+        
         self.figure.subplots_adjust(
-            hspace=self.config["hspace"],
-            wspace=self.config["wspace"]
+            hspace=self._config["hspace"],
+            wspace=self._config["wspace"]
             )
     
     def save_figure(self, path=''):
         """Saves figure to path"""
+        if not self.figure:
+            self.logger.info("Figure not yet created")
+            return None
         
-        path = path or self.config["figure_path"]
+        path = path or self._config["figure_path"]
         
         self.figure.text(
             0.01,
             0.01,
-            self.config["figure_header"],
-            fontsize=self.config["header_fontsize"]
+            self._config["figure_header"],
+            fontsize=self._config["header_fontsize"]
             )
         
         self.figure.savefig(
             path,
-            dpi=self.config["figure_dpi"]
+            dpi=self._config["figure_dpi"]
             )
-        
         
         self.logger.info("**Saved plot figure** {}".format(path))
         

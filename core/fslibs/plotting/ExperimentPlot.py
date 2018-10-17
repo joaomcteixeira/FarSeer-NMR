@@ -19,6 +19,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Farseer-NMR. If not, see <http://www.gnu.org/licenses/>.
 """
+import collections
+import numpy as np
+from matplotlib import pyplot as plt
 
 import core.fslibs.Logger as Logger
 from core.fslibs.plotting.PlottingBase import PlottingBase
@@ -61,6 +64,7 @@ class ExperimentPlot(PlottingBase):
     
     def __init__(
             self,
+            config={},
             letter_code=None,
             peak_status=None,
             details=None,
@@ -70,11 +74,13 @@ class ExperimentPlot(PlottingBase):
             **kwargs
             ):
         
-        super().__init__(**kwargs)
-        
         # initializes logger
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("ExperimentPlot initialized")
+        # sets config
+        self._config = ExperimentPlot._default_config.copy()
+        self._config.update(config)
+        self.logger.debug("Configured configure: {}".format(self._config))
         
         # check optional params
         self.letter_code = self._check_letter_code(letter_code)
@@ -92,6 +98,8 @@ class ExperimentPlot(PlottingBase):
         # initiates other attributes
         self._calc_num_subplots()
         
+        super().__init__(config=self._config.copy(), **kwargs)
+        
         return
     
     def _check_letter_code(self, lc):
@@ -99,14 +107,15 @@ class ExperimentPlot(PlottingBase):
         
         if self._check_exists(lc):
             
-            if self._check_instance(collections.Iterator, lc):
+            if self._check_instance(collections.Iterator, lc) \
+                    or self._check_instance(np.ndarray, lc):
                 
                 if self._check_equality(len(lc), self.values.shape[1]):
                     self.logger.debug("...everything *seems* OKAY")
                     return lc
         
-        self.logger.debug("letter_code is not correct. Set to FALSE")
-        return False
+        self.logger.debug("letter_code is not present or not correct. Set to FALSE")
+        return None
     
     def _check_parameter(self, param, name):
         self.logger.debug("Checking integrity for <{}>:".format(name))
@@ -115,12 +124,12 @@ class ExperimentPlot(PlottingBase):
             
             if self._check_instance(np.ndarray, param):
                 
-                if self._check_equality(param.shape, self.values.shape)
+                if self._check_equality(param.shape, self.values.shape):
                     self.logger.debug("...everything *seems* OKAY")
                     return param
         
-        self.logger.debug("{} is not correct. Set to FALSE".format(name))
-        return False
+        self.logger.debug("{} is not present or not correct. Set to FALSE".format(name))
+        return None
     
     def _calc_num_subplots(self):
         """

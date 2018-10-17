@@ -21,10 +21,11 @@ along with Farseer-NMR. If not, see <http://www.gnu.org/licenses/>.
 """
 import numpy as np
 from math import ceil
-import collections
+from matplotlib import pyplot as plt
 
 from core.fslibs.plotting.ExperimentPlot import ExperimentPlot
 from core.fslibs.WetHandler import WetHandler
+import core.fslibs.Logger as Logger
 
 
 class BarPlotBase(ExperimentPlot):
@@ -53,6 +54,7 @@ class BarPlotBase(ExperimentPlot):
             self,
             values,
             labels,
+            config={},
             **kwargs
             ):
         
@@ -60,11 +62,16 @@ class BarPlotBase(ExperimentPlot):
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("BarPlotBase initialized")
         
+        
+        self._config = BarPlotBase._default_config.copy()
+        self._config.update(config)
+        self.logger.debug("Configured configure: {}".format(self._config))
+        
         # check input
         self.values = self._check_values(values)
         self.labels = self._check_labels(labels)
         
-        super().__init__(**kwargs)
+        super().__init__(config=self._config.copy(), **kwargs)
         
 
     def _check_values(self, values):
@@ -209,6 +216,8 @@ class BarPlotBase(ExperimentPlot):
         self.plot_subplots() # from self
         self.adjust_subplots() # from PlottingBase
         self.clean_subplots() # from PlottingBase
+        self.save_figure() # from PlottingBase
+        plt.close(self.figure)
         return
     
     def plot_subplots(self):

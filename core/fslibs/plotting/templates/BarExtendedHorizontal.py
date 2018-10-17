@@ -137,7 +137,7 @@ class BarExtendedHorizontal(BarPlotBase):
             self,
             values,
             labels,
-            config=None,
+            config={},
             **kwargs
             ):
         
@@ -145,25 +145,18 @@ class BarExtendedHorizontal(BarPlotBase):
         self.logger = Logger.FarseerLogger(__name__).setup_log()
         self.logger.debug("BarExtendedHorizontal initiated")
         
+        # sets configuration
+        self.logger.debug("Config received: {}".format(config))
+        self._config = BarExtendedHorizontal._default_config.copy()
+        self._config.update(config)
+        self.logger.debug("Configured configure: {}".format(self._config))
+        
         super().__init__(
             values,
             labels,
+            config=self._config.copy(),
             **kwargs
             )
-        
-        # sets configuration
-        self.logger.debug("Config received: {}".format(config))
-        self_config = {
-            **PlottingBase._default_config,
-            **ExperimentPlot._default_config,
-            **BarPlotBase._default_config,
-            **BarExtendedHorizontal._default_config,
-            **config
-            }.copy()
-        
-        self.logger.debug("Set config: OK")
-        
-        
     
     def subplot(self, ax, values, subtitle, i):
         """Configures subplot."""
@@ -172,10 +165,10 @@ class BarExtendedHorizontal(BarPlotBase):
         # configures vars
         c = self._config
         ydata = np.nan_to_num(values).astype(float)
-        logger.debug("ydata: {}".format(ydata))
+        self.logger.debug("ydata: {}".format(ydata))
         num_of_bars = ydata.shape[0]
-        logger.debug("Number of bars to represented: {}".format(num_of_bars))
-        logger.debug("Subtitle: {}".format(subtitle))
+        self.logger.debug("Number of bars to represented: {}".format(num_of_bars))
+        self.logger.debug("Subtitle: {}".format(subtitle))
         
         ###################
         # Plots bars
@@ -186,11 +179,12 @@ class BarExtendedHorizontal(BarPlotBase):
             align='center',
             alpha=c["bar_alpha"],
             linewidth=c["bar_linewidth"],
+            color='black',
             zorder=4
             )
         
-        logger.debug("Number of bars plotted: {}".format(len(bars)))
-        logger.debug("Number of expected bars equals num of bars: {}".format(num_of_bars == len(bars)))
+        self.logger.debug("Number of bars plotted: {}".format(len(bars)))
+        self.logger.debug("Number of expected bars equals num of bars: {}".format(num_of_bars == len(bars)))
         
         ###################
         # Set subplot title
@@ -202,30 +196,30 @@ class BarExtendedHorizontal(BarPlotBase):
             weight=c["subtitle_weight"]
             )
         
-        logger.debug("Subplot title set to : {}".format(subtitle))
+        self.logger.debug("Subplot title set to : {}".format(subtitle))
         
         ###################
         # Configures spines
         ax.spines['bottom'].set_zorder(10)
         ax.spines['top'].set_zorder(10)
-        logger.debug("Spines set: OK")
+        self.logger.debug("Spines set: OK")
         
         ###################
         # Configures X ticks and axis
         
         # Define tick spacing
-        for i in range(100,10000,100):
-            if i>num_of_bars:
-                mod_ = i//100
+        for j in range(101,10000,100):
+            if j>num_of_bars:
+                mod_ = j//100
                 break
-        logger.debug("Tick spacing set to: {}".format(mod_))
+        self.logger.debug("Tick spacing set to: {}".format(mod_))
         
         # get xticks and xticks_labels to be represented
-        xticks = ydata[0::mod_]
-        xticks_labels = labels[0::mod_]
+        xticks = np.arange(len(bars))[0::mod_]
+        xticks_labels = np.array(self.labels)[0::mod_]
         
-        logger.debug("xticks represented: {}".format(xticks))
-        logger.debug("xticks labels represented: {}".format(xtick_labels))
+        self.logger.debug("xticks represented: {}".format(xticks))
+        self.logger.debug("xticks labels represented: {}".format(xticks_labels))
         
         # Set X ticks
         ax.set_xticks(xticks)
@@ -247,7 +241,7 @@ class BarExtendedHorizontal(BarPlotBase):
             length=c["x_ticks_len"],
             direction='out'
             )
-        logger.debug("Configured X tick params: OK")
+        self.logger.debug("Configured X tick params: OK")
         
         # Set X axis label
         ax.set_xlabel(
@@ -258,7 +252,7 @@ class BarExtendedHorizontal(BarPlotBase):
             weight=c["x_label_weight"],
             rotation=c["x_label_rotation"]
             )
-        logger.debug("Set X label: OK")
+        self.logger.debug("Set X label: OK")
         
         ###################
         # Configures Y ticks and axis
@@ -267,7 +261,7 @@ class BarExtendedHorizontal(BarPlotBase):
         ymin = c["y_lims"][0]
         ymax = c["y_lims"][1]
         ax.set_ylim(ymin, ymax)
-        logger.debug("Set y max {} and ymin {}".format(ymin, ymax))
+        self.logger.debug("Set y max {} and ymin {}".format(ymin, ymax))
         
         # sets number of y ticks
         ax.locator_params(axis='y', tight=True, nbins=c["y_ticks_nbins"])
@@ -280,7 +274,7 @@ class BarExtendedHorizontal(BarPlotBase):
             fontweight=c["y_ticks_weight"],
             rotation=c["y_ticks_rot"]
             )
-        logger.debug("Set Y tick labels: OK")
+        self.logger.debug("Set Y tick labels: OK")
         
         # sets y ticks params
         ax.tick_params(
@@ -289,7 +283,7 @@ class BarExtendedHorizontal(BarPlotBase):
             length=c["y_ticks_len"],
             direction='out'
             )
-        logger.debug("Configured Y tick params: OK")
+        self.logger.debug("Configured Y tick params: OK")
         
         # set Y label
         ax.set_ylabel(
@@ -300,15 +294,15 @@ class BarExtendedHorizontal(BarPlotBase):
             weight=c["y_label_weight"],
             rotation=c["y_label_rot"]
             )
-        logger.debug("Set Y label: OK")
+        self.logger.debug("Set Y label: OK")
         
         ###################
         # Additional configurations
         ax.margins(x=0.01, tight=True)
         
         # defines bars colors
-        if self.peak_status:
-            self.set_item_colors(
+        if self.peak_status is not None:
+            self._set_item_colors(
                 bars,
                 self.peak_status[i],
                 {
@@ -317,7 +311,7 @@ class BarExtendedHorizontal(BarPlotBase):
                     'unassigned': c["unassigned_color"]
                     }
                 )
-            logger.debug("set_item_colors: OK")
+            self.logger.debug("set_item_colors: OK")
         
         ###################
         # Additional representation features
@@ -331,12 +325,12 @@ class BarExtendedHorizontal(BarPlotBase):
                 alpha=c["y_grid_alpha"],
                 zorder=0
                 )
-            logger.debug("Configured grid: OK")
+            self.logger.debug("Configured grid: OK")
         
         # defines xticks colors
-        if self.peak_status and c["x_ticks_color_flag"]:
+        if self.peak_status is not None and c["x_ticks_color_flag"]:
             logger.debug("Configuring for x_ticks_color_flag...")
-            self.set_item_colors(
+            self._set_item_colors(
                 ax.get_xticklabels(),
                 self.peak_status[i,0::mod_],
                 {
@@ -345,12 +339,12 @@ class BarExtendedHorizontal(BarPlotBase):
                     'unassigned':c["unassigned_color"]
                     }
                 )
-            logger.debug("...Done")
+            self.logger.debug("...Done")
         
         # Adds red line to identify significant changes.
         if c["threshold_flag"]:
-            logger.debug("... Starting threshold draw")
-            self.plot_threshold(
+            self.logger.debug("... Starting threshold draw")
+            self._plot_threshold(
                 ax,
                 ydata,
                 c["threshold_color"],
@@ -358,11 +352,11 @@ class BarExtendedHorizontal(BarPlotBase):
                 c["threshold_alpha"],
                 zorder=c["threshold_zorder"]
                 )
-            logger.debug("Threshold: OK")
+            self.logger.debug("Threshold: OK")
         
-        if self.letter_code and c["mark_prolines_flag"]:
-            logger.debug("... Starting Prolines Mark")
-            self.text_marker(
+        if self.letter_code is not None and c["mark_prolines_flag"]:
+            self.logger.debug("... Starting Prolines Mark")
+            self._text_marker(
                 ax,
                 range(num_of_bars),
                 ydata,
@@ -370,32 +364,35 @@ class BarExtendedHorizontal(BarPlotBase):
                 {'P':c["mark_prolines_symbol"]},
                 fs=c["mark_fontsize"]
                 )
-            logger.debug("Prolines Marked: OK")
+            self.logger.debug("Prolines Marked: OK")
         
-        if self.details and c["mark_user_details_flag"]:
-            logger.debug("... Starting User Details Mark")
-            self.text_marker(
+        if self.details is not None and c["mark_user_details_flag"]:
+            self.logger.debug("... Starting User Details Mark")
+            print(i)
+            self._text_marker(
                 ax,
                 range(num_of_bars),
-                data,
+                ydata,
                 self.details[i],
                 c["user_marks_dict"],
                 fs=c["mark_fontsize"]
                 )
-            logger.debug("User marks: OK")
+            self.logger.debug("User marks: OK")
         
-        if self.details and c["color_user_details_flag"]:
-            logger.debug("... Starting User Colors Mark")
-            self.set_item_colors(
+        if self.details is not None and c["color_user_details_flag"]:
+            self.logger.debug("... Starting User Colors Mark")
+            self._set_item_colors(
                 bars,
                 self.details[i],
                 c["user_bar_colors_dict"]
                 )
-            logger.debug("Color user details: OK")
+            self.logger.debug("Color user details: OK")
                
-        if self.theo_pre and self.tag_position and c["plot_theoretical_pre"]:
+        if self.theo_pre is not None \
+                and self.tag_position is not None \
+                and c["plot_theoretical_pre"]:
             
-            self.plot_theo_pre(
+            self._plot_theo_pre(
                 ax,
                 range(num_of_bars),
                 self.theo_pre[i],
@@ -411,7 +408,7 @@ class BarExtendedHorizontal(BarPlotBase):
                 )
             
             if tag_found:
-                self.draw_paramagnetic_tag(
+                self._draw_paramagnetic_tag(
                     ax,
                     tag_found,
                     y_max,
@@ -424,148 +421,208 @@ class BarExtendedHorizontal(BarPlotBase):
         return
 
 if __name__ == "__main__":
-    import os
-    
-    file_name = os.path.realpath(__file__)
     
     ######################################################################## 1
+    ############ Short data set
     
-    print("### testing {}".format(file_name))
+    values = np.full((7,15), 0.2)
+    labels = np.arange(1, len(values[0])+1).astype(str)
     
-    dataset_path = os.path.join(
-        os.path.dirname(file_name),
-        'testing',
-        'csps'
-        )
-        
-    print("testing dataset: {}".format(dataset_path))
-    
-    a = []
-    for f in sorted(os.listdir(dataset_path)):
-        print("reading: {}".format(f))
-        a.append(
-            np.genfromtxt(
-                os.path.join(dataset_path, f),
-                delimiter=',',
-                skip_header=1,
-                dtype=str,
-                missing_values='NaN'
-                )
-            )
-    
-    full_data_set = np.stack(a, axis=0)
-    print("dataset shape: {}".format(full_data_set.shape))
-    
-    plot = BarExtendedHorizontal(
-        full_data_set[:,:,21].astype(float),
-        full_data_set[:,:,[0,1,2,3,4,11,12,15]],
-        partype='ppm',
-        exp_names=["0","25","50","100","200","400","500"]
-        )
-    
-    plot.plot()
-    plot.save_figure("csps.pdf")
-    
-    ################################## 1.2
-    
-    plot = BarExtendedHorizontal(
-        full_data_set[:,:,19].astype(float),
-        full_data_set[:,:,[0,1,2,3,4,11,12,15]],
-        partype='ppm',
-        exp_names=["0","25","50","100","200","400","500"],
-        PRE_loaded=False
-        )
-    
-    plot.config["y_lims"] = (-0.3,0.3)
-    plot.plot()
-    plot.save_figure("1H_delta.pdf")
+    c = {"figure_path": "bar_extended_1_short.pdf"}
+    plot1 = BarExtendedHorizontal(values, labels, config=c)
+    plot1.plot()
     
     ######################################################################## 2
+    ############ Large data set
     
-    dataset_path = os.path.join(
-        os.path.dirname(file_name),
-        'testing',
-        'dpre'
-        )
+    values = np.full((2,765), 0.2)
+    labels = np.arange(1, len(values[0])+1).astype(str)
+    
+    c = {"figure_path": "bar_extended_2_large.pdf"}
+    plot1 = BarExtendedHorizontal(values, labels, config=c)
+    plot1.plot()
+    
+    ######################################################################## 2
+    ############ Mark details
+    
+    values = np.random.random((3,100)) - 0.5
+    labels = np.arange(1, len(values[0])+1).astype(str)
+    aa = ['P','A']
+    letter = np.random.choice(aa, values.shape[1], p=[0.1,0.9])
+    mask = np.where(letter=='P')
+    values[:,mask] = np.nan
+    
+    dd = ['None','foo','bar','boo']
+    details = np.random.choice(dd, values.shape[1])
+    details = np.stack([details, details, details], axis=0)
+    print(details.shape == values.shape)
+    details[:, mask] = "None"
+    
+    c = {
+        "y_lims":(-1,1),
+        "figure_path": "bar_extended_3_mark.pdf",
+        "mark_prolines_flag": True,
+        "mark_user_details_flag": True,
+        "color_user_details_flag": True,
+        "user_marks_dict": {
+            "foo": "f",
+            "bar": "b",
+            "boo": "o"
+        },
+        "user_bar_colors_dict": {
+            "foo": "green",
+            "bar": "yellow",
+            "boo": "magenta"
+        },
+            }
+    
+    plot1 = BarExtendedHorizontal(
+        values, labels, config=c, letter_code=letter, details=details)
+    plot1.plot()
+    
+    
+    # import os
+    
+    # file_name = os.path.realpath(__file__)
+    
+    # ######################################################################## 1
+    
+    # print("### testing {}".format(file_name))
+    
+    # dataset_path = os.path.join(
+        # os.path.dirname(file_name),
+        # 'testing',
+        # 'csps'
+        # )
         
-    print("testing dataset: {}".format(dataset_path))
+    # print("testing dataset: {}".format(dataset_path))
     
-    a = []
-    for f in sorted(os.listdir(dataset_path)):
-        print("reading: {}".format(f))
-        a.append(
-            np.genfromtxt(
-                os.path.join(dataset_path, f),
-                delimiter=',',
-                skip_header=1,
-                dtype=str,
-                missing_values='NaN'
-                )
-            )
+    # a = []
+    # for f in sorted(os.listdir(dataset_path)):
+        # print("reading: {}".format(f))
+        # a.append(
+            # np.genfromtxt(
+                # os.path.join(dataset_path, f),
+                # delimiter=',',
+                # skip_header=1,
+                # dtype=str,
+                # missing_values='NaN'
+                # )
+            # )
     
-    full_data_set = np.stack(a, axis=0)
-    print("dataset shape: {}".format(full_data_set.shape))
+    # full_data_set = np.stack(a, axis=0)
+    # print("dataset shape: {}".format(full_data_set.shape))
     
-    pre_args = {
-        "PRE_loaded":True,
-        "series_axis":'along_z',
-        "para_name":"para"
-        }
+    # plot = BarExtendedHorizontal(
+        # full_data_set[:,:,21].astype(float),
+        # full_data_set[:,:,[0,1,2,3,4,11,12,15]],
+        # partype='ppm',
+        # exp_names=["0","25","50","100","200","400","500"]
+        # )
     
-    plot = BarExtendedHorizontal(
-        full_data_set[:,:,19].astype(float),
-        full_data_set[:,:,[0,1,2,3,4,11,12,15]],
-        data_extra=full_data_set[:,:,[21, 22]],
-        partype='ratio',
-        exp_names=["dia", "para"],
-        **pre_args
-        )
+    # plot.plot()
+    # plot.save_figure("csps.pdf")
     
-    plot.config["y_lims"] = (0, 1.1)
-    plot.plot()
-    plot.save_figure("dpre.pdf")
+    # ################################## 1.2
     
-    ######################################################################## 3
+    # plot = BarExtendedHorizontal(
+        # full_data_set[:,:,19].astype(float),
+        # full_data_set[:,:,[0,1,2,3,4,11,12,15]],
+        # partype='ppm',
+        # exp_names=["0","25","50","100","200","400","500"],
+        # PRE_loaded=False
+        # )
     
-    dataset_path = os.path.join(
-        os.path.dirname(file_name),
-        'testing',
-        'dpre_not_complete'
-        )
+    # plot.config["y_lims"] = (-0.3,0.3)
+    # plot.plot()
+    # plot.save_figure("1H_delta.pdf")
+    
+    # ######################################################################## 2
+    
+    # dataset_path = os.path.join(
+        # os.path.dirname(file_name),
+        # 'testing',
+        # 'dpre'
+        # )
         
-    print("testing dataset: {}".format(dataset_path))
+    # print("testing dataset: {}".format(dataset_path))
     
-    a = []
-    for f in sorted(os.listdir(dataset_path)):
-        print("reading: {}".format(f))
-        a.append(
-            np.genfromtxt(
-                os.path.join(dataset_path, f),
-                delimiter=',',
-                skip_header=1,
-                dtype=str,
-                missing_values='NaN'
-                )
-            )
+    # a = []
+    # for f in sorted(os.listdir(dataset_path)):
+        # print("reading: {}".format(f))
+        # a.append(
+            # np.genfromtxt(
+                # os.path.join(dataset_path, f),
+                # delimiter=',',
+                # skip_header=1,
+                # dtype=str,
+                # missing_values='NaN'
+                # )
+            # )
     
-    full_data_set = np.stack(a, axis=0)
-    print("dataset shape: {}".format(full_data_set.shape))
+    # full_data_set = np.stack(a, axis=0)
+    # print("dataset shape: {}".format(full_data_set.shape))
     
-    pre_args = {
-        "PRE_loaded":True,
-        "series_axis":'along_z',
-        "para_name":"para"
-        }
+    # pre_args = {
+        # "PRE_loaded":True,
+        # "series_axis":'along_z',
+        # "para_name":"para"
+        # }
     
-    plot = BarExtendedHorizontal(
-        full_data_set[:,:,19].astype(float),
-        full_data_set[:,:,[0,1,2,3,4,11,12,15]],
-        data_extra=full_data_set[:,:,[21, 22]],
-        partype='ratio',
-        exp_names=["dia", "para"],
-        **pre_args
-        )
+    # plot = BarExtendedHorizontal(
+        # full_data_set[:,:,19].astype(float),
+        # full_data_set[:,:,[0,1,2,3,4,11,12,15]],
+        # data_extra=full_data_set[:,:,[21, 22]],
+        # partype='ratio',
+        # exp_names=["dia", "para"],
+        # **pre_args
+        # )
     
-    plot.config["y_lims"] = (0, 1.1)
-    plot.plot()
-    plot.save_figure("dpre_not_complete.pdf")
+    # plot.config["y_lims"] = (0, 1.1)
+    # plot.plot()
+    # plot.save_figure("dpre.pdf")
+    
+    # ######################################################################## 3
+    
+    # dataset_path = os.path.join(
+        # os.path.dirname(file_name),
+        # 'testing',
+        # 'dpre_not_complete'
+        # )
+        
+    # print("testing dataset: {}".format(dataset_path))
+    
+    # a = []
+    # for f in sorted(os.listdir(dataset_path)):
+        # print("reading: {}".format(f))
+        # a.append(
+            # np.genfromtxt(
+                # os.path.join(dataset_path, f),
+                # delimiter=',',
+                # skip_header=1,
+                # dtype=str,
+                # missing_values='NaN'
+                # )
+            # )
+    
+    # full_data_set = np.stack(a, axis=0)
+    # print("dataset shape: {}".format(full_data_set.shape))
+    
+    # pre_args = {
+        # "PRE_loaded":True,
+        # "series_axis":'along_z',
+        # "para_name":"para"
+        # }
+    
+    # plot = BarExtendedHorizontal(
+        # full_data_set[:,:,19].astype(float),
+        # full_data_set[:,:,[0,1,2,3,4,11,12,15]],
+        # data_extra=full_data_set[:,:,[21, 22]],
+        # partype='ratio',
+        # exp_names=["dia", "para"],
+        # **pre_args
+        # )
+    
+    # plot.config["y_lims"] = (0, 1.1)
+    # plot.plot()
+    # plot.save_figure("dpre_not_complete.pdf")
