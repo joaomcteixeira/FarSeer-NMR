@@ -29,9 +29,9 @@ from core.fslibs.WetHandler import WetHandler as fsw
 
 class ExperimentPlot(PlottingBase):
     """
-    Defines a class for plots where each subplot represents the data
-    for the whole experiment where X axes are the Residue numbers (labels)
-    and Y axes the NMR parameter to be represented.
+    Defines a class for plots where each subplot represents each experimental
+    datapoint, where X axes are the Residue numbers (labels)
+    and Y axes the NMR parameter/observable to be represented.
     
     Not functional on its own.
     
@@ -57,6 +57,8 @@ class ExperimentPlot(PlottingBase):
         - tag_position (np.array shape (y,x), dtype=str):
             empty strings were tag not present, and "*" denotes the presence
             of the paramagnetic tag.
+        
+        - threshold (float): the Y value of the threshold line.
     
     """
     
@@ -65,12 +67,13 @@ class ExperimentPlot(PlottingBase):
     def __init__(
             self,
             config={},
+            details=None,
             letter_code=None,
             peak_status=None,
-            details=None,
-            theo_pre=None,
-            tag_position=None,
             subtitles=None,
+            tag_position=None,
+            theo_pre=None,
+            threshold=None,
             **kwargs
             ):
         
