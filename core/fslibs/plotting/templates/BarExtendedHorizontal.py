@@ -39,7 +39,7 @@ from core.fslibs.WetHandler import WetHandler as fsw
 
 class BarExtendedHorizontal(BarPlotBase):
     """
-    Plots the Horizontal Bar Plot template.
+    Plots the Extended Horizontal Bar Plot template.
     
     Subplots have the width of the figure and one subplot is plotted for
     each experiment. Each value in <values> is represented by a bar and
@@ -160,7 +160,7 @@ class BarExtendedHorizontal(BarPlotBase):
         self.logger.debug("Config received: {}".format(config))
         self._config = BarExtendedHorizontal._default_config.copy()
         self._config.update(config)
-        self.logger.debug("Configured configure: {}".format(self._config))
+        self.logger.debug("Config updated: {}".format(self._config))
         
         super().__init__(
             values,

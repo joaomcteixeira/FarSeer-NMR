@@ -150,18 +150,18 @@ class BarCompacted(BarPlotBase):
             "foo": "f",
             "mal": "m",
             "bem": "b"
-        },
+            },
         "user_bar_colors_dict": {
             "foo": "green",
             "mal": "yellow",
             "bem": "magenta"
-        },
+            },
         "unassigned_shade": True,
         "unassigned_shade_alpha": 0.5,
         
         "hspace": 0.5,
         "wspace": 0.5
-    }
+        }
     
     def __init__(self,
             data,
@@ -415,11 +415,15 @@ if __name__ == "__main__":
     
     ######################################################################## 1
     
-    dataset_path = os.path.join(
+    testing_path = os.path.join(
         os.path.dirname(file_name),
-        'testing',
-        'csps'
+        os.pardir,
+        'testing'
         )
+    
+    print("testing path: {}".format(testing_path))
+    
+    dataset_path = os.path.join(testing_path, 'csps')
         
     print("testing dataset: {}".format(dataset_path))
     
@@ -464,11 +468,7 @@ if __name__ == "__main__":
     
     ######################################################################## 1
     
-    dataset_path = os.path.join(
-        os.path.dirname(file_name),
-        'testing',
-        'csps_not_complete'
-        )
+    dataset_path = os.path.join(testing_path, 'csps_not_complete')
         
     print("testing dataset: {}".format(dataset_path))
     
@@ -500,11 +500,7 @@ if __name__ == "__main__":
     
     ######################################################################## 2
     
-    dataset_path = os.path.join(
-        os.path.dirname(file_name),
-        'testing',
-        'dpre'
-        )
+    dataset_path = os.path.join(testing_path, 'dpre')
         
     print("testing dataset: {}".format(dataset_path))
     
@@ -545,11 +541,7 @@ if __name__ == "__main__":
     
     ######################################################################## 3
     
-    dataset_path = os.path.join(
-        os.path.dirname(file_name),
-        'testing',
-        'dpre_not_complete'
-        )
+    dataset_path = os.path.join(testing_path, 'dpre_not_complete')
         
     print("testing dataset: {}".format(dataset_path))
     

@@ -76,7 +76,7 @@ class BarPlotBase(ExperimentPlot):
         
         self._config = BarPlotBase._default_config.copy()
         self._config.update(config)
-        self.logger.debug("Configured configure: {}".format(self._config))
+        self.logger.debug("Config updated: {}".format(self._config))
         
         # check input
         self.values = self._check_values(values)
