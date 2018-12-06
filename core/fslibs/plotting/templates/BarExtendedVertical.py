@@ -1,10 +1,21 @@
 """
-Copyright © 2017-2018 Farseer-NMR
+Copyright © 2017-2018 Farseer-NMR Project
 
-@ResearchGate https://goo.gl/z8dPJU
-@Twitter https://twitter.com/farseer_nmr
+Find us at:
 
-This file is part of Farseer-NMR.
+- J. BioMol NMR Publication:
+    https://link.springer.com/article/10.1007/s10858-018-0182-5
+
+- GitHub: https://github.com/Farseer-NMR
+
+- Mail list: https://groups.google.com/forum/#!forum/farseer-nmr
+    email: farseer-nmr@googlegroups.com
+
+- Research Gate: https://goo.gl/z8dPJU
+
+- Twitter: https://twitter.com/farseer_nmr
+
+This file is part of the Farseer-NMR Project.
 
 Farseer-NMR is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
