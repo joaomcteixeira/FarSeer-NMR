@@ -40,7 +40,7 @@ from core.fslibs.plotting.ExperimentPlot import ExperimentPlot
 from core.fslibs.plotting.BarPlotBase import BarPlotBase
 from core.fslibs.WetHandler import WetHandler as fsw
 
-class BarCompacted(ExperimentPlot, BarPlotBase):
+class BarCompacted(BarPlotBase):
     """
     Compacted Bar plotting template.
     

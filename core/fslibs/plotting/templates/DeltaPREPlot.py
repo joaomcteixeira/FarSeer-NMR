@@ -42,7 +42,7 @@ from core.fslibs.plotting.ExperimentPlot import ExperimentPlot
 from core.fslibs.plotting.BarPlotBase import BarPlotBase
 from core.fslibs.WetHandler import WetHandler as fsw
 
-class DeltaPREPlot(ExperimentPlot, BarPlotBase):
+class DeltaPREPlot(BarPlotBase):
     """
     DeltaPRE Plot.
     

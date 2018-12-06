@@ -40,7 +40,7 @@ from core.fslibs.plotting.ExperimentPlot import ExperimentPlot
 from core.fslibs.plotting.BarPlotBase import BarPlotBase
 from core.fslibs.WetHandler import WetHandler as fsw
 
-class DeltaPREHeatmap(ExperimentPlot, BarPlotBase):
+class DeltaPREHeatmap(BarPlotBase):
     """
     DeltaPRE Heatmap plotting template.
     

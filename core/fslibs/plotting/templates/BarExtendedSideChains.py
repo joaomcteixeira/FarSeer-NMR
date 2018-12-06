@@ -39,7 +39,7 @@ from core.fslibs.plotting.ExperimentPlot import ExperimentPlot
 from core.fslibs.plotting.BarPlotBase import BarPlotBase
 from core.fslibs.WetHandler import WetHandler as fsw
 
-class BarExtendedSideChains(ExperimentPlot, BarPlotBase):
+class BarExtendedSideChains(BarPlotBase):
     """
     Horizontal Extended Bar plotting template for Sidechains.
     
