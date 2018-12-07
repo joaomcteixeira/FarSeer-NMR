@@ -35,6 +35,7 @@ along with Farseer-NMR. If not, see <http://www.gnu.org/licenses/>.
 from math import ceil
 from matplotlib import pyplot as plt
 import numpy as np
+import json
 
 import core.fslibs.Logger as Logger
 
