@@ -1,5 +1,7 @@
 """
-Copyright © 2017-2018 Farseer-NMR Project
+EXTENDED HORIZONTAL BAR PLOT TEMPLATE
+
+Copyright © 2017-2019 Farseer-NMR Project
 
 Find us at:
 
@@ -15,7 +17,10 @@ Find us at:
 
 - Twitter: https://twitter.com/farseer_nmr
 
-This file is part of the Farseer-NMR Project.
+THIS FILE IS PART OF THE FARSEER-NMR PROJECT.
+
+Contributors to this file:
+- João M.C. Teixeira (https://github.com/joaomcteixeira)
 
 Farseer-NMR is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -39,7 +44,7 @@ from core.fslibs.WetHandler import WetHandler as fsw
 
 class BarExtendedHorizontal(BarPlotBase):
     """
-    Plots the Extended Horizontal Bar Plot template.
+    Extended Horizontal Bar Plot template.
     
     Subplots have the width of the figure and one subplot is plotted for
     each experiment. Each value in <values> is represented by a bar and
@@ -152,6 +157,22 @@ class BarExtendedHorizontal(BarPlotBase):
             config={},
             **kwargs
             ):
+        """
+        PARAMETERS:
+    
+        - values (np.array shape (y,x), dtype=float): where X (axis=1)
+            is the data to plot for each column and Y (axis=0) is the evolution
+            of that data along the titration series.
+            
+        - labels (np.array shape (x,), dtype=str): Bar labels presented
+            sequentially and synchronized with <values>.
+            <labels> axis 0 equals <values> axis 1.
+        
+        - config (opt, dict): configuration parameters structured by
+            nested dictionaries. If None provided uses the default
+            configuraton. Use .get_config() or .print_config()
+            methods to access the available parameters.
+        """
         
         # initializes logger
         self.logger = Logger.FarseerLogger(__name__).setup_log()
