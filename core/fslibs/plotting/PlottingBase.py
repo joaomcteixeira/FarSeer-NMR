@@ -306,6 +306,41 @@ class PlottingBase:
         
         return ceil(num_subplots/cols_page) + 1 
     
+    def set_config(self, config={}):
+        """
+        Updates config dictionary
+        
+        See also .get_config() and .print_config()
+        
+        Parameters:
+            - config (dict)
+        """
+        
+        self.logger.debug("updating config to: {}".\
+            format(json.dumps(config, indent=4, sort_keys=True))
+            )
+        
+        self._config.update(config)
+        self.logger.debug("updated config: {}".
+            format(json.dumps(self._config, indent=4, sort_keys=True))
+                )
+        
+        return
+    
+    def get_config(self):
+        """
+        Returns the configuration dictionary
+        """
+        return self._config
+    
+    def print_config(self):
+        """
+        Prints a formatted version of the configuration file.
+        """
+        print(json.dumps(self._config, indent=4, sort_keys=True))
+    
+        return
+    
     def draw_figure(self):
         """
         Draws the figure architecture.
