@@ -226,7 +226,7 @@ class BarExtendedHorizontal(BarPlotBase):
                 break
         self.logger.debug("Tick spacing set to: {}".format(mod_))
         
-        # get xticks and xticks_labels to be represented
+        # set xticks and xticks_labels to be represented
         xticks = np.arange(len(bars))[0::mod_]
         xticks_labels = np.array(self.labels)[0::mod_]
         
@@ -310,6 +310,8 @@ class BarExtendedHorizontal(BarPlotBase):
         
         ###################
         # Additional configurations
+        # "is not None" is used in IF statements intentionally
+        
         ax.margins(x=0.01, tight=True)
         
         # defines bars colors
@@ -373,7 +375,6 @@ class BarExtendedHorizontal(BarPlotBase):
         
         if self.details is not None and c["mark_user_details_flag"]:
             self.logger.debug("... Starting User Details Mark")
-            print(i)
             self._text_marker(
                 ax,
                 range(num_of_bars),
@@ -454,7 +455,6 @@ if __name__ == "__main__":
     dd = ['None','foo','bar','boo']
     details = np.random.choice(dd, values.shape[1])
     details = np.stack([details, details, details], axis=0)
-    print(details.shape == values.shape)
     details[:, mask] = "None"
     
     c = {
