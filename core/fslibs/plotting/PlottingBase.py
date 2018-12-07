@@ -30,7 +30,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Farseer-NMR. If not, see <http://www.gnu.org/licenses/>.
 """
-#from abc import ABCMeta, abstractmethod
 
 from math import ceil
 from matplotlib import pyplot as plt
