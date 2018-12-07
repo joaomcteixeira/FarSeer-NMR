@@ -73,7 +73,16 @@ class ExperimentPlot(PlottingBase):
     
     """
     
-    _default_config = {}
+    _default_config = {
+        "plot_theoretical_pre":False,
+        "theo_pre_color": "red",
+        "theo_pre_lw": 1.0,
+        "tag_id":"*",
+        
+        "tag_cartoon_color": "black",
+        "tag_cartoon_ls": "-",
+        "tag_cartoon_lw": 1.0
+        }
     
     def __init__(
             self,
@@ -267,7 +276,7 @@ class ExperimentPlot(PlottingBase):
                 continue
         return
         
-    def _finds_para_tag(data, tag_data, identifier="*"):
+    def _finds_para_tag(data, tag_data):
         """
         Finds the bar index where the tag tick should be drawn based
         on an <identifier>.
@@ -277,8 +286,6 @@ class ExperimentPlot(PlottingBase):
             - data (iterator): data upon which the index will be searched
             
             - tag_data (np.array): contains information where the tag is
-            
-            - identifier (str): the identifier to look for.
         """
         if len(data) != len(tag_data):
             logger.info("*** Data and tag_data size equal: FALSE")
@@ -286,7 +293,7 @@ class ExperimentPlot(PlottingBase):
         
         logger.debug("Tag info: {}".format(tag_data))
         
-        where_tag = np.where(tag_data==identifier)
+        where_tag = np.where(tag_data==self._config["tag_id"])
         logger.debug("Tag mask found: {}".format(where_tag))
         
         tag_position = list(range(len(data)))[where_tag[0][0]]
@@ -299,10 +306,7 @@ class ExperimentPlot(PlottingBase):
             ax,
             tag_position,
             y_lim,
-            plottype='h',
-            tag_color='red',
-            tag_ls='-',
-            tag_lw=0.1
+            plottype='h'
             ):
         """
         Draws paramagnetic tag tick on functionalized residue.
@@ -332,9 +336,9 @@ class ExperimentPlot(PlottingBase):
                 tag_position,
                 0,
                 y_lim,
-                colors=tag_color,
-                linestyle=tag_ls,
-                linewidth=tag_lw,
+                colors=self._config["tag_cartoon_color"],
+                linestyle=self._config["tag_cartoon_ls"],
+                linewidth=self._config["tag_cartoon_lw"],
                 zorder=10
                 )
             ax.plot(
@@ -351,9 +355,9 @@ class ExperimentPlot(PlottingBase):
                 tag_position,
                 0,
                 y_lim,
-                colors=tag_color,
-                linestyle=tag_ls,
-                linewidth=tag_lw,
+                colors=self._config["tag_cartoon_color"],
+                linestyle=self._config["tag_cartoon_ls"],
+                linewidth=self._config["tag_cartoon_lw"],
                 zorder=10
                 )
             ax.plot(
@@ -373,9 +377,9 @@ class ExperimentPlot(PlottingBase):
                 tag_position,
                 0,
                 tag_line,
-                colors=tag_color,
-                linestyle=tag_ls,
-                linewidth=tag_lw,
+                colors=self._config["tag_cartoon_color"],
+                linestyle=self._config["tag_cartoon_ls"],
+                linewidth=self._config["tag_cartoon_lw"],
                 zorder=10
                 )
         return
@@ -385,9 +389,7 @@ class ExperimentPlot(PlottingBase):
             ax,
             values_x,
             values_y,
-            plottype='h',
-            pre_color='lightblue',
-            pre_lw=1
+            plottype='h'
             ):
         """
         Plots theoretical PRE.
@@ -402,10 +404,6 @@ class ExperimentPlot(PlottingBase):
             plottype (str): {'h', 'v'}, whether plot of type 
                 horizontal, vertical or Heat Map. Defaults: 'h'.
             
-            pre_color (str): the colour of plot line
-            
-            pre_lw (int): line width
-            
         """
         
         if plottype == 'v':
@@ -413,8 +411,8 @@ class ExperimentPlot(PlottingBase):
                 values_y,
                 values_x,
                 zorder=9,
-                color=pre_color,
-                lw=pre_lw
+                color=self._config["theo_pre_color"],
+                lw=self._config["theo_pre_lw"]
                 )
         
         elif plottype == 'h':
@@ -422,8 +420,8 @@ class ExperimentPlot(PlottingBase):
                 values_x,
                 values_y,
                 zorder=9,
-                color=pre_color,
-                lw=pre_lw
+                color=self._config["theo_pre_color"],
+                lw=self._config["theo_pre_lw"]
                 )
         
         return

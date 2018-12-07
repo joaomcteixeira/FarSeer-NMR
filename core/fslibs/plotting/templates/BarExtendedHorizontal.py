@@ -47,6 +47,7 @@ class BarExtendedHorizontal(BarPlotBase):
     """
     
     _default_config = {
+        
         "cols_page": 1,
         "rows_page": 6,
         
@@ -93,15 +94,6 @@ class BarExtendedHorizontal(BarPlotBase):
         "y_grid_linewidth": 0.2,
         "y_grid_alpha": 0.8,
         
-        "plot_theoretical_pre":False,
-        "theo_pre_color": "red",
-        "theo_pre_lw": 1.0,
-        "tag_id":"*",
-        
-        "tag_cartoon_color": "black",
-        "tag_cartoon_lw": 1.0,
-        "tag_cartoon_ls": "-",
-        
         "measured_color": "black",
         "missing_color": "red",
         "unassigned_color": "lightgrey",
@@ -109,12 +101,6 @@ class BarExtendedHorizontal(BarPlotBase):
         "bar_width": 0.8,
         "bar_alpha": 1,
         "bar_linewidth": 0,
-        
-        "threshold_flag": True,
-        "threshold_color": "red",
-        "threshold_linewidth": 0.5,
-        "threshold_alpha": 0.8,
-        "threshold_zorder":10,
         
         "mark_fontsize": 4,
         "mark_prolines_flag": False,
@@ -131,6 +117,21 @@ class BarExtendedHorizontal(BarPlotBase):
             "bar": "yellow",
             "boo": "magenta"
         },
+        
+        "threshold_flag": True,
+        "threshold_color": "red",
+        "threshold_linewidth": 0.5,
+        "threshold_alpha": 0.8,
+        "threshold_zorder":10,
+        
+        "plot_theoretical_pre":False,
+        "theo_pre_color": "red",
+        "theo_pre_lw": 1.0,
+        "tag_id":"*",
+        
+        "tag_cartoon_color": "black",
+        "tag_cartoon_ls": "-",
+        "tag_cartoon_lw": 1.0,
         
         "hspace": 0.5,
         "wspace": 0.5,
@@ -355,14 +356,7 @@ class BarExtendedHorizontal(BarPlotBase):
         # Adds red line to identify significant changes.
         if c["threshold_flag"]:
             self.logger.debug("... Starting threshold draw")
-            self._plot_threshold(
-                ax,
-                ydata,
-                c["threshold_color"],
-                c["threshold_linewidth"],
-                c["threshold_alpha"],
-                zorder=c["threshold_zorder"]
-                )
+            self._plot_threshold(ax, ydata)
             self.logger.debug("Threshold: OK")
         
         if self.letter_code is not None and c["mark_prolines_flag"]:
@@ -407,15 +401,12 @@ class BarExtendedHorizontal(BarPlotBase):
                 ax,
                 range(num_of_bars),
                 self.theo_pre[i],
-                pre_color=c["theo_pre_color"],
-                pre_lw=c["theo_pre_lw"],
                 orientation='h'
                 )
             
             tag_found = self.finds_paramagnetic_tag(
                 bars,
-                self.tag_position[i],
-                identifier=c["tag_id"]
+                self.tag_position[i]
                 )
             
             if tag_found:
@@ -423,10 +414,7 @@ class BarExtendedHorizontal(BarPlotBase):
                     ax,
                     tag_found,
                     y_max,
-                    plottype='h',
-                    tag_color=c["tag_cartoon_color"],
-                    tag_ls=c["tag_cartoon_ls"],
-                    tag_lw=c["tag_cartoon_lw"]
+                    plottype='h'
                     )
         
         return

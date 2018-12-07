@@ -59,7 +59,15 @@ class BarPlotBase(ExperimentPlot):
             <labels> axis 0 equals <values> axis 1.
         
     """
-    _default_config = {}
+    _default_config = {
+        
+        "threshold_flag": True,
+        "threshold_color": "red",
+        "threshold_linewidth": 0.5,
+        "threshold_alpha": 0.8,
+        "threshold_zorder":10
+        
+        }
     
     def __init__(
             self,
@@ -149,12 +157,8 @@ class BarPlotBase(ExperimentPlot):
             self,
             ax,
             values,
-            color,
-            lw,
-            alpha,
             std=5,
-            orientation='horizontal',
-            zorder=5):
+            orientation='horizontal'):
         """
         Plots threshold line that identifies relevant perturnations.
         
@@ -186,37 +190,37 @@ class BarPlotBase(ExperimentPlot):
         if orientation == 'horizontal':
             ax.axhline(
                 y=threshold,
-                color=color, 
-                linewidth=lw,
-                alpha=alpha,
-                zorder=zorder
+                color=self._config["threshold_color"], 
+                linewidth=self._config["threshold_linewidth"],
+                alpha=self._config["threshold_alpha"],
+                zorder=self._config["threshold_zorder"]
                 )
             # in case there are negative numbers, plots the threshold,
             # if there are not negative numbers, this line is never displayed
             ax.axhline(
                 y=-threshold,
-                color=color, 
-                linewidth=lw,
-                alpha=alpha,
-                zorder=zorder
+                color=self._config["threshold_color"], 
+                linewidth=self._config["threshold_linewidth"],
+                alpha=self._config["threshold_alpha"],
+                zorder=self._config["threshold_zorder"]
                 )
         
         elif orientation == 'vertical':
             ax.axvline(
                 x=threshold,
-                color=color, 
-                linewidth=lw,
-                alpha=alpha,
-                zorder=zorder
+                color=self._config["threshold_color"], 
+                linewidth=self._config["threshold_linewidth"],
+                alpha=self._config["threshold_alpha"],
+                zorder=self._config["threshold_zorder"]
                 )
             # in case there are negative numbers, plots the threshold,
             # if there are not negative numbers, this line is never displayed
             ax.axvline(
                 x=-threshold,
-                color=color, 
-                linewidth=lw,
-                alpha=alpha,
-                zorder=zorder
+                color=self._config["threshold_color"], 
+                linewidth=self._config["threshold_linewidth"],
+                alpha=self._config["threshold_alpha"],
+                zorder=self._config["threshold_zorder"]
                 )
         
         return
