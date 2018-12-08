@@ -44,37 +44,9 @@ class BarExtendedVertical(BarPlotBase):
     """
     Vertical Extended Bar plotting template.
     
-    Parameters:
-        - data (np.array(dtype=float) of shape [z,y,x]): multidimensional array
-            containain the dataset to be plot. Where:
-                X) length=1. Is the column containing the calculated or observed NMR
-                    parameter to be used as Y axis in plots,
-                Y) are rows containing the X information for each residue
-                Z) is [Y,X] for each experiment.
-            Data can be further treated with data_select() method.
-        
-        - data_info (np.array(dtype=str) of shape [z,y,x]): same as <data>
-            but for columns ResNo, 1-letter, 3-letter, Peak Status, Merit,
-            Fit Method, Vol. Method, Details; in this order.
-        
-        - config (opt, dict): a dictionary containing all the configuration
-            parameters required for this plotting routine. If None provided
-            uses the default configuraton. Access the default configuration
-            via the default_config class attribute.
-        
-        - data_extra (opt, np.ndarray of shape [z,y,x]): extra ndarray to help
-            on plotting the data passed as <data>.
-                In the case of plotting theoretical PRE data, data_extra
-                columns should be [Theo PRE, tag position].
-        
-        - partype (opt {'ppm', 'ratio'}, defaults None): 
-            indicates the type of data that is being plotted, so that
-            special option can be activated.
-        
-        - exp_names (opt, sequence type): list of the experiment names.
-        
-        - additional kwargs can be passed as **kwargs.
-    
+    Subplots have the hight of the figure and one subplot is plotted for
+    each experiment. Each value in <values> is represented by a bar and
+    each bar is labeled according to <labels>.
     """
     
     default_config = {
@@ -82,7 +54,8 @@ class BarExtendedVertical(BarPlotBase):
         "rows_page": 2,
         
         "y_lims":(0,0.3),
-        "ylabel":"CSPs",
+        "x_label":"Residues",
+        "y_label":"your labels goes here",
         
         "subtitle_fn": "Arial",
         "subtitle_fs": 8,
@@ -90,22 +63,22 @@ class BarExtendedVertical(BarPlotBase):
         "subtitle_weight": "normal",
         
         "x_label_fn": "Arial",
-        "x_label_fs": 6,
-        "x_label_pad": 10,
+        "x_label_fs": 8,
+        "x_label_pad": 2,
         "x_label_weight": "bold",
-        "x_label_rot":-90,
+        "x_label_rotation":0,
         
         "y_label_fn": "Arial",
-        "y_label_fs": 6,
-        "y_label_pad": 5,
+        "y_label_fs": 8,
+        "y_label_pad": 3,
         "y_label_weight": "bold",
-        "y_label_rot":0,
+        "y_label_rot":90,
         
         "x_ticks_pad": 2,
         "x_ticks_len": 2,
         "x_ticks_fn": "monospace",
-        "x_ticks_fs": 4,
-        "x_ticks_rot": 0,
+        "x_ticks_fs": 6,
+        "x_ticks_rot": 90,
         "x_ticks_weight": "normal",
         "x_ticks_color_flag":True,
         
@@ -115,19 +88,13 @@ class BarExtendedVertical(BarPlotBase):
         "y_ticks_pad": 1,
         "y_ticks_weight": "normal",
         "y_ticks_len": 2,
+        "y_ticks_nbins":8,
         
         "y_grid_flag": True,
         "y_grid_color": "lightgrey",
         "y_grid_linestyle": "-",
         "y_grid_linewidth": 0.2,
         "y_grid_alpha": 0.8,
-        
-        "theo_pre_color": "red",
-        "theo_pre_lw": 1.0,
-        
-        "tag_cartoon_color": "black",
-        "tag_cartoon_lw": 1.0,
-        "tag_cartoon_ls": "-",
         
         "measured_color": "black",
         "missing_color": "red",
@@ -137,73 +104,102 @@ class BarExtendedVertical(BarPlotBase):
         "bar_alpha": 1,
         "bar_linewidth": 0,
         
+        "mark_fontsize": 4,
+        "mark_prolines_flag": False,
+        "mark_prolines_symbol": "P",
+        "mark_user_details_flag": False,
+        "color_user_details_flag": False,
+        "user_marks_dict": {
+            "foo": "f",
+            "bar": "b",
+            "boo": "o"
+        },
+        "user_bar_colors_dict": {
+            "foo": "green",
+            "bar": "yellow",
+            "boo": "magenta"
+        },
+        
         "threshold_flag": True,
         "threshold_color": "red",
         "threshold_linewidth": 0.5,
         "threshold_alpha": 0.8,
         "threshold_zorder":10,
         
-        "mark_fontsize": 4,
-        "mark_prolines_flag": True,
-        "mark_prolines_symbol": "P",
-        "mark_user_details_flag": True,
-        "color_user_details_flag": True,
-        "user_marks_dict": {
-            "foo": "f",
-            "mal": "m",
-            "bem": "b"
-        },
-        "user_bar_colors_dict": {
-            "foo": "green",
-            "mal": "yellow",
-            "bem": "magenta"
+        "plot_theoretical_pre":False,
+        "theo_pre_color": "red",
+        "theo_pre_lw": 1.0,
+        "tag_id":"*",
+        
+        "tag_cartoon_color": "black",
+        "tag_cartoon_ls": "-",
+        "tag_cartoon_lw": 1.0,
         },
         
         "hspace": 0.5,
-        "wspace": 0.5
+        "wspace": 0.5,
+        
+        "figure_header":"No header provided",
+        "header_fontsize":5,
+        
+        "figure_path":"bar_extended_horizontal.pdf",
+        "figure_dpi":300,
+        "fig_height": 11.69,
+        "fig_width": 8.69
     }
     
-    def __init__(self,
-            data,
-            data_info,
-            config=None,
-            data_extra=None,
-            partype="",
-            exp_names="",
+    def __init__(
+            self,
+            values,
+            labels,
+            config={},
             **kwargs
             ):
+        """
+        PARAMETERS:
+    
+        - values (np.array shape (y,x), dtype=float): where X (axis=1)
+            is the data to plot for each bar (residue) and
+            Y (axis=0) is the evolution of that data along the
+            titration series.
+            
+        - labels (np.array shape (x,), dtype=str): Bar labels presented
+            sequentially and synchronized with <values>.
+            <labels> axis 0 equals <values> axis 1.
+        
+        - config (opt, dict): configuration parameters structured by
+            nested dictionaries. If None provided uses the default
+            configuraton. Use .get_config() or .print_config()
+            methods to access the available parameters.
+        """
+        
+        # initializes logger
+        self.logger = Logger.FarseerLogger(__name__).setup_log()
+        self.logger.debug("BarExtendedHorizontal initiated")
+        
+        # sets configuration
+        self._config = BarExtendedHorizontal._default_config.copy()
+        self._config.update(config)
+        #self.logger.debug("Config updated: {}".format(self._config))
+        
         super().__init__(
-            data,
-            data_info,
-            config=config,
-            partype=partype,
-            exp_names=exp_names,
+            values,
+            labels,
+            config=self._config.copy(),
             **kwargs
             )
-        
-        self.logger = Logger.FarseerLogger(__name__).setup_log()
-        self.logger.debug("BarExtendedVertical initiated")
-        
-        self.data_extra = data_extra
     
-    def subplot(self, ax, data, data_info, exp_name, data_extra=None):
+    def subplot(self, ax, values, subtitle, i):
         """Configures subplot."""
         
-        c = self.config
-        col = self.info_cols
-        self.logger.debug("Starting Subplot ###### {}".format(exp_name))
-        
-        data = np.nan_to_num(data)
-        
-        self.logger.debug(data)
-        self.logger.debug(data_info)
-        self.logger.debug(data_extra)
-        
-        number_of_residues_to_plot = data.shape[0]
-        
-        self.logger.debug(
-            "Number of residues to plot: {}".format(number_of_residues_to_plot)
-            )
+        ###################
+        # configures vars
+        c = self._config
+        ydata = np.nan_to_num(values).astype(float)
+        self.logger.debug("ydata: {}".format(ydata))
+        num_of_bars = ydata.shape[0]
+        self.logger.debug("Number of bars to represented: {}".format(num_of_bars))
+        self.logger.debug("Subtitle: {}".format(subtitle))
         
         bars = ax.barh(
             range(number_of_residues_to_plot),
