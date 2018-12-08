@@ -70,7 +70,7 @@ class PlottingBase:
         self.axs = None
         self._config = PlottingBase._default_config.copy()
         self._config.update(config)
-        self.logger.debug("Configured configure: {}".format(self._config))
+        self.logger.debug("Config Updated: {}".format(self._config))
     
     def _check_exists(self, obj):
         """

@@ -161,8 +161,9 @@ class BarExtendedHorizontal(BarPlotBase):
         PARAMETERS:
     
         - values (np.array shape (y,x), dtype=float): where X (axis=1)
-            is the data to plot for each column and Y (axis=0) is the evolution
-            of that data along the titration series.
+            is the data to plot for each bar (residue) and
+            Y (axis=0) is the evolution of that data along the
+            titration series.
             
         - labels (np.array shape (x,), dtype=str): Bar labels presented
             sequentially and synchronized with <values>.
@@ -179,10 +180,9 @@ class BarExtendedHorizontal(BarPlotBase):
         self.logger.debug("BarExtendedHorizontal initiated")
         
         # sets configuration
-        self.logger.debug("Config received: {}".format(config))
         self._config = BarExtendedHorizontal._default_config.copy()
         self._config.update(config)
-        self.logger.debug("Config updated: {}".format(self._config))
+        #self.logger.debug("Config updated: {}".format(self._config))
         
         super().__init__(
             values,

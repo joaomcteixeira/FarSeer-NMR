@@ -103,7 +103,7 @@ class ExperimentPlot(PlottingBase):
         # sets config
         self._config = ExperimentPlot._default_config.copy()
         self._config.update(config)
-        self.logger.debug("Configured configure: {}".format(self._config))
+        #self.logger.debug("Config updated: {}".format(self._config))
         
         # check optional params
         self.letter_code = self._check_letter_code(letter_code)

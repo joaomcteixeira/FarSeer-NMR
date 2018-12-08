@@ -77,12 +77,13 @@ class BarCompacted(BarPlotBase):
     
     """
     
-    default_config = {
+    _default_config = {
         "cols_page": 3,
         "rows_page": 5,
-        
+
         "y_lims":(0,0.3),
-        "ylabel":"CSPs",
+        "x_label":"Residues",
+        "y_label":"your labels goes here",
         
         "subtitle_fn": "Arial",
         "subtitle_fs": 8,
@@ -93,6 +94,7 @@ class BarCompacted(BarPlotBase):
         "x_label_fs": 8,
         "x_label_pad": 2,
         "x_label_weight": "bold",
+        "x_label_rotation":0,
         
         "y_label_fn": "Arial",
         "y_label_fs": 8,
@@ -102,10 +104,11 @@ class BarCompacted(BarPlotBase):
         
         "x_ticks_pad": 2,
         "x_ticks_len": 2,
-        "x_ticks_fn": "Arial",
+        "x_ticks_fn": "monospace",
         "x_ticks_fs": 6,
-        "x_ticks_rot": 0,
+        "x_ticks_rot": 90,
         "x_ticks_weight": "normal",
+        "x_ticks_color_flag":True,
         
         "y_ticks_fn": "Arial",
         "y_ticks_fs": 6,
@@ -113,6 +116,7 @@ class BarCompacted(BarPlotBase):
         "y_ticks_pad": 1,
         "y_ticks_weight": "normal",
         "y_ticks_len": 2,
+        "y_ticks_nbins":8,
         
         "y_grid_flag": True,
         "y_grid_color": "lightgrey",
@@ -120,20 +124,32 @@ class BarCompacted(BarPlotBase):
         "y_grid_linewidth": 0.2,
         "y_grid_alpha": 0.8,
         
-        "theo_pre_color": "red",
-        "theo_pre_lw": 1.0,
-        
-        "tag_cartoon_color": "black",
-        "tag_cartoon_lw": 1.0,
-        "tag_cartoon_ls": "-",
-        
         "measured_color": "black",
         "missing_color": "red",
         "unassigned_color": "lightgrey",
         
+        "unassigned_shade": True,
+        "unassigned_shade_alpha": 0.5,
+        
         "bar_width": 0.8,
         "bar_alpha": 1,
         "bar_linewidth": 0,
+        
+        "mark_fontsize": 4,
+        "mark_prolines_flag": False,
+        "mark_prolines_symbol": "P",
+        "mark_user_details_flag": False,
+        "color_user_details_flag": False,
+        "user_marks_dict": {
+            "foo": "f",
+            "bar": "b",
+            "boo": "o"
+        },
+        "user_bar_colors_dict": {
+            "foo": "green",
+            "bar": "yellow",
+            "boo": "magenta"
+        },
         
         "threshold_flag": True,
         "threshold_color": "red",
@@ -141,161 +157,186 @@ class BarCompacted(BarPlotBase):
         "threshold_alpha": 0.8,
         "threshold_zorder":10,
         
-        "mark_fontsize": 4,
-        "mark_prolines_flag": True,
-        "mark_prolines_symbol": "P",
-        "mark_user_details_flag": True,
-        "color_user_details_flag": True,
-        "user_marks_dict": {
-            "foo": "f",
-            "mal": "m",
-            "bem": "b"
-            },
-        "user_bar_colors_dict": {
-            "foo": "green",
-            "mal": "yellow",
-            "bem": "magenta"
-            },
-        "unassigned_shade": True,
-        "unassigned_shade_alpha": 0.5,
+        "plot_theoretical_pre":False,
+        "theo_pre_color": "red",
+        "theo_pre_lw": 1.0,
+        "tag_id":"*",
+        
+        "tag_cartoon_color": "black",
+        "tag_cartoon_ls": "-",
+        "tag_cartoon_lw": 1.0,
         
         "hspace": 0.5,
-        "wspace": 0.5
+        "wspace": 0.5,
+        
+        "figure_header":"No header provided",
+        "header_fontsize":5,
+        
+        "figure_path":"bar_extended_horizontal.pdf",
+        "figure_dpi":300,
+        "fig_height": 11.69,
+        "fig_width": 8.69
+
         }
     
-    def __init__(self,
-            data,
-            data_info,
-            config=None,
-            data_extra=None,
-            partype="",
-            exp_names="",
+    def __init__(
+            self,
+            values,
+            labels=None,
+            config={},
             **kwargs
             ):
+        
+        # initializes logger
+        self.logger = Logger.FarseerLogger(__name__).setup_log()
+        self.logger.debug("BarExtendedHorizontal initiated")
+        
+        # sets labels
+        # CompactedBar plot does not requires labels specifically
+        # yet BarPlotBase requires labels to be passed
+        #
+        # is not None avoids
+        # ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+        labels = labels if labels is not None \
+            else np.arange(1, values.shape[1]+1, step=1)
+        
+        # sets configuration
+        self.logger.debug("Config received: {}".format(config))
+        self._config = BarCompacted._default_config.copy()
+        self._config.update(config)
+        self.logger.debug("Config updated: {}".format(self._config))
+        
         super().__init__(
-            data,
-            data_info,
-            config=config,
-            partype=partype,
-            exp_names=exp_names,
+            values,
+            labels,
+            config=self._config.copy(),
             **kwargs
             )
         
-        self.logger = Logger.FarseerLogger(__name__).setup_log()
-        self.logger.debug("BarCompacted initiated")
-        
-        self.data_extra = data_extra
+        return
     
-    def subplot(self, ax, data, data_info, exp_name, data_extra=None):
+    
+    def subplot(self, ax, values, subtitle, i):
         """Configures subplot."""
         
-        c = self.config
-        col = self.info_cols
-        self.logger.debug("Starting Subplot ###### {}".format(exp_name))
+        ###################
+        # configures vars
+        c = self._config
+        ydata = np.nan_to_num(values).astype(float)
+        self.logger.debug("ydata: {}".format(ydata))
+        num_of_bars = ydata.shape[0]
+        self.logger.debug("Number of bars to represented: {}".format(num_of_bars))
+        self.logger.debug("Subtitle: {}".format(subtitle))
         
-        data = np.nan_to_num(data)
-        
-        self.logger.debug(data)
-        self.logger.debug(data_info)
-        self.logger.debug(data_extra)
-        
-        number_of_residues_to_plot = data.shape[0]
-        
-        self.logger.debug(
-            "Number of residues to plot: {}".format(number_of_residues_to_plot)
-            )
-        
+        ###################
+        # Plots bars
         bars = ax.bar(
-            range(number_of_residues_to_plot),
-            data,
+            range(num_of_bars),
+            ydata,
             width=c["bar_width"],
             align='center',
             alpha=c["bar_alpha"],
             linewidth=c["bar_linewidth"],
+            color='black',
             zorder=4
             )
         
-        self.logger.debug("Created bar plot: OK")
+        self.logger.debug("Number of bars plotted: {}".format(len(bars)))
+        self.logger.debug("Number of expected bars equals num of bars: {}".format(num_of_bars == len(bars)))
         
-        for i in range(100,10000,100):
-            if i>number_of_residues_to_plot:
-                mod_ = i//10
-                break
-        self.logger.debug("tick mod: {}".format(mod_))
-        
-        xticks = list()
-        xticklabels = list()
-        for k, m in zip(
-                range(number_of_residues_to_plot),
-                data_info[:,col["ResNo"]]
-                ):
-            
-            if int(m)%mod_==0:
-                xticks.append(k)
-                xticklabels.append(m)
-        
-        self.logger.debug("Setting xticks: {}".format(xticks))
-        self.logger.debug("xticklabels: {}".format(xticklabels))
-        
-        ax.set_xticks(xticks)
-        self.logger.debug("set_xticks: OK")
-        
-        ## https://github.com/matplotlib/matplotlib/issues/6266
-        ax.set_xticklabels(
-            xticklabels,
-            fontname=c["x_ticks_fn"],
-            fontsize=c["x_ticks_fs"],
-            fontweight=c["x_ticks_weight"],
-            rotation=c["x_ticks_rot"]
-            )
-        self.logger.debug("set_xticklabels: OK")
-        
-        if c["unassigned_shade"]:
-            unassignedmask = \
-                data_info[:, col['Peak Status']] == 'unassigned'
-            
-            for res, m in enumerate(unassignedmask):
-                if m:
-                    res -= 0.5
-                    ax.axvspan(
-                        res,
-                        res+1,
-                        color=c["unassigned_color"],
-                        alpha=c["unassigned_shade_alpha"],
-                        lw=0
-                        )
-        
-        # Set subplot titles
+        ###################
+        # Set subplot title
         ax.set_title(
-            exp_name,
+            subtitle,
             y=c["subtitle_pad"],
             fontsize=c["subtitle_fs"],
             fontname=c["subtitle_fn"],
             weight=c["subtitle_weight"]
             )
-        self.logger.debug("Set title: OK")
         
-        # defines bars colors
-        self._set_item_colors(
-            bars,
-            data_info[:,col['Peak Status']],
-            {
-                'measured': c["measured_color"],
-                'missing': c["missing_color"],
-                'unassigned': c["unassigned_color"]
-                }
-            )
-        self.logger.debug("set_item_colors: OK")
+        self.logger.debug("Subplot title set to : {}".format(subtitle))
         
-        # configures spines
+        ###################
+        # Configures spines
         ax.spines['bottom'].set_zorder(10)
         ax.spines['top'].set_zorder(10)
         self.logger.debug("Spines set: OK")
-        # cConfigures YY ticks
-        ax.set_ylim(c["y_lims"][0], c["y_lims"][1])
-        ax.locator_params(axis='y', tight=True, nbins=8)
-        self.logger.debug("Set Y limits: OK")
         
+        ###################
+        # Configures X ticks and axis
+        
+        # Define tick spacing
+        tmp_ticks = np.arange(len(num_of_bars))
+        
+        xticks = np.arange(1, num_of_bars)
+        mod_ = 0
+        
+        while not(len(xticks) <= 10):
+            xticks = np.concatenate(
+                (
+                    tmp_ticks[0],
+                    tmp_ticks[tmp_ticks % mod_ == 0]
+                    ),
+                axis=None
+                )
+            xticks_labels = np.array(self.labels)[xticks]
+            print(xticks_labels)
+            mod_ += 10
+        
+        self.logger.debug("Tick spacing set to: {}".format(mod_))
+        
+        # set xticks and xticks_labels to be represented
+        xticks_labels = np.array(self.labels)[xticks]
+        
+        self.logger.debug("xticks represented: {}".format(xticks))
+        self.logger.debug("xticks labels represented: {}".format(xticks_labels))
+        
+        # Set X ticks
+        ax.set_xticks(xticks)
+        
+        # Set X ticks labels
+        ## https://github.com/matplotlib/matplotlib/issues/6266
+        ax.set_xticklabels(
+            xticks_labels,
+            fontname=c["x_ticks_fn"],
+            fontsize=c["x_ticks_fs"],
+            fontweight=c["x_ticks_weight"],
+            rotation=c["x_ticks_rot"]
+            )
+        
+        # Set xticks params
+        ax.tick_params(
+            axis='x',
+            pad=c["x_ticks_pad"],
+            length=c["x_ticks_len"],
+            direction='out'
+            )
+        self.logger.debug("Configured X tick params: OK")
+        
+        # Set X axis label
+        ax.set_xlabel(
+            c["x_label"],
+            fontname=c["x_label_fn"],
+            fontsize=c["x_label_fs"],
+            labelpad=c["x_label_pad"],
+            weight=c["x_label_weight"],
+            rotation=c["x_label_rotation"]
+            )
+        self.logger.debug("Set X label: OK")
+        
+        ###################
+        # Configures Y ticks and axis
+        
+        # sets axis limits
+        ymin = c["y_lims"][0]
+        ymax = c["y_lims"][1]
+        ax.set_ylim(ymin, ymax)
+        self.logger.debug("Set y max {} and ymin {}".format(ymin, ymax))
+        
+        # sets number of y ticks
+        ax.locator_params(axis='y', tight=True, nbins=c["y_ticks_nbins"])
+        
+        # sets y tick labels
         ax.set_yticklabels(
             ['{:.2f}'.format(yy) for yy in ax.get_yticks()],
             fontname=c["y_ticks_fn"],
@@ -305,40 +346,47 @@ class BarCompacted(BarPlotBase):
             )
         self.logger.debug("Set Y tick labels: OK")
         
-        # configures tick params
-        ax.margins(x=0.01)
-        ax.tick_params(
-            axis='x',
-            pad=c["x_ticks_pad"],
-            length=c["x_ticks_len"],
-            direction='out'
-            )
+        # sets y ticks params
         ax.tick_params(
             axis='y',
             pad=c["y_ticks_pad"],
             length=c["y_ticks_len"],
             direction='out'
             )
-        self.logger.debug("Configured X and Y tick params: OK")
-            
-        # Set axes labels
-        ax.set_xlabel(
-            'Residue',
-            fontname=c["x_label_fn"],
-            fontsize=c["x_label_fs"],
-            labelpad=c["x_label_pad"],
-            weight=c["x_label_weight"],
-            rotation=0
-            )
+        self.logger.debug("Configured Y tick params: OK")
+        
+        # set Y label
         ax.set_ylabel(
-            c["ylabel"],
+            c["y_label"],
             fontsize=c["y_label_fs"],
             labelpad=c["y_label_pad"],
             fontname=c["y_label_fn"],
             weight=c["y_label_weight"],
             rotation=c["y_label_rot"]
             )
-        self.logger.debug("Configured X and Y labels")
+        self.logger.debug("Set Y label: OK")
+        
+        ###################
+        # Additional configurations
+        # "is not None" is used in IF statements intentionally
+        
+        ax.margins(x=0.01, tight=True)
+        
+        # defines bars colors
+        if self.peak_status is not None:
+            self._set_item_colors(
+                bars,
+                self.peak_status[i],
+                {
+                    'measured': c["measured_color"],
+                    'missing': c["missing_color"],
+                    'unassigned': c["unassigned_color"]
+                    }
+                )
+            self.logger.debug("set_item_colors: OK")
+        
+        ###################
+        # Additional representation features
         
         # Adds grid
         if c["y_grid_flag"]:
@@ -351,60 +399,357 @@ class BarCompacted(BarPlotBase):
                 )
             self.logger.debug("Configured grid: OK")
         
-        # Adds red line to identify significant changes.
-        if c["threshold_flag"] and self.ppm_data:
-            self.logger.debug("... Starting Threshold draw")
-            self._plot_threshold(
-                ax,
-                data,
-                c["threshold_color"],
-                c["threshold_linewidth"],
-                c["threshold_alpha"],
-                zorder=c["threshold_zorder"]
+        # defines xticks colors
+        if self.peak_status is not None and c["x_ticks_color_flag"]:
+            logger.debug("Configuring for x_ticks_color_flag...")
+            self._set_item_colors(
+                ax.get_xticklabels(),
+                self.peak_status[i,0::mod_],
+                {
+                    'measured':c["measured_color"],
+                    'missing':c["missing_color"],
+                    'unassigned':c["unassigned_color"]
+                    }
                 )
+            self.logger.debug("...Done")
+        
+        # Adds red line to identify significant changes.
+        if c["threshold_flag"]:
+            self.logger.debug("... Starting threshold draw")
+            self._plot_threshold(ax, ydata)
             self.logger.debug("Threshold: OK")
         
-        if c["mark_prolines_flag"]:
+        if self.letter_code is not None and c["mark_prolines_flag"]:
             self.logger.debug("... Starting Prolines Mark")
             self._text_marker(
                 ax,
-                range(number_of_residues_to_plot),
-                data,
-                data_info[:,col['1-letter']],
+                range(num_of_bars),
+                ydata,
+                self.letter_code,
                 {'P':c["mark_prolines_symbol"]},
                 fs=c["mark_fontsize"]
                 )
             self.logger.debug("Prolines Marked: OK")
         
-        if c["mark_user_details_flag"]:
+        if self.details is not None and c["mark_user_details_flag"]:
             self.logger.debug("... Starting User Details Mark")
             self._text_marker(
                 ax,
-                range(number_of_residues_to_plot),
-                data,
-                data_info[:,col['Details']],
+                range(num_of_bars),
+                ydata,
+                self.details[i],
                 c["user_marks_dict"],
                 fs=c["mark_fontsize"]
                 )
             self.logger.debug("User marks: OK")
         
-        if c["color_user_details_flag"]:
+        if self.details is not None and c["color_user_details_flag"]:
             self.logger.debug("... Starting User Colors Mark")
             self._set_item_colors(
                 bars,
-                data_info[:,col["Details"]],
+                self.details[i],
                 c["user_bar_colors_dict"]
                 )
             self.logger.debug("Color user details: OK")
-        
-        self.logger.debug("PRE_Loaded Flag: {}".format(self.kwargs.get("PRE_loaded")))
-        self.logger.debug("Partype to be evaluated: {}".format(self.ratio_data))
-        if (self.kwargs.get("PRE_loaded") and self.ratio_data):
+               
+        if self.theo_pre is not None \
+                and self.tag_position is not None \
+                and c["plot_theoretical_pre"]:
             
-            self.logger.debug("Passed first PRE test")
-            self._plot_pre_info(ax, data, data_info, data_extra, exp_name, orientation='h')
+            self._plot_theo_pre(
+                ax,
+                range(num_of_bars),
+                self.theo_pre[i],
+                orientation='h'
+                )
+            
+            tag_found = self.finds_paramagnetic_tag(
+                bars,
+                self.tag_position[i]
+                )
+            
+            if tag_found:
+                self._draw_paramagnetic_tag(
+                    ax,
+                    tag_found,
+                    y_max,
+                    plottype='h'
+                    )
         
         return
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    # def subplot(self, ax, data, data_info, exp_name, data_extra=None):
+        # """Configures subplot."""
+        
+        # c = self.config
+        # col = self.info_cols
+        # self.logger.debug("Starting Subplot ###### {}".format(exp_name))
+        
+        # data = np.nan_to_num(data)
+        
+        # self.logger.debug(data)
+        # self.logger.debug(data_info)
+        # self.logger.debug(data_extra)
+        
+        # number_of_residues_to_plot = data.shape[0]
+        
+        # self.logger.debug(
+            # "Number of residues to plot: {}".format(number_of_residues_to_plot)
+            # )
+        
+        # bars = ax.bar(
+            # range(number_of_residues_to_plot),
+            # data,
+            # width=c["bar_width"],
+            # align='center',
+            # alpha=c["bar_alpha"],
+            # linewidth=c["bar_linewidth"],
+            # zorder=4
+            # )
+        
+        # self.logger.debug("Created bar plot: OK")
+        
+        # for i in range(100,10000,100):
+            # if i>number_of_residues_to_plot:
+                # mod_ = i//10
+                # break
+        # self.logger.debug("tick mod: {}".format(mod_))
+        
+        # xticks = list()
+        # xticklabels = list()
+        # for k, m in zip(
+                # range(number_of_residues_to_plot),
+                # data_info[:,col["ResNo"]]
+                # ):
+            
+            # if int(m)%mod_==0:
+                # xticks.append(k)
+                # xticklabels.append(m)
+        
+        # self.logger.debug("Setting xticks: {}".format(xticks))
+        # self.logger.debug("xticklabels: {}".format(xticklabels))
+        
+        # ax.set_xticks(xticks)
+        # self.logger.debug("set_xticks: OK")
+        
+        # ## https://github.com/matplotlib/matplotlib/issues/6266
+        # ax.set_xticklabels(
+            # xticklabels,
+            # fontname=c["x_ticks_fn"],
+            # fontsize=c["x_ticks_fs"],
+            # fontweight=c["x_ticks_weight"],
+            # rotation=c["x_ticks_rot"]
+            # )
+        # self.logger.debug("set_xticklabels: OK")
+        
+        # if c["unassigned_shade"]:
+            # unassignedmask = \
+                # data_info[:, col['Peak Status']] == 'unassigned'
+            
+            # for res, m in enumerate(unassignedmask):
+                # if m:
+                    # res -= 0.5
+                    # ax.axvspan(
+                        # res,
+                        # res+1,
+                        # color=c["unassigned_color"],
+                        # alpha=c["unassigned_shade_alpha"],
+                        # lw=0
+                        # )
+        
+        # # Set subplot titles
+        # ax.set_title(
+            # exp_name,
+            # y=c["subtitle_pad"],
+            # fontsize=c["subtitle_fs"],
+            # fontname=c["subtitle_fn"],
+            # weight=c["subtitle_weight"]
+            # )
+        # self.logger.debug("Set title: OK")
+        
+        # # defines bars colors
+        # self._set_item_colors(
+            # bars,
+            # data_info[:,col['Peak Status']],
+            # {
+                # 'measured': c["measured_color"],
+                # 'missing': c["missing_color"],
+                # 'unassigned': c["unassigned_color"]
+                # }
+            # )
+        # self.logger.debug("set_item_colors: OK")
+        
+        # # configures spines
+        # ax.spines['bottom'].set_zorder(10)
+        # ax.spines['top'].set_zorder(10)
+        # self.logger.debug("Spines set: OK")
+        # # cConfigures YY ticks
+        # ax.set_ylim(c["y_lims"][0], c["y_lims"][1])
+        # ax.locator_params(axis='y', tight=True, nbins=8)
+        # self.logger.debug("Set Y limits: OK")
+        
+        # ax.set_yticklabels(
+            # ['{:.2f}'.format(yy) for yy in ax.get_yticks()],
+            # fontname=c["y_ticks_fn"],
+            # fontsize=c["y_ticks_fs"],
+            # fontweight=c["y_ticks_weight"],
+            # rotation=c["y_ticks_rot"]
+            # )
+        # self.logger.debug("Set Y tick labels: OK")
+        
+        # # configures tick params
+        # ax.margins(x=0.01)
+        # ax.tick_params(
+            # axis='x',
+            # pad=c["x_ticks_pad"],
+            # length=c["x_ticks_len"],
+            # direction='out'
+            # )
+        # ax.tick_params(
+            # axis='y',
+            # pad=c["y_ticks_pad"],
+            # length=c["y_ticks_len"],
+            # direction='out'
+            # )
+        # self.logger.debug("Configured X and Y tick params: OK")
+            
+        # # Set axes labels
+        # ax.set_xlabel(
+            # 'Residue',
+            # fontname=c["x_label_fn"],
+            # fontsize=c["x_label_fs"],
+            # labelpad=c["x_label_pad"],
+            # weight=c["x_label_weight"],
+            # rotation=0
+            # )
+        # ax.set_ylabel(
+            # c["ylabel"],
+            # fontsize=c["y_label_fs"],
+            # labelpad=c["y_label_pad"],
+            # fontname=c["y_label_fn"],
+            # weight=c["y_label_weight"],
+            # rotation=c["y_label_rot"]
+            # )
+        # self.logger.debug("Configured X and Y labels")
+        
+        # # Adds grid
+        # if c["y_grid_flag"]:
+            # ax.yaxis.grid(
+                # color=c["y_grid_color"],
+                # linestyle=c["y_grid_linestyle"],
+                # linewidth=c["y_grid_linewidth"],
+                # alpha=c["y_grid_alpha"],
+                # zorder=0
+                # )
+            # self.logger.debug("Configured grid: OK")
+        
+        # # Adds red line to identify significant changes.
+        # if c["threshold_flag"] and self.ppm_data:
+            # self.logger.debug("... Starting Threshold draw")
+            # self._plot_threshold(
+                # ax,
+                # data,
+                # c["threshold_color"],
+                # c["threshold_linewidth"],
+                # c["threshold_alpha"],
+                # zorder=c["threshold_zorder"]
+                # )
+            # self.logger.debug("Threshold: OK")
+        
+        # if c["mark_prolines_flag"]:
+            # self.logger.debug("... Starting Prolines Mark")
+            # self._text_marker(
+                # ax,
+                # range(number_of_residues_to_plot),
+                # data,
+                # data_info[:,col['1-letter']],
+                # {'P':c["mark_prolines_symbol"]},
+                # fs=c["mark_fontsize"]
+                # )
+            # self.logger.debug("Prolines Marked: OK")
+        
+        # if c["mark_user_details_flag"]:
+            # self.logger.debug("... Starting User Details Mark")
+            # self._text_marker(
+                # ax,
+                # range(number_of_residues_to_plot),
+                # data,
+                # data_info[:,col['Details']],
+                # c["user_marks_dict"],
+                # fs=c["mark_fontsize"]
+                # )
+            # self.logger.debug("User marks: OK")
+        
+        # if c["color_user_details_flag"]:
+            # self.logger.debug("... Starting User Colors Mark")
+            # self._set_item_colors(
+                # bars,
+                # data_info[:,col["Details"]],
+                # c["user_bar_colors_dict"]
+                # )
+            # self.logger.debug("Color user details: OK")
+        
+        # self.logger.debug("PRE_Loaded Flag: {}".format(self.kwargs.get("PRE_loaded")))
+        # self.logger.debug("Partype to be evaluated: {}".format(self.ratio_data))
+        # if (self.kwargs.get("PRE_loaded") and self.ratio_data):
+            
+            # self.logger.debug("Passed first PRE test")
+            # self._plot_pre_info(ax, data, data_info, data_extra, exp_name, orientation='h')
+        
+        # return
 
 if __name__ == "__main__":
     import os

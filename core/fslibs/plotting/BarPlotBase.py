@@ -84,11 +84,13 @@ class BarPlotBase(ExperimentPlot):
         
         self._config = BarPlotBase._default_config.copy()
         self._config.update(config)
-        self.logger.debug("Config updated: {}".format(self._config))
+        #self.logger.debug("Config updated: {}".format(self._config))
         
         # check input
         self.values = self._check_values(values)
+        self.logger.debug("<values>: {}".format(self.values))
         self.labels = self._check_labels(labels)
+        self.logger.debug("<labels>: {}".format(self.labels))
         
         super().__init__(config=self._config.copy(), **kwargs)
         
