@@ -20,6 +20,8 @@ if __name__ == "__main__":
     values = np.full((7,15), 0.2)
     labels = np.arange(1, len(values[0])+1).astype(str)
     
+    np.put(values, [0,9,14], 0.15)
+    
     plot1 = BarExtendedHorizontal(values, labels)
     c = {"figure_path": "bar_extended_horizontal_1_short.pdf"}
     plot1.set_config(c)
@@ -35,6 +37,8 @@ if __name__ == "__main__":
     
     values = np.full((2,765), 0.2)
     labels = np.arange(1, len(values[0])+1).astype(str)
+    
+    np.put(values, [0,699], 0.15)
     
     c = {"figure_path": "bar_extended_horizontal_2_large.pdf"}
     plot1 = BarExtendedHorizontal(values, labels, config=c)
