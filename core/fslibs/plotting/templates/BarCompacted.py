@@ -104,9 +104,9 @@ class BarCompacted(BarPlotBase):
         
         "x_ticks_pad": 2,
         "x_ticks_len": 2,
-        "x_ticks_fn": "monospace",
+        "x_ticks_fn": "Arial",
         "x_ticks_fs": 6,
-        "x_ticks_rot": 90,
+        "x_ticks_rot": 0,
         "x_ticks_weight": "normal",
         "x_ticks_color_flag":True,
         
@@ -224,7 +224,7 @@ class BarCompacted(BarPlotBase):
         c = self._config
         ydata = np.nan_to_num(values).astype(float)
         self.logger.debug("ydata: {}".format(ydata))
-        num_of_bars = ydata.shape[0]
+        num_of_bars = ydata.size
         self.logger.debug("Number of bars to represented: {}".format(num_of_bars))
         self.logger.debug("Subtitle: {}".format(subtitle))
         
@@ -263,31 +263,53 @@ class BarCompacted(BarPlotBase):
         self.logger.debug("Spines set: OK")
         
         ###################
-        # Configures X ticks and axis
+        # Configures X ticks and X ticks labels
         
-        # Define tick spacing
-        tmp_ticks = np.arange(len(num_of_bars))
+        try:
+            self.labels.astype(int)
+        except ValueError:
+            labels_are_int = False
+        else:
+            labels_are_int = True
         
-        xticks = np.arange(1, num_of_bars)
-        mod_ = 0
+        if num_of_bars <= 10:
+            xticks = np.arange(num_of_bars)
         
-        while not(len(xticks) <= 10):
-            xticks = np.concatenate(
-                (
-                    tmp_ticks[0],
-                    tmp_ticks[tmp_ticks % mod_ == 0]
-                    ),
-                axis=None
-                )
-            xticks_labels = np.array(self.labels)[xticks]
-            print(xticks_labels)
-            mod_ += 10
+        else:
+            number_of_ticks = num_of_bars
+            mod_ = 10
+            sanity_counter = 0
         
-        self.logger.debug("Tick spacing set to: {}".format(mod_))
+            if labels_are_int:
+                tmp_labels = self.labels.astype(int)
+                
+                while number_of_ticks > 10 and sanity_counter < 100000:
+                    
+                    mask = np.where(tmp_labels % mod_ == 0)[0]
+                    
+                    xticks = np.arange(num_of_bars)[mask]
+                    xticks_labels = tmp_labels[mask]
+                    number_of_ticks = len(xticks)
+        
+                    mod_ *= 10
+                    sanity_counter += 1
+            
+            elif not(labels_are_int):
+                
+                tmp_xticks = np.arange(num_of_bars)
+        
+                while number_of_ticks > 10 and sanity_counter < 100000:
+                    
+                    xticks = tmp_xticks[tmp_xticks % mod_ == 0]
+                    xticks_labels = self.labels[xticks]
+                    number_of_ticks = len(xticks)
+        
+                    mod_ *= 10
+                    sanity_counter += 1
+                
+        self.logger.debug("sanity_counter: {}".format(sanity_counter))
         
         # set xticks and xticks_labels to be represented
-        xticks_labels = np.array(self.labels)[xticks]
-        
         self.logger.debug("xticks represented: {}".format(xticks))
         self.logger.debug("xticks labels represented: {}".format(xticks_labels))
         
