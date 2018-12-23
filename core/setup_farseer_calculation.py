@@ -30,11 +30,8 @@ from core.fslibs.WetHandler import WetHandler as fsw
 from core.fslibs.FastaHandler import FastaHandler
 
 def check_input_construction(output_path, variables):
-
-    if not output_path.endswith('/'):
-        output_path += '/'
-
-
+    
+    
     if os.path.exists(os.path.join(output_path, 'spectra')):
         return "Spectra"
 
@@ -138,6 +135,11 @@ def create_directory_structure(output_path, variables):
                             fasta_start
                             )
                         )
+                
+                elif peaklist[0].format_ == 'ccpnmrv2':
+                    pklfh = open(peaklist_path, 'r')
+                    fout.writelines(pklfh.readlines())
+                
                 else:
                     write_peaklist_file(fout, peaklist)
 
