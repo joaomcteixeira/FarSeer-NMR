@@ -1,7 +1,16 @@
+import numpy as np
 
-from plotlibs import plottingbase, experimentplotbase, barplotbase
+from core.fslibs import Logger
+from plotlibs import (
+    plottingbase,
+    experimentplotbase,
+    barplotbase,
+    plotdecorators,
+    )
 
-default_config = {
+log = Logger.FarseerLogger(__name__).setup_log()
+
+_default_config = {
     
     "cols_page": 1,
     "rows_page": 6,
@@ -100,22 +109,52 @@ default_config = {
     }
 
 
+def get_config():
+    """
+    Returns the module's default config dictionary.
+    """
+    return _default_config
+
+
+def print_config(indent=4, sort_keys=True):
+    """
+    Nicely prints module's default config.
+    
+    Parameters
+    ----------
+    indent : int, optional
+        Indentation for sublevels. Defaults to 4.
+    
+    sort_keys : bool, optional
+        Sorts config keys. Default to True.
+    """
+    
+    if not(isinstance(indent, int)) :
+            raise ValueError("indent should be int type")
+    if not(isinstance(sort_keys, bool)) :
+            raise ValueError("sort_keys should be bool type")
+    
+    print(json.dumps(_default_config, indent=indent, sort_keys=sort_keys))
+    
+    return
+
 
 def _subplot(
         ax,
         values,
+        labels,
         i,
+        c,
         ):
-    """Configures subplot."""
+    """Subplot routine."""
     
     ###################
     # configures vars
-    c = self._config
     ydata = np.nan_to_num(values).astype(float)
-    self.logger.debug("ydata: {}".format(ydata))
+    log.debug("ydata: {}".format(ydata))
     num_of_bars = ydata.shape[0]
-    self.logger.debug("Number of bars to represented: {}".format(num_of_bars))
-    self.logger.debug("Subtitle: {}".format(subtitles[i]))
+    log.debug("Number of bars to represented: {}".format(num_of_bars))
+    log.debug("Suptitle: {}".format(suptitles[i]))
     
     ###################
     # Plots bars
@@ -127,29 +166,31 @@ def _subplot(
         alpha=c["bar_alpha"],
         linewidth=c["bar_linewidth"],
         color='black',
-        zorder=4
+        zorder=4,
         )
     
-    self.logger.debug("Number of bars plotted: {}".format(len(bars)))
-    self.logger.debug("Number of expected bars equals num of bars: {}".format(num_of_bars == len(bars)))
+    log.debug("Number of bars plotted: {}".format(len(bars)))
+    log.debug(
+        f"Num of expected bars equals num of bars: {num_of_bars == len(bars)}"
+        )
     
     ###################
     # Set subplot title
     ax.set_title(
-        subtitles[i],
+        suptitles[i],
         y=c["subtitle_pad"],
         fontsize=c["subtitle_fs"],
         fontname=c["subtitle_fn"],
-        weight=c["subtitle_weight"]
+        weight=c["subtitle_weight"],
         )
     
-    self.logger.debug("Subplot title set to : {}".format(subtitles[i]))
+    log.debug("Subplot title set to : {}".format(suptitles[i]))
     
     ###################
     # Configures spines
     ax.spines['bottom'].set_zorder(10)
     ax.spines['top'].set_zorder(10)
-    self.logger.debug("Spines set: OK")
+    log.debug("Spines set: OK")
     
     ###################
     # Configures X ticks and axis
@@ -159,14 +200,14 @@ def _subplot(
         if j>num_of_bars:
             mod_ = j//100
             break
-    self.logger.debug("Tick spacing set to: {}".format(mod_))
+    log.debug("Tick spacing set to: {}".format(mod_))
     
     # set xticks and xticks_labels to be represented
     xticks = np.arange(len(bars))[0::mod_]
-    xticks_labels = np.array(self.labels)[0::mod_]
+    xticks_labels = np.array(labels)[0::mod_]
     
-    self.logger.debug("xticks represented: {}".format(xticks))
-    self.logger.debug("xticks labels represented: {}".format(xticks_labels))
+    log.debug("xticks represented: {}".format(xticks))
+    log.debug("xticks labels represented: {}".format(xticks_labels))
     
     # Set X ticks
     ax.set_xticks(xticks)
@@ -178,7 +219,7 @@ def _subplot(
         fontname=c["x_ticks_fn"],
         fontsize=c["x_ticks_fs"],
         fontweight=c["x_ticks_weight"],
-        rotation=c["x_ticks_rot"]
+        rotation=c["x_ticks_rot"],
         )
     
     # Set xticks params
@@ -188,7 +229,7 @@ def _subplot(
         length=c["x_ticks_len"],
         direction='out'
         )
-    self.logger.debug("Configured X tick params: OK")
+    log.debug("Configured X tick params: OK")
     
     # Set X axis label
     ax.set_xlabel(
@@ -197,9 +238,9 @@ def _subplot(
         fontsize=c["x_label_fs"],
         labelpad=c["x_label_pad"],
         weight=c["x_label_weight"],
-        rotation=c["x_label_rotation"]
+        rotation=c["x_label_rotation"],
         )
-    self.logger.debug("Set X label: OK")
+    log.debug("Set X label: OK")
     
     ###################
     # Configures Y ticks and axis
@@ -208,7 +249,7 @@ def _subplot(
     ymin = c["y_lims"][0]
     ymax = c["y_lims"][1]
     ax.set_ylim(ymin, ymax)
-    self.logger.debug("Set y max {} and ymin {}".format(ymin, ymax))
+    log.debug("Set y max {} and ymin {}".format(ymin, ymax))
     
     # sets number of y ticks
     ax.locator_params(axis='y', tight=True, nbins=c["y_ticks_nbins"])
@@ -219,18 +260,18 @@ def _subplot(
         fontname=c["y_ticks_fn"],
         fontsize=c["y_ticks_fs"],
         fontweight=c["y_ticks_weight"],
-        rotation=c["y_ticks_rot"]
+        rotation=c["y_ticks_rot"],
         )
-    self.logger.debug("Set Y tick labels: OK")
+    log.debug("Set Y tick labels: OK")
     
     # sets y ticks params
     ax.tick_params(
         axis='y',
         pad=c["y_ticks_pad"],
         length=c["y_ticks_len"],
-        direction='out'
+        direction='out',
         )
-    self.logger.debug("Configured Y tick params: OK")
+    log.debug("Configured Y tick params: OK")
     
     # set Y label
     ax.set_ylabel(
@@ -239,9 +280,9 @@ def _subplot(
         labelpad=c["y_label_pad"],
         fontname=c["y_label_fn"],
         weight=c["y_label_weight"],
-        rotation=c["y_label_rot"]
+        rotation=c["y_label_rot"],
         )
-    self.logger.debug("Set Y label: OK")
+    log.debug("Set Y label: OK")
     
     ###################
     # Additional configurations
@@ -250,17 +291,17 @@ def _subplot(
     ax.margins(x=0.01, tight=True)
     
     # defines bars colors
-    if self.peak_status is not None:
-        self._set_item_colors(
+    if peak_status is not None:
+        experimentplotbase.set_item_colors(
             bars,
-            self.peak_status[i],
+            peak_status[i],
             {
                 'measured': c["measured_color"],
                 'missing': c["missing_color"],
-                'unassigned': c["unassigned_color"]
-                }
+                'unassigned': c["unassigned_color"],
+                },
             )
-        self.logger.debug("set_item_colors: OK")
+        log.debug("set_item_colors: OK")
     
     ###################
     # Additional representation features
@@ -272,109 +313,170 @@ def _subplot(
             linestyle=c["y_grid_linestyle"],
             linewidth=c["y_grid_linewidth"],
             alpha=c["y_grid_alpha"],
-            zorder=0
+            zorder=0,
             )
-        self.logger.debug("Configured grid: OK")
+        log.debug("Configured grid: OK")
     
     # defines xticks colors
-    if self.peak_status is not None and c["x_ticks_color_flag"]:
-        logger.debug("Configuring for x_ticks_color_flag...")
-        self._set_item_colors(
+    if peak_status is not None and c["x_ticks_color_flag"]:
+        log.debug("Configuring for x_ticks_color_flag...")
+        experimentplotbase.set_item_colors(
             ax.get_xticklabels(),
-            self.peak_status[i,0::mod_],
+            peak_status[i,0::mod_],
             {
                 'measured':c["measured_color"],
                 'missing':c["missing_color"],
-                'unassigned':c["unassigned_color"]
-                }
+                'unassigned':c["unassigned_color"],
+                },
             )
-        self.logger.debug("...Done")
+        log.debug("...Done")
     
     # Adds red line to identify significant changes.
     if c["threshold_flag"]:
-        self.logger.debug("... Starting threshold draw")
-        self._plot_threshold(ax, ydata)
-        self.logger.debug("Threshold: OK")
+        log.debug("... Starting threshold draw")
+        barplotbase.plot_threshold(ax, ydata)
+        log.debug("Threshold: OK")
     
-    if self.letter_code is not None and c["mark_prolines_flag"]:
-        self.logger.debug("... Starting Prolines Mark")
-        self._text_marker(
+    if letter_code is not None and c["mark_prolines_flag"]:
+        log.debug("... Starting Prolines Mark")
+        experimentplotbase.text_marker(
             ax,
             range(num_of_bars),
             ydata,
-            self.letter_code,
+            letter_code,
             {'P':c["mark_prolines_symbol"]},
-            fs=c["mark_fontsize"]
+            fs=c["mark_fontsize"],
             )
-        self.logger.debug("Prolines Marked: OK")
+        log.debug("Prolines Marked: OK")
     
-    if self.details is not None and c["mark_user_details_flag"]:
-        self.logger.debug("... Starting User Details Mark")
-        self._text_marker(
+    if details is not None and c["mark_user_details_flag"]:
+        log.debug("... Starting User Details Mark")
+        experimentplotbase.text_marker(
             ax,
             range(num_of_bars),
             ydata,
-            self.details[i],
+            details[i],
             c["user_marks_dict"],
-            fs=c["mark_fontsize"]
+            fs=c["mark_fontsize"],
             )
-        self.logger.debug("User marks: OK")
+        log.debug("User marks: OK")
     
-    if self.details is not None and c["color_user_details_flag"]:
-        self.logger.debug("... Starting User Colors Mark")
-        self._set_item_colors(
+    if details is not None and c["color_user_details_flag"]:
+        log.debug("... Starting User Colors Mark")
+        experimentplotbase.set_item_colors(
             bars,
-            self.details[i],
-            c["user_bar_colors_dict"]
+            details[i],
+            c["user_bar_colors_dict"],
             )
-        self.logger.debug("Color user details: OK")
+        log.debug("Color user details: OK")
            
-    if self.theo_pre is not None \
-            and self.tag_position is not None \
+    if theo_pre is not None \
+            and tag_position is not None \
             and c["plot_theoretical_pre"]:
         
-        self._plot_theo_pre(
+        experimentplotbase.plot_theo_pre(
             ax,
             range(num_of_bars),
-            self.theo_pre[i],
-            orientation='h'
+            theo_pre[i],
+            orientation='h',
             )
         
-        tag_found = self.finds_paramagnetic_tag(
+        tag_found = experimentplotbase.finds_paramagnetic_tag(
             bars,
-            self.tag_position[i]
+            tag_position[i],
             )
         
         if tag_found:
-            self._draw_paramagnetic_tag(
+            experimentplotbase.draw_paramagnetic_tag(
                 ax,
                 tag_found,
                 y_max,
-                plottype='h'
+                plottype='h',
                 )
     
     return
 
 
-
-@barplotbase.add_docstring
-@experimentplotbase.add_docstring
-@plottingbase.add_docstring
+@plotdecorators.check_barplot_args
 def plot(
         values,
         labels,
         header="",
-        details=None,
+        suptitles=None,
         letter_code=None,
         peak_status=None,
-        subtitles=None,
+        details=None,
+        threshold=None,
         tag_position=None,
         theo_pre=None,
-        threshold=None,
         **kwargs,
         ):
+    """
+    Plots according to the Extended Bar Plot Template.
     
-    config = {**default_config, **kwargs}
+    The Extended Bar Plot template draws wide Bar plots that are
+    designed to fit one page with. Bar Plots represent parameters
+    for each residue individually in the form of bars.
+    
+    Subplots, one for each peaklist, i.e. experiment, are stacked
+    sequentially from top to bottom.
+    
+    Parameters
+    ----------
+    values : np.array shape (y,x), dtype=float
+        where X (axis=1) is the data to plot for each column,
+        Y (axis=0) is the evolution of that data along the titration.
+        
+    labels : sequence type of length values.shape[1]
+        Bar labels which are drawn as xtick labels.
+    
+    header : str
+        Multi-line string with additional human-readable notes.
+        Header will be written in the output figure file in a dedicated
+        blank space.
+    
+    suptitles : iterable type of strings
+        Titles of each subplot, length must be equal to values.shape[0].
+
+    letter_code : sequence type
+        1-letter code of the protein sequence, should have length equal
+        to <labels>.
+
+    peak_status : np.array shape (y,x), dtype=str
+        Peak status information according to core.utils.peak_status
+        dictionary.
+
+    details : np.array shape (y,x), dtype=str
+        Peaklist Details column information.
+    
+    threshold : float
+        The Y value of the threshold line.
+    
+    theo_pre : np.array shape (y,x), dtype=str
+        Information on theoretical PRE data.
+
+    tag_position : np.array shape (y,x), dtype=str
+        Null values where tag not present, "*" character denotes
+        the position of the of the paramagnetic tag.
+    
+    **kwargs : accepts **kwargs
+        Plot details (colors, shapes, fonts, ...) can be highly
+        configured through additional kwargs parameters.
+        
+        The available kwargs are stored in a default configuratio
+        dictionary that can be obtained through the module's
+        .get_config() or .prin_config() functions.
+        
+        This dictionary can be modified and passed enterilly to the
+        function call, do not forget the unpacking operator (**),
+        or, instead if individual arguments are passed, those will
+        update the default configuration.
+        
+        If no **kwargs are provided, the default configuration dictionary 
+        is used.
+    """
+    
+    config = {**_default_config, **kwargs}
     
     """Runs all operations to plot."""
     num_subplots = experimentplotbase.calc_num_subplots(values)
@@ -385,21 +487,28 @@ def plot(
         config["cols_page"],
         config["fig_height"],
         config["fig_width"],
-        ) # from PlottingBase
+        )
     
     for i in range(values.shape[0]):
         
-        logger.debug("Starting subplot no: {}".format(i))
-        
-        _subplot(axs[i], values[i], i, config)
+        log.debug("Starting subplot no: {}".format(i))
+        # other parameters are not passed because they are None by default
+        # and may lead to IndexError
+        _subplot(
+            axs[i],
+            values[i],
+            labels,
+            config,
+            i,
+            )
     
     plottingbase.adjust_subplots(
         figure,
         config["hspace"],
         config["wspace"],
-        ) # from PlottingBase
+        )
     
-    plottingbase.clean_subplots(axs, num_subplots) # from PlottingBase
+    plottingbase.clean_subplots(axs, num_subplots)
     
     plottingbase.save_figure(
         figure,
@@ -407,7 +516,7 @@ def plot(
         header=header,
         header_fs=config["header_fontsize"],
         dpi=config["figure_dpi"],
-        ) # from PlottingBase
+        )
     
     plt.close(figure)
     

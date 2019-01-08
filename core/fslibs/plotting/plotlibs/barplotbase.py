@@ -1,10 +1,12 @@
+from functools import wraps
+
 def plot_threshold(
         ax,
         values,
         std=5,
         orientation='horizontal',
         threshold_color="red",
-        threshold_linewidth=0.5
+        threshold_linewidth=0.5,
         threshold_alpha=0.8,
         threshold_zorder=10,
         **kwargs,
@@ -70,27 +72,4 @@ def plot_threshold(
     
     return
 
-def plot_subplots(values, axs, subtitles, func):
-    """
-    Sends the specific data to each subplot.
-    Requires self.figure and self.axs
-    
-    Returns:
-        - None
-    """
-    logger.debug("Starting plot activity")
-    
-    for i in range(values.shape[0]):
-        
-        logger.debug("Starting subplot no: {}".format(i))
-        
-        func(
-            self.axs[i],
-            self.values[i],
-            self.suptitles[i],
-            i
-            )
-    
-    # returns the final index
-    # useful for some subplots
-    return i
+

@@ -275,3 +275,45 @@ def text_marker(
                     )
     
     return
+
+
+def _decorator_main_docstring(func):
+    docs = """
+    This template is part of the Experiment-based templates. These
+    are characterized by representing in each subplot the data
+    referent to a peaklist, i.e. experiment.
+
+    The most common representation are the Bar Plots, where a given
+    parameter is represented as a bar for each separated residue.
+    """
+    func.__doc__ = docs + func.__doc__
+    return func
+
+def _decorator_shared_vars_docstring(func):
+    
+    func.__doc__ += """
+    subtitles : iterable type of strings
+        Titles of each subplot, length must be equal to values.shape[0].
+
+    letter_code : sequence type
+        1-letter code of the protein sequence, should have length equal
+        to <labels>.
+
+    peak_status : np.array shape (y,x), dtype=str
+        Peak status information according to core.utils.peak_status
+        dictionary.
+
+    details : np.array shape (y,x), dtype=str
+        Peaklist Details column information.
+
+    theo_pre : np.array shape (y,x), dtype=str
+        Information on theoretical PRE data.
+
+    tag_position : np.array shape (y,x), dtype=str
+        Null values where tag not present, "*" character denotes
+        the position of the of the paramagnetic tag.
+
+    threshold : float
+        The Y value of the threshold line.
+    """    
+    return func

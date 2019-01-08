@@ -1,9 +1,9 @@
-import core.fslibs.Logger import Logger
+import core.fslibs.Logger as Logger
 from core.fslibs.WetHandler import WetHandler
 
-logger = Logger.FarseerLogger(__name__).get_log()
+logger = Logger.FarseerLogger(__name__).setup_log()
 
-def _hex_to_RGB(hexx):
+def hex_to_RGB(hexx):
     """
     This function was taken from:
     Copyright 2017 Ben Southgate
@@ -42,7 +42,7 @@ def _hex_to_RGB(hexx):
     # Pass 16 to the integer function for change of base
     return [int(hexx[i:i+2], 16) for i in range(1,6,2)]
 
-def _RGB_to_hex(RGB):
+def RGB_to_hex(RGB):
     """
     This function was taken verbatim from:
     Copyright 2017 Ben Southgate
@@ -80,7 +80,7 @@ def _RGB_to_hex(RGB):
         )
     return hexx
 
-def _color_dict(gradient):
+def color_dict(gradient):
     """
     This function was taken verbatim from:
     Copyright 2017 Ben Southgate
@@ -122,7 +122,7 @@ def _color_dict(gradient):
     
     return d
 
-def _linear_gradient(finish_hex="#FFFFFF", n=10):
+def linear_gradient(finish_hex="#FFFFFF", n=10):
     """
     This function was taken verbatim from:
     Copyright 2017 Ben Southgate
@@ -264,3 +264,6 @@ def save_figure(
     logger.info(f"**Saved plot figure** {file_path}")
     
     return
+
+
+
