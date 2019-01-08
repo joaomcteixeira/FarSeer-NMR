@@ -1,7 +1,14 @@
+import inspect
+
+import numpy as np
+from matplotlib import pyplot as plt
+
+from core import validate
 import core.fslibs.Logger as Logger
 from core.fslibs.WetHandler import WetHandler
 
-logger = Logger.FarseerLogger(__name__).setup_log()
+log = Logger.FarseerLogger(__name__).setup_log()
+
 
 def hex_to_RGB(hexx):
     """
@@ -174,23 +181,45 @@ def linear_gradient(finish_hex="#FFFFFF", n=10):
     return _color_dict(RGB_list)
 
 
-def draw_figure(num_subplots, rows_page, cols_page, fig_height, fig_width):
+def draw_figure(
+        num_subplots,
+        rows_page,
+        cols_page,
+        fig_height,
+        fig_width,
+        ):
     """
-    Draws the figure architecture.
+    Draws the matplotlib figure architecture.
     
-    Defines the size of the figure and subplots based
-    on the data to plot.
+    Defines subplot grid distrubitions based on the data to plot, 
+    desired rows and columns per page, figure height and width.
     
-    Parameters:
+    Parameters
+    ----------
+    num_subplots : int
+        The total number of subplots
     
-        - num_subplots:
-        - cols_page:
-        - fig_height:
-        - fig_width:
+    rows_page: int
+        The desired number os subplot rows per figure's page.
     
-    Returns:
-        - matplotlib Figure, Axes
+    cols_page : int
+        The desired number os subplot columns per figure's page.
+    
+    fig_height : float
+        Height of the figure's page.
+    
+    fig_width : float
+        Width of the figure's page.
+    
+    Returns
+    -------
+    (Figure, Axes) tuple
+        
+        matplotlib.pyplot.figure and matplotlib.pyplot.axes objects.
     """
+    types = [int, int, int, float, float]
+    args, _, _, values = inspect.getargvalues(inspect.currentframe())
+    list(map(validate, zip(values.values(), types)))
     
     numrows = _calc_num_rows(
         num_subplots,
@@ -216,12 +245,34 @@ def draw_figure(num_subplots, rows_page, cols_page, fig_height, fig_width):
         rect=[0.01,0.01,0.995,0.995]
         )
     
-    logger.debug("Figure drawn: OKAY")
+    log.debug("Figure drawn: OKAY")
     
     return figure, axs
 
 
 def adjust_subplots(figure, hspace, wspace):
+    """
+    Ajudst subplots.
+    
+    Adjusts subplots according to matplotlib.pyplot.subplots_adjust
+    
+    Parameters
+    ----------
+    figure : :obj:`matplotlib.pyplot.figure`
+    
+    hspace : float
+        from matplotlib, the amount of height reserved for space
+            between subplots, expressed as a fraction of the average
+            axis height
+    
+    wspace : float
+        from matplotlib, the amount of width reserved for space
+            between subplots, expressed as a fraction of the average
+            axis width
+    """
+    types = [plt.figure, float, float]
+    args, _, _, values = inspect.getargvalues(inspect.currentframe())
+    list(map(validate, zip(values.values(), types)))
     
     figure.subplots_adjust(
         hspace=hspace,
@@ -230,15 +281,31 @@ def adjust_subplots(figure, hspace, wspace):
     
     return
 
-def clean_subplots(axs, num_subplots):
-    """ Removes unsed subplots."""
+def clean_subplots(axes, num_subplots):
+    """
+    Removes unsed subplots from figure.
     
-    len_axs = len(axs)
+    <axes> length is compared to <num_subplots> and elements
+    in <axes> that have not been used are removed from figure.
     
-    logger.debug(f"Length Axes: {len_axs}")
+    Parameters
+    ----------
+    axs : :obj:`matplotlib.pyplot.axes`
+    
+    num_subplots : int
+        The number of subplots that have been draw in the Figure.
+    """
+    types = [plt.axes, int]
+    args, _, _, values = inspect.getargvalues(inspect.currentframe())
+    list(map(validate, zip(values.values(), types)))
+    
+    
+    len_axs = len(axes)
+    
+    log.debug(f"Length Axes: {len_axs}")
     
     for i in range(num_subplots, len_axs):
-        axs[i].remove()
+        axes[i].remove()
     
     return
 
@@ -250,7 +317,42 @@ def save_figure(
         header_fs=5,
         dpi=300,
         ):
-    """Saves figure to path"""
+    """
+    Saves figure to path.
+    
+    Parameters
+    ----------
+    figure : :obj:`matplotlib.pyplot.figure`
+    
+    file_path : str
+        File name path of the output file.
+        
+        For example:
+        /home/user/where/ever/i/want/figure.pdf
+        
+        file extensions can be such as accepted by fname in:
+        
+        https://matplotlib.org/api/_as_gen/matplotlib.pyplot.savefig.html
+    
+    header : str
+        Multi-line string with additional human-readable notes.
+        Header will be written in the output figure file in a dedicated
+        blank space.
+    
+    header_fs : float
+        The header fontsize.
+    
+    dpi : int
+        The resolution in dots per inch. 
+        
+        The Figure resolution in dpi. Deppends on the file extension.
+        
+        Additional help:
+        https://matplotlib.org/api/_as_gen/matplotlib.pyplot.savefig.html
+    """    
+    types = [plt.figure, str, str, float, int]
+    args, _, _, values = inspect.getargvalues(inspect.currentframe())
+    list(map(validate, zip(values.values(), types)))
     
     figure.text(
         0.01,
@@ -261,7 +363,7 @@ def save_figure(
     
     figure.savefig(file_path, dpi=dpi)
     
-    logger.info(f"**Saved plot figure** {file_path}")
+    log.info(f"**Saved plot figure** {file_path}")
     
     return
 
