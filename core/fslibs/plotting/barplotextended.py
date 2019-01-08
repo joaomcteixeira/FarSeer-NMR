@@ -1,11 +1,14 @@
 import numpy as np
+import json
+
+from matplotlib import pyplot as plt
 
 from core.fslibs import Logger
 from plotlibs import (
     plottingbase,
     experimentplotbase,
     barplotbase,
-    plotdecorators,
+    plotvalidators,
     )
 
 log = Logger.FarseerLogger(__name__).setup_log()
@@ -145,6 +148,12 @@ def _subplot(
         labels,
         i,
         c,
+        suptitles,
+        letter_code,
+        peak_status,
+        details,
+        tag_position,
+        theo_pre,
         ):
     """Subplot routine."""
     
@@ -397,7 +406,6 @@ def _subplot(
     return
 
 
-@plotdecorators.check_barplot_args
 def plot(
         values,
         labels,
@@ -406,7 +414,6 @@ def plot(
         letter_code=None,
         peak_status=None,
         details=None,
-        threshold=None,
         tag_position=None,
         theo_pre=None,
         **kwargs,
@@ -423,58 +430,85 @@ def plot(
     
     Parameters
     ----------
-    values : np.array shape (y,x), dtype=float
+    values : np.ndarray shape (y,x), dtype=float
         where X (axis=1) is the data to plot for each column,
         Y (axis=0) is the evolution of that data along the titration.
         
     labels : sequence type of length values.shape[1]
         Bar labels which are drawn as xtick labels.
     
-    header : str
+    header : str, optional
         Multi-line string with additional human-readable notes.
         Header will be written in the output figure file in a dedicated
-        blank space.
+        blank space. 
     
-    suptitles : iterable type of strings
+    suptitles : iterable type of strings, optional
         Titles of each subplot, length must be equal to values.shape[0].
-
-    letter_code : sequence type
+        Defaults to a range of values.shape[0], ["0", "1", "2", ...
+    
+    Bellow Parameters Assigned to None if not provided
+    --------------------------------------------------
+    
+    letter_code : sequence type, optional
         1-letter code of the protein sequence, should have length equal
         to <labels>.
 
-    peak_status : np.array shape (y,x), dtype=str
+    peak_status : np.ndarray shape (y,x), dtype=str, optional
         Peak status information according to core.utils.peak_status
         dictionary.
 
-    details : np.array shape (y,x), dtype=str
+    details : np.ndarray shape (y,x), dtype=str, optional
         Peaklist Details column information.
     
-    threshold : float
-        The Y value of the threshold line.
-    
-    theo_pre : np.array shape (y,x), dtype=str
+    theo_pre : np.ndarray shape (y,x), dtype=str, optional
         Information on theoretical PRE data.
 
-    tag_position : np.array shape (y,x), dtype=str
+    tag_position : np.ndarray shape (y,x), dtype=str, optional
         Null values where tag not present, "*" character denotes
         the position of the of the paramagnetic tag.
     
-    **kwargs : accepts **kwargs
+    Plot Configuration Parameters
+    -----------------------------
+    
+    **kwargs :
         Plot details (colors, shapes, fonts, ...) can be highly
-        configured through additional kwargs parameters.
+        configured through additional named parameters.
         
-        The available kwargs are stored in a default configuratio
-        dictionary that can be obtained through the module's
-        .get_config() or .prin_config() functions.
+        The available options for named parameters are stored in a
+        default configuration dictionary that can be obtained through
+        the module's .get_config() (see also .prin_config()) functions.
         
         This dictionary can be modified and passed enterilly to the
         function call, do not forget the unpacking operator (**),
         or, instead if individual arguments are passed, those will
         update the default configuration.
         
-        If no **kwargs are provided, the default configuration dictionary 
-        is used.
+        If no **kwargs are provided, the default configuration
+        dictionary is used.
+        
+        Example:
+        
+        >>> my_config_dict = {"figure_path": "super_plot.pdf"}
+        >>> plot(some_values, some_labels, **my_config_dict)
+        
+        or
+        
+        >>> plot(some_values, some_labels, figure_path="super_plot.pdf")
     """
+    
+    plotvalidators.validate_barplot_data(values, labels)
+    
+    suptitles = suptitles or [str(i) for i in range(values.shape[0])]
+    
+    plotvalidators.validate_barplot_additional_data(
+        values,
+        suptitles=suptitles,
+        letter_code=letter_code,
+        peak_status=peak_status,
+        details=details,
+        tag_position=tag_position,
+        theo_pre=theo_pre,
+        )
     
     config = {**_default_config, **kwargs}
     
@@ -498,8 +532,14 @@ def plot(
             axs[i],
             values[i],
             labels,
-            config,
             i,
+            config,
+            suptitles,
+            letter_code,
+            peak_status,
+            details,
+            tag_position,
+            theo_pre,
             )
     
     plottingbase.adjust_subplots(
@@ -521,3 +561,16 @@ def plot(
     plt.close(figure)
     
     return
+
+if __name__ == "__main__":
+    
+    print_config()
+    
+    ######################################################################## 1
+    ############ Short data set
+    
+    values = np.full((7,15), 0.2)
+    labels = np.arange(1, len(values[0])+1).astype(str)
+    
+    c = {"figure_path": "bar_extended_1_short.pdf"}
+    plot(values, labels, header="oh my headeR!!!", **c)

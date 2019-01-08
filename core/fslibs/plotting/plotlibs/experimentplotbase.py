@@ -1,16 +1,32 @@
+import inspect
+import collections
+import numpy as np
+
+from matplotlib import pyplot as plt
+
+from core import validate
+from core.fslibs import Logger
+
+log = Logger.FarseerLogger(__name__).setup_log()
+
+
 def calc_num_subplots(values):
     """
     Calculates the total number of subplots to be plotted
     based on the user data.
     
-    Returns:
-        - None
-        
-    Stores:
-        - self.num_subplots (int)
+    Parameters
+    ----------
+    values : np.ndarray shape (y,x), dtype=float
+        where X (axis=1) is the data to plot for each column,
+        Y (axis=0) is the evolution of that data along the titration.
     """
+    types = [np.ndarray]
+    args_, _, _, values_ = inspect.getargvalues(inspect.currentframe())
+    list(map(validate.validate_types, zip(values_.values(), types)))
+    
     num_subplots = values.shape[0]
-    logger.debug(f"Number of subplots: {num_subplots}")
+    log.debug(f"Number of subplots: {num_subplots}")
     
     return num_subplots
 
@@ -22,27 +38,38 @@ def draw_paramagnetic_tag(
         tag_cartoon_color="black",
         tag_cartoon_ls="-",
         tag_cartoon_lw=1.0,
+        **kargs,
         ):
     """
     Draws paramagnetic tag tick on functionalized residue.
     
-    Parameters:
-        axs (matplotlib subplot axis): where values are plot.
+    Parameters
+    ----------
+    ax : element of :obj:`matplotlib.pyplot.axes`
         
-        tag_position (int): the residue number where the paramagnetic
-            tag is placed.
+    tag_position : int
+        The bar index where the paramagnetic tag is placed.
+        Bar index can be obtained via .finds_para_tag()
         
-        y_lim (float): plot's y axis limit
+    y_lim : float
+        Plot's y axis limit
         
-        plottype (str): {'h', 'v', 'hm'}, whether plot of type 
-            horizontal, vertical or Heat Map. Defaults: 'h'.
+    plottype : ['h', 'v', 'hm'], optional
+        Whether plot of type horizontal, vertical or Heat Map.
+        Defaults: 'h'
         
-        tag_color (str): the colour of the tag cartoon
+    tag_cartoon_color : str, optional
+        The colour of the tag cartoon. Defaults to "black".
         
-        tag_ls (str): matplotlib linestyle kwarg for the tag tick
+    tag_cartoon_ls : str, optional
+        matplotlib's linestyle kwarg for the tag tick. Defaults to "-".
         
-        tag_lw (float): tag tick line width.
+    tag_cartoon_lw : float, optional
+        Tag tick line width. Defaults to 1.0.
     """
+    types = [plt.axis, int, float, str, str, str, float]
+    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
+    list(map(validate.validate_types, zip(values_.values(), types)))
     
     y_lim = y_lim*0.1
     
@@ -99,31 +126,49 @@ def draw_paramagnetic_tag(
             )
     return
 
-def finds_para_tag(data, tag_data, tag_id="*"):
+def finds_para_tag(
+        data,
+        tag_data,
+        tag_id="*",
+        **kargs,
+        ):
     """
     Finds the bar index where the tag tick should be drawn based
-    on an <identifier>.
+    on <tag_id>.
     
-    Parameters:
+    Parameters
+    ----------
+    data : iterator type
+        data upon which the index will be searched
         
-        - data (iterator): data upon which the index will be searched
-        
-        - tag_data (np.array): contains information where the tag is
+    tag_data : np.ndarray, dtype=str
+        Null values where tag not present, <identifier> character
+        denotes the position of the of the paramagnetic tag.
     
-    Returns:
-        - index where Tag is located
+    tag_id : str, optional
+        The tag identifier. Defaults to "*".
+    
+    Returns
+    -------
+        int
+            The index where tag is located
     """
-    if len(data) != len(tag_data):
-        logger.info("*** Data and tag_data size equal: FALSE")
-        return False
+    types = [collections.Iterator, np.ndarray, str]
+    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
+    list(map(validate.validate_types, zip(values_.values(), types)))
     
-    logger.debug("Tag info: {}".format(tag_data))
+    if len(data) != len(tag_data):
+        _ = "*** Data and tag_data size equal: FALSE"
+        log.info(_)
+        raise ValueError(_)
+    
+    log.debug("Tag info: {}".format(tag_data))
     
     where_tag = np.where(tag_data==tag_id)
-    logger.debug("Tag mask found: {}".format(where_tag))
+    log.debug("Tag mask found: {}".format(where_tag))
     
     tag_position = list(range(len(data)))[where_tag[0][0]]
-    logger.debug("Tag bar index position: {}".format(tag_position))
+    log.debug("Tag bar index position: {}".format(tag_position))
     
     return tag_position
 
@@ -133,23 +178,35 @@ def plot_theo_pre(
         values_y,
         plottype='h',
         theo_pre_color="red",
-        theo_pre_lw=1,
+        theo_pre_lw=1.0,
         **kargs,
         ):
     """
     Plots theoretical PRE.
     
-    Parameters:
-        axs (matplotlib subplot axis): where values are plot.
+    Parameters
+    ----------
+    ax : element of :obj:`matplotlib.pyplot.axes`
         
-        values_x (np.ndarray): X values to plot
+    values_x : np.ndarray
+        X values to plot
         
-        values_y (np.adrray): Y values to plot
+    values_y : np.ndarray
+        Y values to plot
         
-        plottype (str): {'h', 'v'}, whether plot of type 
-            horizontal, vertical or Heat Map. Defaults: 'h'.
-        
+    plottype : ['h', 'v'], optional
+        Whether the plot is of horizontal or vertical type.
+        Defaults: 'h'.
+    
+    theo_pre_color : str, optional
+        Plot line color. Defaults "red"
+    
+    theo_pre_lw : float, optional
+        Plot line width. Defaults to 1.0.
     """
+    types = [plt.axis, np.ndarray, np.ndarray, str, str, float]
+    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
+    list(map(validate.validate_types, zip(values_.values(), types)))
     
     if plottype == 'v':
         ax.plot(
@@ -176,23 +233,26 @@ def set_item_colors(items, values, d):
     Colour codes <items> according to conditions in <values>
     as described by <d>.
     
-    Parameters:
-        items (items obj): either plot bars, ticks, etc...
+    Parameters
+    ----------
+    items : matplotib's items obj
+        Either plot bars, ticks, etc...
     
-        values (np.array shape (x,)):
-            containing the condition information.
+    values : np.ndarray of shape (x,)
+        Containing the condition information.
     
-        d (dict): keys are conditions, and values are colours.
-    
-    Returns:
-        None, series are changed in place.
+    d : dict
+        Keys are conditions matching <values>, and values are colours.
     """
+    types = [collections.Iterator, np.ndarray, dict]
+    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
+    list(map(validate.validate_types, zip(values_.values(), types)))
     
-    logger.debug("Setting colours: {}".format(values))
+    log.debug("Setting colours: {}".format(values))
     
-    for v, it in zip(values, items):
+    for v, item_ in zip(values, items):
         if str(v) in d.keys():
-            it.set_color(d[str(v)])
+            item_.set_color(d[str(v)])
     return
 
 def text_marker(
@@ -208,25 +268,37 @@ def text_marker(
     """
     Places a text mark over the bars of a Bar Plot.
     
-    Parameters:
-        ax (matplotlib subplot axis): where maker is written.
+    Parameters
+    ----------
+    ax : element of :obj:`matplotlib.pyplot.axes`.
         
-        values_x (np.array): series with X axis information
+    values_x : np.ndarray
+        X values to plot.
         
-        values_y (np.array): series with Y axis information
+    values_y : np.ndarray
+        Y values to plot.
         
-        series (np.array): series with information source to
-            convert to text mark.
+    series : np.ndarray
+        Series with information source to convert to text mark.
         
-        d (dict): translates information into marker.
+    d : dict
+        Keys are conditions matching <series>, and values are
+            the text markers.
         
-        fs (int): font size
+    fs : float, optional
+        Text mark font size.
         
-        orientation (str): {'horizontal', 'vertical'}
-            wheter plotting in a vertical or horizontal plot.
-            Defaults to 'horizontal'
+    orientation : ['horizontal', 'vertical'], optional
+        Wheter plotting in a vertical or horizontal plot.
+        Defaults to 'horizontal'
     """
-    logger.debug(f"Text marker series: {series}")
+    types = [collections.Iterator, np.ndarray, np.ndarray,
+        np.ndarray, dict, float, str]
+    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
+    list(map(validate.validate_types, zip(values_.values(), types)))
+    
+    
+    log.debug(f"Text marker series: {series}")
     
     if orientation == 'vertical':
         
@@ -275,45 +347,3 @@ def text_marker(
                     )
     
     return
-
-
-def _decorator_main_docstring(func):
-    docs = """
-    This template is part of the Experiment-based templates. These
-    are characterized by representing in each subplot the data
-    referent to a peaklist, i.e. experiment.
-
-    The most common representation are the Bar Plots, where a given
-    parameter is represented as a bar for each separated residue.
-    """
-    func.__doc__ = docs + func.__doc__
-    return func
-
-def _decorator_shared_vars_docstring(func):
-    
-    func.__doc__ += """
-    subtitles : iterable type of strings
-        Titles of each subplot, length must be equal to values.shape[0].
-
-    letter_code : sequence type
-        1-letter code of the protein sequence, should have length equal
-        to <labels>.
-
-    peak_status : np.array shape (y,x), dtype=str
-        Peak status information according to core.utils.peak_status
-        dictionary.
-
-    details : np.array shape (y,x), dtype=str
-        Peaklist Details column information.
-
-    theo_pre : np.array shape (y,x), dtype=str
-        Information on theoretical PRE data.
-
-    tag_position : np.array shape (y,x), dtype=str
-        Null values where tag not present, "*" character denotes
-        the position of the of the paramagnetic tag.
-
-    threshold : float
-        The Y value of the threshold line.
-    """    
-    return func

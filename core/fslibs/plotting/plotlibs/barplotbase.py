@@ -1,4 +1,11 @@
-from functools import wraps
+import numpy as np
+from math import ceil
+
+from core import validate
+from core.fslibs import Logger
+
+log = Logger.FarseerLogger(__name__).setup_log()
+
 
 def plot_threshold(
         ax,
@@ -14,30 +21,38 @@ def plot_threshold(
     """
     Plots threshold line that identifies relevant perturnations.
     
-    Parameters:
-        ax (matplotlib subplot axis): subplot where line is drawn.
+    Parameters
+    ----------
+     ax : element of :obj:`matplotlib.pyplot.axes`
+    
+    values : np.ndarray
+        Values to evaluate.
         
-        values (np.array of shape [x]): values to evaluate.
-        
-        color (str): line color.
-        
-        lw (int): line width.
-        
-        alpha (float): transparency.
-        
-        std (int): standard deviation multiplier
-        
-        orientation (str): {'horizontal', 'vertical'}
-            wheter plotting in a vertical or horizontal barplot.
-        
-        zorder (int): the matplotlib zorder kwarg.
+    std : int
+        Standard deviation multiplier
+    
+    orientation : ['horizontal', 'vertical'], optional
+        Wheter plotting in a vertical or horizontal plot.
+        Defaults to 'horizontal'
+    
+    threshold_color :str
+        Line color. Defaults to "red".
+    
+    threshold_linewidth : float
+        Line width. Defaults to "0.5".
+    
+    threshold_alpha : float [0-1]
+        Line's transparency.
+    
+    threshold_zorder : int
+        The matplotlib zorder for the plot.
     """
     sorted_values = np.copy(np.sort(np.absolute(values)))
     parsed_values = sorted_values[np.logical_not(np.isnan(sorted_values))]
     firstdecile = parsed_values[0:ceil(0.1*len(parsed_values))]
     threshold = np.mean(firstdecile) + std*np.std(firstdecile)
     
-    logger.debug("Threshold defined: {}".format(threshold))
+    log.debug("Threshold defined: {}".format(threshold))
     
     line_details = {
         "color": threshold_color,

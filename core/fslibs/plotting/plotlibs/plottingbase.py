@@ -1,7 +1,10 @@
 import inspect
+from math import ceil
 
 import numpy as np
+import matplotlib.figure as mplfigure
 from matplotlib import pyplot as plt
+
 
 from core import validate
 import core.fslibs.Logger as Logger
@@ -181,6 +184,63 @@ def linear_gradient(finish_hex="#FFFFFF", n=10):
     return _color_dict(RGB_list)
 
 
+def calc_num_rows(num_subplots, cols_page):
+    """
+    Calculates the total number of rows.
+    
+    Calculates the number of subplot rows to be drawn in the figure
+    based on the total number of subplots to be drawn
+    and the number os columns per page.
+    
+    Parameters
+    ----------
+    num_subplots : int
+        The total number of subplots
+    
+    cols_page : int
+        The desired number os subplot columns per figure's page.
+    
+    Returns
+    -------
+        float
+            The calculated number.
+    """
+    types = [int, int]
+    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
+    list(map(validate.validate_types, zip(values_.values(), types)))
+    
+    return ceil(num_subplots/cols_page) + 1 
+
+
+def calc_real_fig_height(rows_page, numrows, fig_hgt):
+    """
+    Calculates real figure height based on the height per page and
+    total number of subplots rows.
+    
+    Paramers
+    --------
+    rows_page : int
+        Desired number of rows per page.
+        
+    numrows : int
+        Total number of subplot rows based on number of columns.
+        Can be calculated from .calc_num_rows()
+        
+    fig_hgt : float
+        Height of figure's page.
+    
+    Returns
+    -------
+        float
+            Value in Inches of the final figure height.
+    """
+    types = [int, int, float]
+    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
+    list(map(validate.validate_types, zip(values_.values(), types)))
+    
+    return (fig_hgt/rows_page)*numrows
+
+
 def draw_figure(
         num_subplots,
         rows_page,
@@ -218,15 +278,15 @@ def draw_figure(
         matplotlib.pyplot.figure and matplotlib.pyplot.axes objects.
     """
     types = [int, int, int, float, float]
-    args, _, _, values = inspect.getargvalues(inspect.currentframe())
-    list(map(validate, zip(values.values(), types)))
+    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
+    list(map(validate.validate_types, zip(values_.values(), types)))
     
-    numrows = _calc_num_rows(
+    numrows = calc_num_rows(
         num_subplots,
         cols_page,
         )
     
-    real_fig_height = _calc_real_fig_height(
+    real_fig_height = calc_real_fig_height(
         rows_page, 
         numrows,
         fig_height,
@@ -239,7 +299,7 @@ def draw_figure(
         figsize=(fig_width, real_fig_height),
         )
     
-    self.axs = self.axs.ravel()
+    axs = axs.ravel()
     
     plt.tight_layout(
         rect=[0.01,0.01,0.995,0.995]
@@ -270,9 +330,9 @@ def adjust_subplots(figure, hspace, wspace):
             between subplots, expressed as a fraction of the average
             axis width
     """
-    types = [plt.figure, float, float]
-    args, _, _, values = inspect.getargvalues(inspect.currentframe())
-    list(map(validate, zip(values.values(), types)))
+    types = [mplfigure.Figure, float, float]
+    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
+    list(map(validate.validate_types, zip(values_.values(), types)))
     
     figure.subplots_adjust(
         hspace=hspace,
@@ -295,10 +355,7 @@ def clean_subplots(axes, num_subplots):
     num_subplots : int
         The number of subplots that have been draw in the Figure.
     """
-    types = [plt.axes, int]
-    args, _, _, values = inspect.getargvalues(inspect.currentframe())
-    list(map(validate, zip(values.values(), types)))
-    
+    list(map(validate.validate_types, [(num_subplots, int)]))
     
     len_axs = len(axes)
     
@@ -339,7 +396,7 @@ def save_figure(
         Header will be written in the output figure file in a dedicated
         blank space.
     
-    header_fs : float
+    header_fs : int
         The header fontsize.
     
     dpi : int
@@ -350,9 +407,9 @@ def save_figure(
         Additional help:
         https://matplotlib.org/api/_as_gen/matplotlib.pyplot.savefig.html
     """    
-    types = [plt.figure, str, str, float, int]
-    args, _, _, values = inspect.getargvalues(inspect.currentframe())
-    list(map(validate, zip(values.values(), types)))
+    types = [mplfigure.Figure, str, str, int, int]
+    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
+    list(map(validate.validate_types, zip(values_.values(), types)))
     
     figure.text(
         0.01,
@@ -363,7 +420,7 @@ def save_figure(
     
     figure.savefig(file_path, dpi=dpi)
     
-    log.info(f"**Saved plot figure** {file_path}")
+    log.info(f"**Saved plot figure** {file_path}\n")
     
     return
 

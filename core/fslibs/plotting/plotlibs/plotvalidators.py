@@ -1,21 +1,13 @@
 from functools import wraps
 
-def check_barplot_args(func):
-    """
-    Checks arguments passed to parameters common in all Bar Plot
-    templates.
-    """
+
+def validate_barplot_data(values, labels):
     
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        
-        if len(args[1]) != args[0].shape[1] : raise AttributeError(
+    if len(labels) != values.shape[1] : raise ValueError(
             "Length of labels do not match the length of values (ydata)"
             )
-        
-        return func(*args, **kwargs)
     
-    return wrapper
+    return
 
 
 def validate_barplot_additional_data(values, **kwargs):
@@ -60,7 +52,7 @@ def validate_barplot_additional_data(values, **kwargs):
         
         if kwargs[x] is None: return
         
-        if len(kwargs[x]) != values.shape[1] : raise ValueError(
+        if len(kwargs[x]) != values.shape[0] : raise ValueError(
             f"Length of {x} ({len(kwargs[x])}) differs "
             f"from values shape ({values.shape[1]})"
             )
@@ -76,7 +68,7 @@ def validate_barplot_additional_data(values, **kwargs):
         "tag_position",
         "theo_pre",
         ]
-    
+    print(kwargs["suptitles"])
     list(map(check_len, seq_params_to_evaluate))
     list(map(check_shape, array_params_to_evaluate))
     
