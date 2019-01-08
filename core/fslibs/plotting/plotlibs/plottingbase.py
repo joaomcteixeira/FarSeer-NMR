@@ -350,11 +350,13 @@ def clean_subplots(axes, num_subplots):
     
     Parameters
     ----------
-    axs : :obj:`matplotlib.pyplot.axes`
+    axes : numpy.ndarray of :obj:`matplotlib.axes.Axes`
     
     num_subplots : int
         The number of subplots that have been draw in the Figure.
     """
+    types = [np.ndarray, int]
+    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
     list(map(validate.validate_types, [(num_subplots, int)]))
     
     len_axs = len(axes)

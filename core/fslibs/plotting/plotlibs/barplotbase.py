@@ -1,5 +1,8 @@
 import numpy as np
 from math import ceil
+import inspect
+
+from matplotlib.axes import Axes
 
 from core import validate
 from core.fslibs import Logger
@@ -16,37 +19,41 @@ def plot_threshold(
         threshold_linewidth=0.5,
         threshold_alpha=0.8,
         threshold_zorder=10,
-        **kwargs,
         ):
     """
     Plots threshold line that identifies relevant perturnations.
     
     Parameters
     ----------
-     ax : element of :obj:`matplotlib.pyplot.axes`
+    ax : :obj:`matplotlib.axes.Axes`
     
     values : np.ndarray
         Values to evaluate.
         
-    std : int
-        Standard deviation multiplier
+    std : int, optional
+        Standard deviation multiplier. Defaults to 5.
     
     orientation : ['horizontal', 'vertical'], optional
         Wheter plotting in a vertical or horizontal plot.
         Defaults to 'horizontal'
     
-    threshold_color :str
+    threshold_color : str, optional
         Line color. Defaults to "red".
     
-    threshold_linewidth : float
+    threshold_linewidth : float, optional
         Line width. Defaults to "0.5".
     
-    threshold_alpha : float [0-1]
-        Line's transparency.
+    threshold_alpha : float [0-1], optional
+        Line's transparency. Defaults to 0.8.
     
     threshold_zorder : int
         The matplotlib zorder for the plot.
+        Defaults to 10, plots on top of everything.
     """
+    types = [Axes, np.ndarray, int, str, str, float, float, int]
+    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
+    list(map(validate.validate_types, zip(values_.values(), types)))
+    
     sorted_values = np.copy(np.sort(np.absolute(values)))
     parsed_values = sorted_values[np.logical_not(np.isnan(sorted_values))]
     firstdecile = parsed_values[0:ceil(0.1*len(parsed_values))]

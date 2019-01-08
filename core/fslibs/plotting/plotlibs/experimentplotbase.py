@@ -2,6 +2,7 @@ import inspect
 import collections
 import numpy as np
 
+from matplotlib.axes import Axes
 from matplotlib import pyplot as plt
 
 from core import validate
@@ -38,14 +39,13 @@ def draw_paramagnetic_tag(
         tag_cartoon_color="black",
         tag_cartoon_ls="-",
         tag_cartoon_lw=1.0,
-        **kargs,
         ):
     """
     Draws paramagnetic tag tick on functionalized residue.
     
     Parameters
     ----------
-    ax : element of :obj:`matplotlib.pyplot.axes`
+    ax : :obj:`matplotlib.axes.Axes`
         
     tag_position : int
         The bar index where the paramagnetic tag is placed.
@@ -67,7 +67,7 @@ def draw_paramagnetic_tag(
     tag_cartoon_lw : float, optional
         Tag tick line width. Defaults to 1.0.
     """
-    types = [plt.axis, int, float, str, str, str, float]
+    types = [Axes, int, float, str, str, str, float]
     args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
     list(map(validate.validate_types, zip(values_.values(), types)))
     
@@ -130,7 +130,6 @@ def finds_para_tag(
         data,
         tag_data,
         tag_id="*",
-        **kargs,
         ):
     """
     Finds the bar index where the tag tick should be drawn based
@@ -179,14 +178,13 @@ def plot_theo_pre(
         plottype='h',
         theo_pre_color="red",
         theo_pre_lw=1.0,
-        **kargs,
         ):
     """
     Plots theoretical PRE.
     
     Parameters
     ----------
-    ax : element of :obj:`matplotlib.pyplot.axes`
+    ax : :obj:`matplotlib.axes.Axes`
         
     values_x : np.ndarray
         X values to plot
@@ -204,7 +202,7 @@ def plot_theo_pre(
     theo_pre_lw : float, optional
         Plot line width. Defaults to 1.0.
     """
-    types = [plt.axis, np.ndarray, np.ndarray, str, str, float]
+    types = [Axes, np.ndarray, np.ndarray, str, str, float]
     args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
     list(map(validate.validate_types, zip(values_.values(), types)))
     
@@ -263,22 +261,21 @@ def text_marker(
         d,
         fs=3,
         orientation='horizontal',
-        **kwargs,
         ):
     """
     Places a text mark over the bars of a Bar Plot.
     
     Parameters
     ----------
-    ax : element of :obj:`matplotlib.pyplot.axes`.
+    ax : :obj:`matplotlib.pyplot.axes`.
         
-    values_x : np.ndarray
+    values_x : np.ndarray of shape (x,)
         X values to plot.
         
-    values_y : np.ndarray
+    values_y : np.ndarray of shape (x,)
         Y values to plot.
         
-    series : np.ndarray
+    series : np.ndarray of shape (x,)
         Series with information source to convert to text mark.
         
     d : dict
@@ -292,8 +289,7 @@ def text_marker(
         Wheter plotting in a vertical or horizontal plot.
         Defaults to 'horizontal'
     """
-    types = [collections.Iterator, np.ndarray, np.ndarray,
-        np.ndarray, dict, float, str]
+    types = [Axes, np.ndarray, np.ndarray, np.ndarray, dict, float, str]
     args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
     list(map(validate.validate_types, zip(values_.values(), types)))
     
