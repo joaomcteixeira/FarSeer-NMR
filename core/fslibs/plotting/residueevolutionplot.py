@@ -8,7 +8,6 @@ from core import validate
 from core.fslibs import Logger
 from plotlibs import (
     plottingbase,
-    residueplotbase,
     plotvalidators,
     )
 
@@ -437,7 +436,7 @@ def plot(
         )
     
     """Runs all operations to plot."""
-    num_subplots = experimentplotbase.calc_num_subplots(values)
+    num_subplots = values.shape[0]
     
     figure, axs  = plottingbase.draw_figure(
         num_subplots,
