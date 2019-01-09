@@ -1,4 +1,3 @@
-from functools import wraps
 
 
 def validate_barplot_data(values, labels):
@@ -68,7 +67,7 @@ def validate_barplot_additional_data(values, **kwargs):
         "tag_position",
         "theo_pre",
         ]
-    print(kwargs["suptitles"])
+    
     list(map(check_len, seq_params_to_evaluate))
     list(map(check_shape, array_params_to_evaluate))
     
