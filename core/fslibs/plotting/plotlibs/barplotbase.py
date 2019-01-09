@@ -91,3 +91,31 @@ def plot_threshold(
     return
 
 
+
+def _extended_bar_xticks(num_of_bars):
+    """
+    Algorythm to calculate the distribution of xticks
+    in extended bar plots.
+    
+    Parameters
+    ----------
+    num_of_bars : int
+        The number of bars in the plot.
+    
+    Returns
+    -------
+        int
+            The spacer slicer to be used in numpy.ndarray objtes
+            such as xticks, xticks_labels, and others.
+            [::mod_]
+    """
+    
+    # Define tick spacing
+    for j in range(101,10000,100):
+        if j > num_of_bars:
+            mod_ = j // 100
+            break
+    
+    log.debug("Tick spacing set to: {}".format(mod_))
+    
+    return mod_

@@ -240,12 +240,7 @@ def _subplot(
     ###################
     # Configures X ticks and axis
     
-    # Define tick spacing
-    for j in range(101,10000,100):
-        if j>num_of_bars:
-            mod_ = j//100
-            break
-    log.debug("Tick spacing set to: {}".format(mod_))
+    mod_ = barplotbase._extended_bar_xticks(num_of_bars)
     
     # set xticks and xticks_labels to be represented
     xticks = np.arange(len(bars))[0::mod_]
