@@ -122,7 +122,7 @@ def _subplot(
     
     # Draws subplot title
     ax.set_title(
-        suptitle[i],
+        suptitles[i],
         y=c["subtitle_fs"]
         fontsize=c["subtitle_fs"],
         fontname=c["subtitle_fn"],
