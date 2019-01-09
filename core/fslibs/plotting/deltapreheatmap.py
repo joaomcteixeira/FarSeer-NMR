@@ -207,8 +207,9 @@ def plot(
     Parameters
     ----------
     values : np.ndarray shape (y,x), dtype=float
-        where X (axis=1) is the data to plot for each column,
-        Y (axis=0) is the evolution of that data along the titration.
+        Where X (axis=1) is the data to plot for each bar (residue),
+        Y (axis=0) is the evolution of that data along the titration
+        series.
         
     labels : np.ndarray shape (x,), dtype=str
         Bar labels which are drawn as xtick labels.
