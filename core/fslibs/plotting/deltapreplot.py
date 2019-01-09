@@ -520,7 +520,7 @@ def plot(
     
     dp_color = it.cycle(dp_colors['hex'])
     
-    for i in range(values.shape[0]):
+    for i in range(pre_values.shape[0]):
         
         log.debug("Starting subplot no: {}".format(i))
         # other parameters are not passed because they are None by default
