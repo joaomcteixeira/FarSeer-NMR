@@ -22,10 +22,10 @@ _default_config = {
     "x_label":"Residues",
     "y_label":"your labels goes here",
     
-    "subtitle_fn": "Arial",
-    "subtitle_fs": 8,
-    "subtitle_pad": 0.99,
-    "subtitle_weight": "normal",
+    "suptitle_fn": "Arial",
+    "suptitle_fs": 8,
+    "suptitle_pad": 0.99,
+    "suptitle_weight": "normal",
     
     "x_label_fn": "Arial",
     "x_label_fs": 8,
@@ -223,10 +223,10 @@ def _subplot(
     # Set subplot title
     ax.set_title(
         suptitles[i],
-        y=c["subtitle_pad"],
-        fontsize=c["subtitle_fs"],
-        fontname=c["subtitle_fn"],
-        weight=c["subtitle_weight"],
+        y=c["suptitle_pad"],
+        fontsize=c["suptitle_fs"],
+        fontname=c["suptitle_fn"],
+        weight=c["suptitle_weight"],
         )
     
     log.debug("Subplot title set to : {}".format(suptitles[i]))
