@@ -114,7 +114,7 @@ _default_config = {
 
 def _validate_config(config):
     """
-    Validate  config dictionary for Extended Bar Plot template.
+    Validate config dictionary for Extended Bar Plot template.
     
     Loops over config keys and checks if values' type are the
     expected. Raises ValueError otherwise.
@@ -507,6 +507,7 @@ def plot(
     tag_position : np.ndarray shape (y,x), dtype=str, optional
         Null values where tag not present, "*" character denotes
         the position of the of the paramagnetic tag.
+        If None provided, Tag tick is not drawn.
     
     Plot Configuration Parameters
     -----------------------------
@@ -553,7 +554,11 @@ def plot(
     
     config = {**_default_config, **kwargs}
     
-    _validate_config(config)
+    plotvalidators.validate_config(
+        _default_config,
+        config,
+        name="Extended Horizontal Bar",
+        )
     
     """Runs all operations to plot."""
     num_subplots = experimentplotbase.calc_num_subplots(values)

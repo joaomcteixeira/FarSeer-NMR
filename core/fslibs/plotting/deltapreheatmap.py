@@ -1,3 +1,4 @@
+import collections
 import numpy as np
 import json
 
@@ -46,41 +47,6 @@ _default_config = {
     "hspace": 0,
     "rightspace": 0.3,
     }
-
-
-def _validate_config(config):
-    """
-    Validate config dictionary for DeltaPRE Heat Map Plot template.
-    
-    Loops over config keys and checks if values' type are the
-    expected. Raises ValueError otherwise.
-    
-    Parameters
-    ----------
-    config : dict
-        The configuration dictionary
-    """
-    
-    def eval_types(key, value):
-        
-        a = type(config[key])
-        b = type(value)
-        
-        if not(a == b):
-             msg = (
-                f"Argument '{key}' in DetalPRE Heat Map Plot is not of "
-                f"correct type, is {a}, should be {b}."
-                )
-             log.info(msg)
-             raise TypeError(msg)
-    
-    
-    for key, value in _default_config.items():
-        eval_types(key, value)
-    
-    msg = "Parameters type for DeltaPRE Heat Map Plot evaluated successfully"
-    log.debug(msg)
-    return
 
 
 def get_config():
@@ -167,7 +133,57 @@ def _subplot(
         else:
             log.debug("Paramagnetic tag not found, ignoring...")
 
-    return
+    return cleg
+
+
+def _final_subplot(ax, values, labels, c, figure, cleg):
+        
+        vmin = c["vmin"]
+        vmax = c["vmax"]
+        
+        bottom_margin = 1/values.size
+        
+        cbar = plt.colorbar(
+            cleg,
+            ticks=[vmin, vmax/4, vmax/4*2, vmax/4*3, vmax],
+            orientation='vertical',
+            cax = figure.add_axes(
+                [
+                    c["rightspace"] + 0.01, 
+                    bottom_margin,
+                    0.01, 
+                    c["top_margin"] - bottom_margin,
+                    ]
+                )
+            )
+        
+        cbar.ax.tick_params(labelsize=c["cbar_font_size"])
+        ax.get_xaxis().set_visible(True)
+        ax.tick_params(
+            axis='x',
+            bottom='on',
+            length=c["x_ticks_len"],
+            pad=c["x_ticks_pad"],
+            )
+        
+        xticks, xticks_labels = barplotbase.compacted_bar_xticks(
+            num_of_bars,
+            labels,
+            )
+        
+        ax.set_xticks(xticks)
+        
+        ## https://github.com/matplotlib/matplotlib/issues/6266
+        ax.set_xticklabels(
+            xticklabels,
+            fontname=c["x_ticks_fn"],
+            fontsize=c["x_ticks_fs"],
+            fontweight=c["x_ticks_weight"],
+            rotation=c["x_ticks_rot"]
+            )
+        log.debug("set_xticklabels: OK")
+        
+        return
 
 
 def plot(
@@ -243,23 +259,34 @@ def plot(
         >>> plot(some_values, some_labels, figure_path="super_plot.pdf")
     """
     
+    # validates input
     plotvalidators.validate_barplot_data(values, labels)
     
     suptitles = suptitles or [str(i) for i in range(values.shape[0])]
     
-    plotvalidators.validate_barplot_additional_data(
-        values,
-        suptitles=suptitles,
-        letter_code=letter_code,
-        peak_status=peak_status,
-        details=details,
-        tag_position=tag_position,
-        theo_pre=theo_pre,
-        )
+    args2validate = [
+        ("header", header, str),
+        ("suptitles", suptitles, collections.Iterator),
+        ]
+    
+    [validate.validate_types(t) for t in args2validate]
+    
+    args2validate = [
+        ("tag_position", tag_position, np.ndarray),
+        ]
+    
+    [validate.validate_types(t) for t in args2validate if t[1] is not None]
+    
+    [plotvalidators.validate_shapes(t)
+        for t in args2validate if t[1] is not None]
     
     config = {**_default_config, **kwargs}
     
-    _validate_config(config)
+    plotvalidators.validate_config(
+        _default_config,
+        config,
+        name="DeltaPRE HeatMap",
+        )
     
     """Runs all operations to plot."""
     num_subplots = experimentplotbase.calc_num_subplots(values)
@@ -275,21 +302,18 @@ def plot(
     for i in range(values.shape[0]):
         
         log.debug("Starting subplot no: {}".format(i))
-        # other parameters are not passed because they are None by default
-        # and may lead to IndexError
-        _subplot(
+        
+        cleg = _subplot(
             axs[i],
             values[i],
             labels,
             i,
             config,
             suptitles,
-            letter_code,
-            peak_status,
-            details,
             tag_position,
-            theo_pre,
             )
+    else:
+        _final_subplot(axs[i], values[i], labels, c, figure, cleg)
     
     plottingbase.adjust_subplots(
         figure,
@@ -313,13 +337,4 @@ def plot(
 
 if __name__ == "__main__":
     
-    print_config()
-    
-    ######################################################################## 1
-    ############ Short data set
-    
-    values = np.full((7,15), 0.2)
-    labels = np.arange(1, len(values[0])+1).astype(str)
-    
-    c = {"figure_path": 1}
-    plot(values, labels, header="oh my headeR!!!", **c)
+    print("I am DeltaPRE HeatMap Plot")

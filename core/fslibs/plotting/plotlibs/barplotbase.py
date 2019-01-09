@@ -90,7 +90,56 @@ def plot_threshold(
     
     return
 
-
+def compacted_bar_xticks(num_of_bars, labels):
+    
+    try:
+        labels.astype(int)
+    except ValueError:
+        labels_are_int = False
+    else:
+        labels_are_int = True
+    
+    if num_of_bars <= 10:
+        xticks = np.arange(num_of_bars)
+    
+    else:
+        number_of_ticks = num_of_bars
+        mod_ = 10
+        sanity_counter = 0
+    
+        if labels_are_int:
+            tmp_labels = labels.astype(int)
+            
+            while number_of_ticks > 10 and sanity_counter < 100000:
+                
+                mask = np.where(tmp_labels % mod_ == 0)[0]
+                
+                xticks = np.arange(num_of_bars)[mask]
+                xticks_labels = tmp_labels[mask]
+                number_of_ticks = len(xticks)
+    
+                mod_ *= 10
+                sanity_counter += 1
+        
+        elif not(labels_are_int):
+            
+            tmp_xticks = np.arange(num_of_bars)
+    
+            while number_of_ticks > 10 and sanity_counter < 100000:
+                
+                xticks = tmp_xticks[tmp_xticks % mod_ == 0]
+                xticks_labels = labels[xticks]
+                number_of_ticks = len(xticks)
+    
+                mod_ *= 10
+                sanity_counter += 1
+        
+        log.debug("sanity_counter: {}".format(sanity_counter))
+    
+    log.debug("Setting xticks: {}".format([a for a in xticks]))
+    log.debug("xticklabels: {}".format(xticks_labels))
+    
+    return xticks, xticks_labels
 
 def _extended_bar_xticks(num_of_bars):
     """

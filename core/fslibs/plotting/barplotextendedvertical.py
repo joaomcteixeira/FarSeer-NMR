@@ -112,45 +112,6 @@ _default_config = {
     }
 
 
-def _validate_config(config):
-    """
-    Validate  config dictionary for Vertical Extended Bar Plot template.
-    
-    Loops over config keys and checks if values' type are the
-    expected. Raises ValueError otherwise.
-    
-    Parameters
-    ----------
-    config : dict
-        The configuration dictionary
-    """
-    
-    def eval_types(key, value):
-        
-        a = type(config[key])
-        b = type(value)
-        
-        if not(a == b):
-             msg = (
-                f"Argument '{key}' in Vertical Extended BarPlot is "
-                "not of correct type,"
-                f" is {a}, should be {b}."
-                )
-             log.info(msg)
-             raise TypeError(msg)
-    
-    
-    for key, value in _default_config.items():
-        eval_types(key, value)
-    
-    msg = (
-        "Parameters type for "
-        "Vertical Extended BarPlot evaluated successfully"
-        )
-    log.debug(msg)
-    return
-
-
 def get_config():
     """
     Returns the module's default config dictionary.
@@ -522,6 +483,7 @@ def plot(
     tag_position : np.ndarray shape (y,x), dtype=str, optional
         Null values where tag not present, "*" character denotes
         the position of the of the paramagnetic tag.
+        If None provided, Tag tick is not drawn.
     
     Plot Configuration Parameters
     -----------------------------
@@ -568,7 +530,11 @@ def plot(
     
     config = {**_default_config, **kwargs}
     
-    _validate_config(config)
+    plotvalidators.validate_config(
+        _default_config,
+        config,
+        name="Extended Vertical Bar",
+        )
     
     """Runs all operations to plot."""
     num_subplots = experimentplotbase.calc_num_subplots(values)
