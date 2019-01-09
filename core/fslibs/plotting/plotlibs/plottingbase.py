@@ -205,9 +205,6 @@ def calc_num_rows(num_subplots, cols_page):
         float
             The calculated number.
     """
-    types = [int, int]
-    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
-    list(map(validate.validate_types, zip(values_.values(), types)))
     
     return ceil(num_subplots/cols_page) + 1 
 
@@ -234,9 +231,6 @@ def calc_real_fig_height(rows_page, numrows, fig_hgt):
         float
             Value in Inches of the final figure height.
     """
-    types = [int, int, float]
-    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
-    list(map(validate.validate_types, zip(values_.values(), types)))
     
     return (fig_hgt/rows_page)*numrows
 
@@ -277,9 +271,6 @@ def draw_figure(
         
         matplotlib.pyplot.figure and matplotlib.pyplot.axes objects.
     """
-    types = [int, int, int, float, float]
-    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
-    list(map(validate.validate_types, zip(values_.values(), types)))
     
     numrows = calc_num_rows(
         num_subplots,
@@ -330,9 +321,6 @@ def adjust_subplots(figure, hspace, wspace):
             between subplots, expressed as a fraction of the average
             axis width
     """
-    types = [mplfigure.Figure, float, float]
-    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
-    list(map(validate.validate_types, zip(values_.values(), types)))
     
     figure.subplots_adjust(
         hspace=hspace,
@@ -355,9 +343,6 @@ def clean_subplots(axes, num_subplots):
     num_subplots : int
         The number of subplots that have been draw in the Figure.
     """
-    types = [np.ndarray, int]
-    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
-    list(map(validate.validate_types, [(num_subplots, int)]))
     
     len_axs = len(axes)
     
@@ -408,10 +393,7 @@ def save_figure(
         
         Additional help:
         https://matplotlib.org/api/_as_gen/matplotlib.pyplot.savefig.html
-    """    
-    types = [mplfigure.Figure, str, str, int, int]
-    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
-    list(map(validate.validate_types, zip(values_.values(), types)))
+    """
     
     figure.text(
         0.01,

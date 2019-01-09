@@ -14,10 +14,9 @@ from plotlibs import (
 log = Logger.FarseerLogger(__name__).setup_log()
 
 _default_config = {
-    
-    "cols_page": 1,
-    "rows_page": 6,
-    
+    "cols_page": 3,
+    "rows_page": 5,
+
     "y_lims":(0,0.3),
     "x_label":"Residues",
     "y_label":"your labels goes here",
@@ -41,9 +40,9 @@ _default_config = {
     
     "x_ticks_pad": 2,
     "x_ticks_len": 2,
-    "x_ticks_fn": "monospace",
+    "x_ticks_fn": "Arial",
     "x_ticks_fs": 6,
-    "x_ticks_rot": 90,
+    "x_ticks_rot": 0,
     "x_ticks_weight": "normal",
     "x_ticks_color_flag":True,
     
@@ -64,6 +63,9 @@ _default_config = {
     "measured_color": "black",
     "missing_color": "red",
     "unassigned_color": "lightgrey",
+    
+    "unassigned_shade": True,
+    "unassigned_shade_alpha": 0.5,
     
     "bar_width": 0.8,
     "bar_alpha": 1,
@@ -103,18 +105,20 @@ _default_config = {
     "hspace": 0.5,
     "wspace": 0.5,
     
+    "figure_header":"No header provided",
     "header_fontsize":5,
     
-    "figure_path":"bar_extended_horizontal.pdf",
+    "figure_path":"bar_compacted.pdf",
     "figure_dpi":300,
     "fig_height": 11.69,
     "fig_width": 8.69
+
     }
 
 
 def _validate_config(config):
     """
-    Validate  config dictionary for Extended Bar Plot template.
+    Validate config dictionary for Compacted Bar Plot template.
     
     Loops over config keys and checks if values' type are the
     expected. Raises ValueError otherwise.
@@ -132,7 +136,7 @@ def _validate_config(config):
         
         if not(a == b):
              msg = (
-                f"Argument '{key}' in Extended BarPlot is not of correct type,"
+                f"Argument '{key}' in Compacted BarPlot is not of correct type,"
                 f" is {a}, should be {b}."
                 )
              log.info(msg)
@@ -142,7 +146,7 @@ def _validate_config(config):
     for key, value in _default_config.items():
         eval_types(key, value)
     
-    msg = "Parameters type for Extended BarPlot evaluated successfully"
+    msg = "Parameters type for Compacted BarPlot evaluated successfully"
     log.debug(msg)
     return
 
@@ -197,9 +201,9 @@ def _subplot(
     # configures vars
     ydata = np.nan_to_num(values).astype(float)
     log.debug("ydata: {}".format(ydata))
-    num_of_bars = ydata.shape[0]
+    num_of_bars = ydata.size
     log.debug("Number of bars to represented: {}".format(num_of_bars))
-    log.debug("Suptitle: {}".format(suptitles[i]))
+    log.debug("Subtitle: {}".format(suptitles[i]))
     
     ###################
     # Plots bars
@@ -215,9 +219,7 @@ def _subplot(
         )
     
     log.debug("Number of bars plotted: {}".format(len(bars)))
-    log.debug(
-        f"Num of expected bars equals num of bars: {num_of_bars == len(bars)}"
-        )
+    log.debug("Number of expected bars equals num of bars: {}".format(num_of_bars == len(bars)))
     
     ###################
     # Set subplot title
@@ -238,19 +240,53 @@ def _subplot(
     log.debug("Spines set: OK")
     
     ###################
-    # Configures X ticks and axis
+    # Configures X ticks and X ticks labels
     
-    # Define tick spacing
-    for j in range(101,10000,100):
-        if j>num_of_bars:
-            mod_ = j//100
-            break
-    log.debug("Tick spacing set to: {}".format(mod_))
+    try:
+        labels.astype(int)
+    except ValueError:
+        labels_are_int = False
+    else:
+        labels_are_int = True
+    
+    if num_of_bars <= 10:
+        xticks = np.arange(num_of_bars)
+    
+    else:
+        number_of_ticks = num_of_bars
+        mod_ = 10
+        sanity_counter = 0
+    
+        if labels_are_int:
+            tmp_labels = labels.astype(int)
+            
+            while number_of_ticks > 10 and sanity_counter < 100000:
+                
+                mask = np.where(tmp_labels % mod_ == 0)[0]
+                
+                xticks = np.arange(num_of_bars)[mask]
+                xticks_labels = tmp_labels[mask]
+                number_of_ticks = len(xticks)
+    
+                mod_ *= 10
+                sanity_counter += 1
+        
+        elif not(labels_are_int):
+            
+            tmp_xticks = np.arange(num_of_bars)
+    
+            while number_of_ticks > 10 and sanity_counter < 100000:
+                
+                xticks = tmp_xticks[tmp_xticks % mod_ == 0]
+                xticks_labels = labels[xticks]
+                number_of_ticks = len(xticks)
+    
+                mod_ *= 10
+                sanity_counter += 1
+            
+    log.debug("sanity_counter: {}".format(sanity_counter))
     
     # set xticks and xticks_labels to be represented
-    xticks = np.arange(len(bars))[0::mod_]
-    xticks_labels = np.array(labels)[0::mod_]
-    
     log.debug("xticks represented: {}".format(xticks))
     log.debug("xticks labels represented: {}".format(xticks_labels))
     
@@ -272,7 +308,7 @@ def _subplot(
         axis='x',
         pad=c["x_ticks_pad"],
         length=c["x_ticks_len"],
-        direction='out'
+        direction='out',
         )
     log.debug("Configured X tick params: OK")
     
@@ -314,7 +350,7 @@ def _subplot(
         axis='y',
         pad=c["y_ticks_pad"],
         length=c["y_ticks_len"],
-        direction='out',
+        direction='out'
         )
     log.debug("Configured Y tick params: OK")
     
@@ -343,8 +379,8 @@ def _subplot(
             {
                 'measured': c["measured_color"],
                 'missing': c["missing_color"],
-                'unassigned': c["unassigned_color"],
-                },
+                'unassigned': c["unassigned_color"]
+                }
             )
         log.debug("set_item_colors: OK")
     
@@ -358,7 +394,7 @@ def _subplot(
             linestyle=c["y_grid_linestyle"],
             linewidth=c["y_grid_linewidth"],
             alpha=c["y_grid_alpha"],
-            zorder=0,
+            zorder=0
             )
         log.debug("Configured grid: OK")
     
@@ -372,7 +408,7 @@ def _subplot(
                 'measured':c["measured_color"],
                 'missing':c["missing_color"],
                 'unassigned':c["unassigned_color"],
-                },
+                }
             )
         log.debug("...Done")
     
@@ -429,14 +465,14 @@ def _subplot(
         experimentplotbase.plot_theo_pre(
             ax,
             range(num_of_bars),
-            theo_pre[i],
+            self.theo_pre[i],
             theo_pre_color=c["theo_pre_color"],
             theo_pre_lw=c["theo_pre_lw"],
             )
         
         tag_found = experimentplotbase.finds_paramagnetic_tag(
             bars,
-            tag_position[i],
+            self.tag_position[i],
             )
         
         if tag_found:
@@ -465,14 +501,17 @@ def plot(
         **kwargs,
         ):
     """
-    Plots according to the Extended Bar Plot Template.
+    Plots according to the Compacted Bar Plot Template.
     
-    The Extended Bar Plot template draws wide Bar plots that are
-    designed to fit one page with. Bar Plots represent parameters
-    for each residue individually in the form of bars.
+    The Compacted Bar Plot template draws square-shaped subplots
+    designed to fit half page with individually.
+    
+    Bar Plots represent parameters for each residue individually
+    in the form of bars.
     
     Subplots, one for each peaklist, i.e. experiment, are stacked
-    sequentially from top to bottom.
+    sequentially in grid from left to right and from top to bottom.
+    This arrangement can be used directly as a supplementary figure.
     
     Parameters
     ----------
@@ -612,13 +651,11 @@ def plot(
 
 if __name__ == "__main__":
     
-    print_config()
-    
     ######################################################################## 1
     ############ Short data set
     
     values = np.full((7,15), 0.2)
     labels = np.arange(1, len(values[0])+1).astype(str)
     
-    c = {"figure_path": 1}
+    c = {"figure_path": "compacted.pdf"}
     plot(values, labels, header="oh my headeR!!!", **c)

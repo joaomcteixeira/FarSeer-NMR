@@ -22,10 +22,6 @@ def calc_num_subplots(values):
         where X (axis=1) is the data to plot for each column,
         Y (axis=0) is the evolution of that data along the titration.
     """
-    types = [np.ndarray]
-    args_, _, _, values_ = inspect.getargvalues(inspect.currentframe())
-    list(map(validate.validate_types, zip(values_.values(), types)))
-    
     num_subplots = values.shape[0]
     log.debug(f"Number of subplots: {num_subplots}")
     
@@ -67,9 +63,6 @@ def draw_paramagnetic_tag(
     tag_cartoon_lw : float, optional
         Tag tick line width. Defaults to 1.0.
     """
-    types = [Axes, int, float, str, str, str, float]
-    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
-    list(map(validate.validate_types, zip(values_.values(), types)))
     
     y_lim = y_lim*0.1
     
@@ -126,7 +119,7 @@ def draw_paramagnetic_tag(
             )
     return
 
-def finds_para_tag(
+def finds_paramagnetic_tag(
         data,
         tag_data,
         tag_id="*",
@@ -152,9 +145,6 @@ def finds_para_tag(
         int
             The index where tag is located
     """
-    types = [collections.Iterator, np.ndarray, str]
-    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
-    list(map(validate.validate_types, zip(values_.values(), types)))
     
     if len(data) != len(tag_data):
         _ = "*** Data and tag_data size equal: FALSE"
@@ -202,9 +192,6 @@ def plot_theo_pre(
     theo_pre_lw : float, optional
         Plot line width. Defaults to 1.0.
     """
-    types = [Axes, np.ndarray, np.ndarray, str, str, float]
-    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
-    list(map(validate.validate_types, zip(values_.values(), types)))
     
     if plottype == 'v':
         ax.plot(
@@ -242,9 +229,6 @@ def set_item_colors(items, values, d):
     d : dict
         Keys are conditions matching <values>, and values are colours.
     """
-    types = [collections.Iterator, np.ndarray, dict]
-    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
-    list(map(validate.validate_types, zip(values_.values(), types)))
     
     log.debug("Setting colours: {}".format(values))
     
@@ -289,10 +273,6 @@ def text_marker(
         Wheter plotting in a vertical or horizontal plot.
         Defaults to 'horizontal'
     """
-    types = [Axes, np.ndarray, np.ndarray, np.ndarray, dict, float, str]
-    args, _, _, values_ = inspect.getargvalues(inspect.currentframe())
-    list(map(validate.validate_types, zip(values_.values(), types)))
-    
     
     log.debug(f"Text marker series: {series}")
     
