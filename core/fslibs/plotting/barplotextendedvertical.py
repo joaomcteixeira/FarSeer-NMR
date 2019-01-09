@@ -14,9 +14,8 @@ from plotlibs import (
 log = Logger.FarseerLogger(__name__).setup_log()
 
 _default_config = {
-    
-    "cols_page": 1,
-    "rows_page": 6,
+    "cols_page": 5,
+    "rows_page": 2,
     
     "y_lims":(0,0.3),
     "x_label":"Residues",
@@ -29,27 +28,27 @@ _default_config = {
     
     "x_label_fn": "Arial",
     "x_label_fs": 8,
-    "x_label_pad": 2,
+    "x_label_pad": 15,
     "x_label_weight": "bold",
-    "x_label_rotation":0,
+    "x_label_rotation":-90,
     
     "y_label_fn": "Arial",
     "y_label_fs": 8,
     "y_label_pad": 3,
     "y_label_weight": "bold",
-    "y_label_rot":90,
+    "y_label_rot":0,
     
     "x_ticks_pad": 2,
     "x_ticks_len": 2,
     "x_ticks_fn": "monospace",
     "x_ticks_fs": 6,
-    "x_ticks_rot": 90,
+    "x_ticks_rot": -90,
     "x_ticks_weight": "normal",
     "x_ticks_color_flag":True,
     
     "y_ticks_fn": "Arial",
     "y_ticks_fs": 6,
-    "y_ticks_rot": 0,
+    "y_ticks_rot": 45,
     "y_ticks_pad": 1,
     "y_ticks_weight": "normal",
     "y_ticks_len": 2,
@@ -78,12 +77,12 @@ _default_config = {
         "foo": "f",
         "bar": "b",
         "boo": "o"
-    },
+        },
     "user_bar_colors_dict": {
         "foo": "green",
         "bar": "yellow",
         "boo": "magenta"
-    },
+        },
     
     "threshold_flag": True,
     "threshold_color": "red",
@@ -103,9 +102,10 @@ _default_config = {
     "hspace": 0.5,
     "wspace": 0.5,
     
+    "figure_header":"No header provided",
     "header_fontsize":5,
     
-    "figure_path":"bar_extended_horizontal.pdf",
+    "figure_path":"bar_extended_vertical.pdf",
     "figure_dpi":300,
     "fig_height": 11.69,
     "fig_width": 8.69
@@ -114,7 +114,7 @@ _default_config = {
 
 def _validate_config(config):
     """
-    Validate  config dictionary for Extended Bar Plot template.
+    Validate  config dictionary for Vertical Extended Bar Plot template.
     
     Loops over config keys and checks if values' type are the
     expected. Raises ValueError otherwise.
@@ -132,7 +132,8 @@ def _validate_config(config):
         
         if not(a == b):
              msg = (
-                f"Argument '{key}' in Extended BarPlot is not of correct type,"
+                f"Argument '{key}' in Vertical Extended BarPlot is "
+                "not of correct type,"
                 f" is {a}, should be {b}."
                 )
              log.info(msg)
@@ -142,7 +143,10 @@ def _validate_config(config):
     for key, value in _default_config.items():
         eval_types(key, value)
     
-    msg = "Parameters type for Extended BarPlot evaluated successfully"
+    msg = (
+        "Parameters type for "
+        "Vertical Extended BarPlot evaluated successfully"
+        )
     log.debug(msg)
     return
 
@@ -193,7 +197,7 @@ def _subplot(
         ):
     """Subplot routine."""
     
-    ###################
+   ###################
     # configures vars
     ydata = np.nan_to_num(values).astype(float)
     log.debug("ydata: {}".format(ydata))
@@ -203,10 +207,10 @@ def _subplot(
     
     ###################
     # Plots bars
-    bars = ax.bar(
+    bars = ax.barh(
         range(num_of_bars),
         ydata,
-        width=c["bar_width"],
+        height=c["bar_width"],
         align='center',
         alpha=c["bar_alpha"],
         linewidth=c["bar_linewidth"],
@@ -219,6 +223,9 @@ def _subplot(
         f"Num of expected bars equals num of bars: {num_of_bars == len(bars)}"
         )
     
+    # necessary for vertical template
+    ax.invert_yaxis()
+    
     ###################
     # Set subplot title
     ax.set_title(
@@ -228,17 +235,15 @@ def _subplot(
         fontname=c["suptitle_fn"],
         weight=c["suptitle_weight"],
         )
-    
-    log.debug("Subplot title set to : {}".format(suptitles[i]))
+    log.debug("Set title: OK")
     
     ###################
     # Configures spines
     ax.spines['bottom'].set_zorder(10)
     ax.spines['top'].set_zorder(10)
     log.debug("Spines set: OK")
-    
-    ###################
-    # Configures X ticks and axis
+
+    ## Configure XX ticks and Label
     
     # Define tick spacing
     for j in range(101,10000,100):
@@ -248,19 +253,19 @@ def _subplot(
     log.debug("Tick spacing set to: {}".format(mod_))
     
     # set xticks and xticks_labels to be represented
-    xticks = np.arange(len(bars))[0::mod_]
-    xticks_labels = np.array(labels)[0::mod_]
+    yticks = np.arange(len(bars))[0::mod_]
+    yticks_labels = np.array(labels)[0::mod_]
     
-    log.debug("xticks represented: {}".format(xticks))
-    log.debug("xticks labels represented: {}".format(xticks_labels))
+    log.debug("xticks represented: {}".format(yticks))
+    log.debug("xticks labels represented: {}".format(yticks_labels))
     
-    # Set X ticks
-    ax.set_xticks(xticks)
+    # Set Y ticks
+    ax.set_yticks(yticks)
     
-    # Set X ticks labels
+    # Set Y ticks labels
     ## https://github.com/matplotlib/matplotlib/issues/6266
-    ax.set_xticklabels(
-        xticks_labels,
+    ax.set_yticklabels(
+        yticks_labels,
         fontname=c["x_ticks_fn"],
         fontsize=c["x_ticks_fs"],
         fontweight=c["x_ticks_weight"],
@@ -269,15 +274,16 @@ def _subplot(
     
     # Set xticks params
     ax.tick_params(
-        axis='x',
+        axis='y',
         pad=c["x_ticks_pad"],
         length=c["x_ticks_len"],
-        direction='out'
+        direction='out',
         )
+    
     log.debug("Configured X tick params: OK")
     
-    # Set X axis label
-    ax.set_xlabel(
+    # Set Y axis label
+    ax.set_ylabel(
         c["x_label"],
         fontname=c["x_label_fn"],
         fontsize=c["x_label_fs"],
@@ -293,15 +299,15 @@ def _subplot(
     # sets axis limits
     ymin = c["y_lims"][0]
     ymax = c["y_lims"][1]
-    ax.set_ylim(ymin, ymax)
+    ax.set_xlim(ymin, ymax)
     log.debug("Set y max {} and ymin {}".format(ymin, ymax))
     
     # sets number of y ticks
-    ax.locator_params(axis='y', tight=True, nbins=c["y_ticks_nbins"])
+    ax.locator_params(axis='x', tight=True, nbins=c["y_ticks_nbins"])
     
     # sets y tick labels
-    ax.set_yticklabels(
-        ['{:.2f}'.format(yy) for yy in ax.get_yticks()],
+    ax.set_xticklabels(
+        ['{:.2f}'.format(yy) for yy in ax.get_xticks()],
         fontname=c["y_ticks_fn"],
         fontsize=c["y_ticks_fs"],
         fontweight=c["y_ticks_weight"],
@@ -311,15 +317,15 @@ def _subplot(
     
     # sets y ticks params
     ax.tick_params(
-        axis='y',
+        axis='x',
         pad=c["y_ticks_pad"],
         length=c["y_ticks_len"],
         direction='out',
         )
     log.debug("Configured Y tick params: OK")
     
-    # set Y label
-    ax.set_ylabel(
+    # set X label
+    ax.set_xlabel(
         c["y_label"],
         fontsize=c["y_label_fs"],
         labelpad=c["y_label_pad"],
@@ -333,7 +339,7 @@ def _subplot(
     # Additional configurations
     # "is not None" is used in IF statements intentionally
     
-    ax.margins(x=0.01, tight=True)
+    ax.margins(y=0.01, tight=True)
     
     # defines bars colors
     if peak_status is not None:
@@ -353,7 +359,7 @@ def _subplot(
     
     # Adds grid
     if c["y_grid_flag"]:
-        ax.yaxis.grid(
+        ax.xaxis.grid(
             color=c["y_grid_color"],
             linestyle=c["y_grid_linestyle"],
             linewidth=c["y_grid_linewidth"],
@@ -366,7 +372,7 @@ def _subplot(
     if peak_status is not None and c["x_ticks_color_flag"]:
         log.debug("Configuring for x_ticks_color_flag...")
         experimentplotbase.set_item_colors(
-            ax.get_xticklabels(),
+            ax.get_yticklabels(),
             peak_status[i,0::mod_],
             {
                 'measured':c["measured_color"],
@@ -386,6 +392,7 @@ def _subplot(
             threshold_linewidth=c["threshold_linewidth"],
             threshold_alpha=c["threshold_alpha"],
             threshold_zorder=c["threshold_zorder"],
+            orientation="vertical",
             )
         log.debug("Threshold: OK")
     
@@ -398,6 +405,7 @@ def _subplot(
             letter_code,
             {'P':c["mark_prolines_symbol"]},
             fs=c["mark_fontsize"],
+            orientation="vertical",
             )
         log.debug("Prolines Marked: OK")
     
@@ -410,6 +418,7 @@ def _subplot(
             details[i],
             c["user_marks_dict"],
             fs=c["mark_fontsize"],
+            orientation="vertical",
             )
         log.debug("User marks: OK")
     
@@ -421,7 +430,7 @@ def _subplot(
             c["user_bar_colors_dict"],
             )
         log.debug("Color user details: OK")
-           
+    
     if theo_pre is not None \
             and tag_position is not None \
             and c["plot_theoretical_pre"]:
@@ -432,6 +441,7 @@ def _subplot(
             theo_pre[i],
             theo_pre_color=c["theo_pre_color"],
             theo_pre_lw=c["theo_pre_lw"],
+            plottype="v",
             )
         
         tag_found = experimentplotbase.finds_paramagnetic_tag(
@@ -447,6 +457,7 @@ def _subplot(
                 tag_cartoon_color=c["tag_cartoon_color"],
                 tag_cartoon_ls=c["tag_cartoon_ls"],
                 tag_cartoon_lw=c["tag_cartoon_lw"],
+                plottype="v",
                 )
     
     return
@@ -465,14 +476,17 @@ def plot(
         **kwargs,
         ):
     """
-    Plots according to the Extended Bar Plot Template.
+    Plots according to the Vertical Extended Bar Plot Template.
     
-    The Extended Bar Plot template draws wide Bar plots that are
-    designed to fit one page with. Bar Plots represent parameters
-    for each residue individually in the form of bars.
+    The Vertical Extended Bar Plot template draws wide Bar plots 
+    vertically which are
+    designed to fit single page columns or narrow spaces.
+    
+    Bar Plots represent parameters for each residue individually in
+    the form of bars.
     
     Subplots, one for each peaklist, i.e. experiment, are stacked
-    sequentially from top to bottom.
+    sequentially from left to right from top to bottom.
     
     Parameters
     ----------
@@ -620,5 +634,6 @@ if __name__ == "__main__":
     values = np.full((7,15), 0.2)
     labels = np.arange(1, len(values[0])+1).astype(str)
     
-    c = {"figure_path": 1}
+    c = {"figure_path": "vertical.pdf"}
     plot(values, labels, header="oh my headeR!!!", **c)
+
