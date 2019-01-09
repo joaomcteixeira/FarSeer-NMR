@@ -210,7 +210,7 @@ def plot(
         where X (axis=1) is the data to plot for each column,
         Y (axis=0) is the evolution of that data along the titration.
         
-    labels : sequence type of length values.shape[1]
+    labels : np.ndarray shape (x,), dtype=str
         Bar labels which are drawn as xtick labels.
     
     header : str, optional
@@ -218,7 +218,7 @@ def plot(
         Header will be written in the output figure file in a dedicated
         blank space. 
     
-    suptitles : iterable type of strings, optional
+    suptitles : list of str, optional
         Titles of each subplot, length must be equal to values.shape[0].
         Defaults to a range of values.shape[0], ["0", "1", "2", ...
     
@@ -258,28 +258,32 @@ def plot(
         
         >>> plot(some_values, some_labels, figure_path="super_plot.pdf")
     """
-    
-    # validates input
-    plotvalidators.validate_barplot_data(values, labels)
-    
     suptitles = suptitles or [str(i) for i in range(values.shape[0])]
     
+    # validates type of positional arguments
     args2validate = [
-        ("header", header, str),
-        ("suptitles", suptitles, collections.Iterator),
+        ("values", values, np.ndarray),
+        ("labels", labels, np.ndarray),
         ]
     
     [validate.validate_types(t) for t in args2validate]
     
+    # validates type of optional named arguments
     args2validate = [
+        ("header", header, str),
+        ("suptitles", suptitles, list),
         ("tag_position", tag_position, np.ndarray),
         ]
     
     [validate.validate_types(t) for t in args2validate if t[1] is not None]
     
-    [plotvalidators.validate_shapes(t)
-        for t in args2validate if t[1] is not None]
+    # validates shapes and lengths of arguments
+    plotvalidators.validate_shapes(values, ("tag_position", tag_position))
     
+    plotvalidators.validate_len(values[0,:], ("labels", labels))
+    plotvalidators.validate_len(values[:,0], ("suptitles", suptitles))
+    
+    # assigns and validates config
     config = {**_default_config, **kwargs}
     
     plotvalidators.validate_config(

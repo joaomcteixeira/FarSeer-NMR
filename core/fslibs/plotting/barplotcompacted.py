@@ -1,8 +1,10 @@
+import collections
 import numpy as np
 import json
 
 from matplotlib import pyplot as plt
 
+from core import validate
 from core.fslibs import Logger
 from plotlibs import (
     plottingbase,
@@ -114,41 +116,6 @@ _default_config = {
     "fig_width": 8.69
 
     }
-
-
-def _validate_config(config):
-    """
-    Validate config dictionary for Compacted Bar Plot template.
-    
-    Loops over config keys and checks if values' type are the
-    expected. Raises ValueError otherwise.
-    
-    Parameters
-    ----------
-    config : dict
-        The configuration dictionary
-    """
-    
-    def eval_types(key, value):
-        
-        a = type(config[key])
-        b = type(value)
-        
-        if not(a == b):
-             msg = (
-                f"Argument '{key}' in Compacted BarPlot is not of correct type,"
-                f" is {a}, should be {b}."
-                )
-             log.info(msg)
-             raise TypeError(msg)
-    
-    
-    for key, value in _default_config.items():
-        eval_types(key, value)
-    
-    msg = "Parameters type for Compacted BarPlot evaluated successfully"
-    log.debug(msg)
-    return
 
 
 def get_config():
@@ -476,7 +443,7 @@ def plot(
         where X (axis=1) is the data to plot for each column,
         Y (axis=0) is the evolution of that data along the titration.
         
-    labels : sequence type of length values.shape[1]
+    labels : np.ndarray shape (x,), dtype=str
         Bar labels which are drawn as xtick labels.
     
     header : str, optional
@@ -484,14 +451,14 @@ def plot(
         Header will be written in the output figure file in a dedicated
         blank space. 
     
-    suptitles : iterable type of strings, optional
+    suptitles : list of str, optional
         Titles of each subplot, length must be equal to values.shape[0].
         Defaults to a range of values.shape[0], ["0", "1", "2", ...
     
     Bellow Parameters Assigned to None if not provided
     --------------------------------------------------
     
-    letter_code : sequence type, optional
+    letter_code : np.ndarray shape (x,), dtype=str, optional
         1-letter code of the protein sequence, should have length equal
         to <labels>.
 
@@ -539,20 +506,51 @@ def plot(
         >>> plot(some_values, some_labels, figure_path="super_plot.pdf")
     """
     
-    plotvalidators.validate_barplot_data(values, labels)
-    
     suptitles = suptitles or [str(i) for i in range(values.shape[0])]
     
-    plotvalidators.validate_barplot_additional_data(
-        values,
-        suptitles=suptitles,
-        letter_code=letter_code,
-        peak_status=peak_status,
-        details=details,
-        tag_position=tag_position,
-        theo_pre=theo_pre,
-        )
+    # validates type of positional arguments
+    args2validate = [
+        ("values", values, np.ndarray),
+        ("label", labels, np.ndarray),
+        ]
     
+    [validate.validate_types(t) for t in args2validate]
+    
+    # validates type of optional named arguments
+    args2validate = [
+        ("header", header, str),
+        ("suptitles", suptitles, list),
+        ("letter_code", letter_code, np.ndarray),
+        ("peak_status", peak_status, np.ndarray),
+        ("details", details, np.ndarray),
+        ("tag_position", tag_position, np.ndarray),
+        ("theo_pre", theo_pre, np.ndarray),
+        ]
+    
+    [validate.validate_types(t) for t in args2validate if t[1] is not None]
+    
+    # validates shapes and lenghts of arguments
+    args2validate = [
+        ("peak_status", peak_status),
+        ("details", details),
+        ("tag_position", tag_position),
+        ("theo_pre", theo_pre),
+        ]
+    
+    [plotvalidators.validate_shapes(values, t)
+        for t in args2validate if t[1] is not None]
+    
+    args2validate = [
+        ("labels", labels),
+        ("letter_code", letter_code),
+        ]
+    
+    [plotvalidators.validate_len(values[0,:], t)
+        for t in args2validate if t[1] is not None]
+    
+    plotvalidators.validate_len(values[:,0], ("suptitles", suptitles))
+    
+    # assigned and validates config
     config = {**_default_config, **kwargs}
     
     plotvalidators.validate_config(
@@ -620,4 +618,4 @@ if __name__ == "__main__":
     labels = np.arange(1, len(values[0])+1).astype(str)
     
     c = {"figure_path": "compacted.pdf"}
-    plot(values, labels, header="oh my headeR!!!", **c)
+    plot(values, labels, header="12", **c)

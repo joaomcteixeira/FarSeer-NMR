@@ -52,14 +52,25 @@ def validate_barplot_data(values, labels):
     return
 
 
-def validate_shapes(reference, **args):
+def validate_shapes(reference, target_tuple):
     
-    for arg in args:
-        if arg[1].shape != reference.shape:
-            raise ValueError(
-                f"Shape of {arg[0]} ({arg[1].shape}) differs "
-                f"from reference shape ({reference.shape})"
-                )
+    if target_tuple[1].shape != reference.shape:
+        raise ValueError(
+            f"Shape of {target_tuple[0]} ({target_tuple[1].shape}) differs "
+            f"from reference shape ({reference.shape})"
+            )
+    
+
+def validate_len(reference, target_tuple):
+    """
+    Validates len of args against len of reference.
+    """
+    
+    if len(target_tuple[1]) != len(reference):
+        raise ValueError(
+            f"Length of '{target_tuple[0]}' parameter ({len(target_tuple[1])})"
+            f" differs from reference length ({len(reference)})"
+            )
     
 
 
