@@ -1,4 +1,4 @@
-import collections
+import itertools as it
 import numpy as np
 import json
 
@@ -43,14 +43,14 @@ _default_config = {
     "x_ticks_pad": 1,
     "x_ticks_weight": "normal",
     "x_ticks_rot": 30,
-    "x_ticks_len":2,
+    "x_ticks_len": 2,
     
     "y_ticks_fn": "Arial",
     "y_ticks_fs": 5,
     "y_ticks_pad": 1,
     "y_ticks_weight": "normal",
     "y_ticks_rot": 0,
-    "y_ticks_len":2,
+    "y_ticks_len": 2,
     
     "ticks_nbins": 5,
     "scale": 0.01,
@@ -67,7 +67,7 @@ _default_config = {
         "8",
         "*",
         "D"
-    ],
+        ],
     "mksize": 20,
     "mk_start_color": "#696969",
     "mk_end_color": "#000000",
@@ -110,20 +110,40 @@ def print_config(indent=4, sort_keys=True):
 
 
 def _subplot(
-        axs,
+        ax,
         x_axis_values,
         y_axis_values,
         i,
+        c,
         config,
         suptitles,
         peak_status,
         ):
     """ subplot routine."""
     
+    def set_tick_labels(nbins=4):
+        ax.locator_params(axis='both', tight=True, nbins=nbins)
+        ax.set_xticklabels(
+            ax.get_xticks(),
+            fontname=c["x_ticks_fn"],
+            fontsize=c["x_ticks_fs"],
+            fontweight=c["x_ticks_weight"],
+            rotation=c["x_ticks_rot"],
+            )
+        ax.set_yticklabels(
+            ax.get_yticks(),
+            fontname=c["y_ticks_fn"],
+            fontsize=c["y_ticks_fs"],
+            fontweight=c["y_ticks_weight"],
+            rotation=c["y_ticks_rot"],
+            )
+        ax.invert_xaxis()
+        ax.invert_yaxis()
+    
     # Draws subplot title
     ax.set_title(
         suptitles[i],
-        y=c["subtitle_fs"]
+        y=c["subtitle_fs"],
         fontsize=c["subtitle_fs"],
         fontname=c["subtitle_fn"],
         fontweight=c["subtitle_weight"],
@@ -164,7 +184,7 @@ def _subplot(
     
     # writes unassigned in the center of the plot for unassigned peaks
     # and plots nothing
-    if peak_status is not None and peak_status[i,0] == 'unassigned':
+    if peak_status is not None and peak_status[i, 0] == 'unassigned':
         ax.text(
             0,
             0,
@@ -174,15 +194,13 @@ def _subplot(
             va='center',
             ha='center',
             )
-        ax.set_xlim(-1,1)
-        ax.set_ylim(-1,1)
+        ax.set_xlim(-1, 1)
+        ax.set_ylim(-1, 1)
         set_tick_labels()
-        ax.invert_xaxis()
-        ax.invert_yaxis()
         
         return
     
-    elif peak_status is not None and not(np.any(peak_status=="measured")):
+    elif peak_status is not None and not(np.any(peak_status == "measured")):
         ax.text(
             0,
             0,
@@ -192,11 +210,9 @@ def _subplot(
             va='center',
             ha='center',
             )
-        ax.set_xlim(-1,1)
-        ax.set_ylim(-1,1)
+        ax.set_xlim(-1, 1)
+        ax.set_ylim(-1, 1)
         set_tick_labels()
-        ax.invert_xaxis()
-        ax.invert_yaxis()
         
         return
     
@@ -216,12 +232,13 @@ def _subplot(
             plottingbase.linear_gradient(
                 c["mk_start_color"],
                 finish_hex=c["mk_end_color"],
-                n=len(x_axis_values)
+                n=len(x_axis_values),
                 )
+            )
     else:
-        cycle = it.cycle(c["mk_color"])
+        ccycle = it.cycle(c["mk_color"])
     
-    c_list = [next(ccyle) for j in range(len(x_axis_values))]
+    c_list = [next(ccycle) for j in range(len(x_axis_values))]
     
     if peak_status is not None:
         c_list = [
@@ -248,147 +265,63 @@ def _subplot(
             alpha=alpha_list[i],
             )
     
+    # adjust axes scales
+    xlim = np.abs(x_axis_values).max() * 1.5
+    ylim = np.abs(y_axis_values).max() * 1.5
     
-    # # Defines X Axis
-    # ax.set_xticks(c["titration_x_values"])
-    # xmin, xmax = c["titration_x_values"][0], c["titration_x_values"][-1]
-    # ax.set_xlim(xmin, xmax)
-    # if c["set_x_values"]:
-        # ax.locator_params(axis="x", tight=True, nbins=c["x_ticks_nbins"])
+    ax.set_xlim(-xlim, xlim)
+    ax.set_ylim(-ylim, xlim)
     
-    # ax.set_xticklabels(
-        # xlabels,
-        # fontname=c["x_ticks_fn"],
-        # fontsize=c["x_ticks_fs"],
-        # fontweight=c["x_ticks_weight"],
-        # rotation=c["x_ticks_rot"],
-        # )
+    # Further axis setup
+    set_tick_labels(nbins=10)
     
-    # ax.xaxis.tick_bottom()
+    # draws axis 0 dotted line
+    ax.hlines(
+        0,
+        -100,
+        100,
+        colors='black',
+        linestyles='dotted',
+        linewidth=0.25,
+        )
+    ax.vlines(
+        0,
+        -100,
+        100,
+        colors='black',
+        linestyles='dotted',
+        linewidth=0.25,
+        )
     
-    # ax.tick_params(
-            # axis='x',
-            # pad=c["x_ticks_pad"],
-            # length=c["x_ticks_len"],
-            # direction='out',
-            # )
+    # draws scale
+    # draws center scale
+    ax.hlines(
+        0,
+        -c["scale"],
+        c["scale"],
+        colors='darkblue',
+        linestyles='-',
+        linewidth=1,
+        )
+    ax.vlines(
+        0,
+        -c["scale"],
+        c["scale"],
+        colors='darkblue',
+        linestyles='-',
+        linewidth=1,
+        )
     
-    # # Defines Y axis
-    # ax.set_ylim(c["y_lims"][0], c["y_lims"][1])
-    # ax.locator_params(axis='y', tight=True, nbins=c["y_ticks_nbins"])
-    # ax.set_yticklabels(
-            # ['{:.2f}'.format(yy) for yy in ax.get_yticks()],
-            # fontname=c["y_ticks_fn"],
-            # fontsize=c["y_ticks_fs"],
-            # fontweight=c["y_ticks_weight"],
-            # rotation=c["y_ticks_rot"],
-            # )
-    
-    # ax.yaxis.tick_left()
-    
-    # ax.tick_params(
-            # axis='y',
-            # pad=c["y_ticks_pad"],
-            # length=c["y_ticks_len"],
-            # direction='out',
-            # )
-    
-    # # Both Axes
-    # ax.spines['bottom'].set_zorder(10)
-    # ax.spines['top'].set_zorder(10)
-    # ax.spines['left'].set_zorder(10)
-    # ax.spines['right'].set_zorder(10)
-
-    # ax.set_xlabel(
-        # c["x_label"],
-        # fontsize=c["x_label_fs"],
-        # labelpad=c["x_label_pad"],
-        # fontname=c["x_label_fn"],
-        # weight=c["x_label_weight"],
-        # )
-    
-    # ax.set_ylabel(
-            # c["y_label"],
-            # fontsize=c["y_label_fs"],
-            # labelpad=c["y_label_pad"],
-            # fontname=c["y_label_fn"],
-            # weight=c["y_label_weight"],
-            # )
-    
-    # # writes unassigned in the center of the plot for unassigned peaks
-    # # and plots nothing
-    # if peak_status is not None and peak_status[i,0] == 'unassigned':
-        # ax.text(
-            # (c["titration_x_value"][0] + c["titration_x_value"][-1]) / 2,
-            # (c["y_lims"][0] + c["y_lims"][1]) / 2,
-            # 'unassigned',
-            # fontsize=8,
-            # fontname='Arial',
-            # va='center',
-            # ha='center',
-            # )
-        
-        # return
-    
-    # # do not represent the missing peaks.
-    # mas = peak_status[i, :] != "missing"
-    # measured = values[mask]
-    # x_measured = ax.get_xticks()[mask]
-    
-    # # Plots data
-    # ax.plot(
-        # x_measured,
-        # measured,
-        # ls=c["line_style"],
-        # color=c["line_color"],
-        # marker=c["marker_style"],
-        # mfc=c["marker_color"],
-        # markersize=c["marker_size"],
-        # lw=c["line_width"],
-        # zorder=5,
-        # )
-    
-    # if c["fill_between"]:
-        # ax.fill_between(
-            # x_measured,
-            # 0,
-            # measured,
-            # facecolor=c["fill_color"],
-            # alpha=c["fill_alpha"],
-            # )
-    
-    # if fitting is not None:
-        # ax.plot(
-            # np.linspace(
-                # c["titration_x_values"][0],
-                # c["titration_x_values"][-1],
-                # len(fitting[i, :],
-                # ),
-            # fitting[i,:],
-            # ls=c["fit_line_style"],
-            # lw=c["fit_line_width"],
-            # color=c["fit_line_color"],
-            # zorder=6,
-            # )
-    
-    # if fitting_info is not None:
-        # ax.text(
-            # xmax*0.05,
-            # c["y_lims"][1] * 0.97,
-            # fitting_info[i],
-            # ha='left',
-            # va='top',
-            # fontsize=4,
-            # )
-    
-    # return
+    return
 
 
 def plot(
         x_axis_values,
         y_axis_values,
+        header="",
         suptitles=None,
         peak_status=None,
+        **kwargs,
         ):
     """
     Plots Chemical Shift Scatter Plot.
@@ -412,6 +345,11 @@ def plot(
     y_axis_values : np.ndarray with shape (y, x), dtype=float
         Values to plot along the Y axis.
         Parameter details are the same as for <x_axis_values>
+    
+    header : str, optional
+        Multi-line string with additional human-readable notes.
+        Header will be written in the output figure file in a dedicated
+        blank space.
     
     suptitles : list of lenght Y (values.shape[0]), dtype=str, optional
         Suptitles for each subplot. Generally are the residue names:
@@ -455,7 +393,7 @@ def plot(
         >>> plot(some_values, some_labels, figure_path="my_plot.pdf")
     """
     
-    suptitles = suptitles or [str(i) for i in range(values.shape[0])]
+    suptitles = suptitles or [str(i) for i in range(x_axis_values.shape[0])]
     
     # validates type of positional arguments
     args2validate = [
@@ -487,7 +425,7 @@ def plot(
         ("suptitles", suptitles),
         ]
     
-    [plotvalidators.validate_len(x_axis_values[:,0], t)
+    [plotvalidators.validate_len(x_axis_values[:, 0], t)
         for t in args2validate if t[1] is not None]
     
     # assigned and validates config
@@ -502,7 +440,7 @@ def plot(
     """Runs all operations to plot."""
     num_subplots = x_axis_values.shape[0]
     
-    figure, axs  = plottingbase.draw_figure(
+    figure, axs = plottingbase.draw_figure(
         num_subplots,
         config["rows_page"],
         config["cols_page"],
@@ -541,7 +479,7 @@ def plot(
     
     return
 
+
 if __name__ == "__main__":
     
     print("I am CS Scater Plot")
-
