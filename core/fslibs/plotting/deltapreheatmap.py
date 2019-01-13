@@ -1,9 +1,9 @@
-import collections
 import numpy as np
 import json
 
 from matplotlib import pyplot as plt
 
+from core import validate
 from core.fslibs import Logger
 from plotlibs import (
     plottingbase,
@@ -34,7 +34,7 @@ _default_config = {
     "y_label_pad": 2,
     "y_label_weight": "bold",
     
-    "top_margin":0.9,
+    "top_margin": 0.9,
     "right_margin": 0.22,
     "bottom_margin": 0,
     
@@ -128,7 +128,7 @@ def _subplot(
                 tag_cartoon_color=c["tag_cartoon_color"],
                 tag_cartoon_ls=c["tag_cartoon_ls"],
                 tag_cartoon_lw=c["tag_cartoon_lw"],
-                plottype = 'heatmap',
+                plottype='heatmap',
                 )
         else:
             log.debug("Paramagnetic tag not found, ignoring...")
@@ -141,17 +141,17 @@ def _final_subplot(ax, values, labels, c, figure, cleg):
         vmin = c["vmin"]
         vmax = c["vmax"]
         
-        bottom_margin = 1/values.size
+        bottom_margin = 1 / values.size
         
         cbar = plt.colorbar(
             cleg,
-            ticks=[vmin, vmax/4, vmax/4*2, vmax/4*3, vmax],
+            ticks=[vmin, vmax / 4, vmax / 4 * 2, vmax / 4 * 3, vmax],
             orientation='vertical',
-            cax = figure.add_axes(
+            cax=figure.add_axes(
                 [
-                    c["rightspace"] + 0.01, 
+                    c["rightspace"] + 0.01,
                     bottom_margin,
-                    0.01, 
+                    0.01,
                     c["top_margin"] - bottom_margin,
                     ]
                 )
@@ -167,19 +167,19 @@ def _final_subplot(ax, values, labels, c, figure, cleg):
             )
         
         xticks, xticks_labels = barplotbase.compacted_bar_xticks(
-            num_of_bars,
+            len(values),
             labels,
             )
         
         ax.set_xticks(xticks)
         
-        ## https://github.com/matplotlib/matplotlib/issues/6266
+        # https://github.com/matplotlib/matplotlib/issues/6266
         ax.set_xticklabels(
-            xticklabels,
+            xticks_labels,
             fontname=c["x_ticks_fn"],
             fontsize=c["x_ticks_fs"],
             fontweight=c["x_ticks_weight"],
-            rotation=c["x_ticks_rot"]
+            rotation=c["x_ticks_rot"],
             )
         log.debug("set_xticklabels: OK")
         
@@ -217,7 +217,7 @@ def plot(
     header : str, optional
         Multi-line string with additional human-readable notes.
         Header will be written in the output figure file in a dedicated
-        blank space. 
+        blank space.
     
     suptitles : list of str, optional
         Titles of each subplot, length must be equal to values.shape[0].
@@ -281,8 +281,8 @@ def plot(
     # validates shapes and lengths of arguments
     plotvalidators.validate_shapes(values, ("tag_position", tag_position))
     
-    plotvalidators.validate_len(values[0,:], ("labels", labels))
-    plotvalidators.validate_len(values[:,0], ("suptitles", suptitles))
+    plotvalidators.validate_len(values[0, :], ("labels", labels))
+    plotvalidators.validate_len(values[:, 0], ("suptitles", suptitles))
     
     # assigns and validates config
     config = {**_default_config, **kwargs}
@@ -296,7 +296,7 @@ def plot(
     """Runs all operations to plot."""
     num_subplots = experimentplotbase.calc_num_subplots(values)
     
-    figure, axs  = plottingbase.draw_figure(
+    figure, axs = plottingbase.draw_figure(
         num_subplots,
         config["rows_page"],
         config["cols_page"],
@@ -318,7 +318,14 @@ def plot(
             tag_position,
             )
     else:
-        _final_subplot(axs[i], values[i], labels, c, figure, cleg)
+        _final_subplot(
+            axs[i],
+            values[i],
+            labels,
+            config,
+            figure,
+            cleg,
+            )
     
     plottingbase.adjust_subplots(
         figure,
@@ -339,6 +346,7 @@ def plot(
     plt.close(figure)
     
     return
+
 
 if __name__ == "__main__":
     

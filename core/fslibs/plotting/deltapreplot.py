@@ -4,6 +4,7 @@ import json
 
 from matplotlib import pyplot as plt
 
+from core import validate
 from core.fslibs import Logger
 from plotlibs import (
     plottingbase,
@@ -15,11 +16,11 @@ from plotlibs import (
 log = Logger.FarseerLogger(__name__).setup_log()
 
 _default_config = {
-default_config = {
+    
     "cols_page": 1,
     "rows_page": 6,
     
-    "ymax":1,
+    "ymax": 1,
     "y_label": "$\\Delta$PRE$_(rc-exp)$",
     
     "subtitle_fn": "Arial",
@@ -37,7 +38,7 @@ default_config = {
     "y_label_fs": 8,
     "y_label_pad": 3,
     "y_label_weight": "bold",
-    "y_label_rot":90,
+    "y_label_rot": 90,
     
     "x_ticks_pad": 0.5,
     "x_ticks_len": 2,
@@ -75,18 +76,18 @@ default_config = {
     "shade_regions": [
         [
             0,
-            10
-        ],
+            10,
+            ],
         [
             20,
-            25
-        ]
-    ],
+            25,
+            ]
+        ],
     "res_highlight": False,
     "res_hl_list": [
         1,
         2
-    ],
+        ],
     "res_highlight_fs": 4,
     "res_highlight_y": 0.9,
     
@@ -127,12 +128,12 @@ def print_config(indent=4, sort_keys=True):
 
 
 def _subplot(
-        axs,
+        ax,
         pre_values,
-        smoothed_pre
+        smoothed_pre,
         labels,
         i,
-        config,
+        c,
         suptitles,
         letter_code,
         tag_position,
@@ -148,16 +149,18 @@ def _subplot(
     smooth_values_ref = np.nan_to_num(smoothed_pre[0]).astype(float)
     smooth_values_i = np.nan_to_num(smoothed_pre[i]).astype(float)
     
-    log.debug("ydata: {}".format(ydata))
+    log.debug("pre_values_i: {}".format(pre_values_i))
+    log.debug("smooth_values_i: {}".format(smooth_values_i))
+    
     num_of_items = smooth_values_ref.size
     log.debug("Number of bars to represented: {}".format(num_of_items))
     log.debug("Suptitle: {}".format(suptitles[i]))
     
     ###################
     # Plots
-    ## plots reference data
+    # plots reference data
     if i > 0:
-        plot_ref_1 = ax.plot(
+        ax.plot(
             range(num_of_items),
             pre_values_ref,
             ls='o',
@@ -168,37 +171,40 @@ def _subplot(
             zorder=10,
             )
         
-        plot_ref_2 = ax.plot(
+        ax.plot(
             range(num_of_items),
             smooth_values_ref,
             ls='-',
-            lw=c["smooth_lw"]
+            lw=c["smooth_lw"],
             c=c["ref_color"],
             zorder=10,
             )
     
     plot_i_1 = ax.plot(
-            range(num_of_items),
-            pre_values_i,
-            ls='o',
-            markersize=c["dpre_ms"],
-            markeredgewidth=0.0,
-            c=color,
-            alpha=c["dpre_alpha"],
-            zorder=10,
-            )
+        range(num_of_items),
+        pre_values_i,
+        ls='o',
+        markersize=c["dpre_ms"],
+        markeredgewidth=0.0,
+        c=color,
+        alpha=c["dpre_alpha"],
+        zorder=10,
+        )
         
     plot_i_2 = ax.plot(
-            range(num_of_items),
-            smooth_values_i,
-            lw='-',
-            lw=c["smooth_lw"]
-            c=color,
-            zorder=10,
-            )
+        range(num_of_items),
+        smooth_values_i,
+        ls='-',
+        lw=c["smooth_lw"],
+        c=color,
+        zorder=10,
+        )
     
-    log.debug("Number of plot_i_1 plotted: {}".format(len(plot_i_1)))
-    log.debug("Number of expected bars equals num of bars: {}".format(num_of_items == len(plot_i_1)))
+    log.debug(f"Number of plot_i_1 plotted: {len(plot_i_1)}")
+    log.debug(
+        "Number of expected bars equals num of bars: "
+        f"{num_of_items == len(plot_i_1)}"
+        )
     
     ###################
     # Set subplot title
@@ -222,7 +228,7 @@ def _subplot(
     # Configures X ticks and X ticks labels
     
     xticks, xticks_labels = barplotbase.compacted_bar_xticks(
-        num_of_bars,
+        num_of_items,
         labels,
         )
     
@@ -230,7 +236,7 @@ def _subplot(
     ax.set_xticks(xticks)
     
     # Set X ticks labels
-    ## https://github.com/matplotlib/matplotlib/issues/6266
+    # https://github.com/matplotlib/matplotlib/issues/6266
     ax.set_xticklabels(
         xticks_labels,
         fontname=c["x_ticks_fn"],
@@ -312,8 +318,8 @@ def _subplot(
     if c["shade"]:
         for lmargin, rmargin in c["shade_regions"]:
             ax.fill(
-                [lmargin,rmargin,rmargin, lmargin],
-                [0,0,2,2],
+                [lmargin, rmargin, rmargin, lmargin],
+                [0, 0, 2, 2],
                 c["grid_color"],
                 alpha=0.2,
                 )
@@ -324,10 +330,10 @@ def _subplot(
             
             # this implementation is possible because
             # x values are range(num_of_items)
-            rrindex = np.argwhere(labels==str(rr))
+            rrindex = np.argwhere(labels == str(rr))
             ax.text(
                 rr,
-                y_lims[1] * c["res_highlight_y"],
+                c["ymax"] * c["res_highlight_y"],
                 int(rrindex),
                 ha='center',
                 va='center',
@@ -356,7 +362,7 @@ def _subplot(
             experimentplotbase.draw_paramagnetic_tag(
                 ax,
                 tag_found,
-                y_max,
+                c["ymax"],
                 tag_cartoon_color=c["tag_cartoon_color"],
                 tag_cartoon_ls=c["tag_cartoon_ls"],
                 tag_cartoon_lw=c["tag_cartoon_lw"],
@@ -405,16 +411,16 @@ def plot(
     header : str, optional
         Multi-line string with additional human-readable notes.
         Header will be written in the output figure file in a dedicated
-        blank space. 
+        blank space.
     
-    suptitles : iterable type of strings, optional
+    suptitles : list of str, optional
         Titles of each subplot, length must be equal to values.shape[0].
         Defaults to a range of values.shape[0], ["0", "1", "2", ...
     
     Bellow Parameters Assigned to None if not provided
     --------------------------------------------------
     
-    letter_code : sequence type, optional
+    letter_code : np.ndarray shape (x,), dtype=str, optional
         1-letter code of the protein sequence, should have length equal
         to <labels>.
 
@@ -456,7 +462,7 @@ def plot(
     
     # validates type of positional arguments
     args2validate = [
-        ("label", labels, collections.Iterator),
+        ("label", labels, np.ndarray),
         ("pre_values", pre_values, np.ndarray),
         ("smoothed_pre", smoothed_pre, np.ndarray),
         ]
@@ -466,8 +472,8 @@ def plot(
     # validates type of optional named arguments
     args2validate = [
         ("header", header, str),
-        ("suptitles", suptitles, collections.Iterator),
-        ("letter_code", letter_code, collections.Iterator),
+        ("suptitles", suptitles, list),
+        ("letter_code", letter_code, np.ndarray),
         ("tag_position", tag_position, np.ndarray),
         ]
     
@@ -487,10 +493,10 @@ def plot(
         ("letter_code", letter_code),
         ]
     
-    [plotvalidators.validate_len(pre_values[0,:], t)
+    [plotvalidators.validate_len(pre_values[0, :], t)
         for t in args2validate if t[1] is not None]
     
-    plotvalidators.validate_len(pre_values[:,0], ("suptitles", suptitles))
+    plotvalidators.validate_len(pre_values[:, 0], ("suptitles", suptitles))
     
     # assigns and validates config
     config = {**_default_config, **kwargs}
@@ -502,9 +508,10 @@ def plot(
         )
     
     """Runs all operations to plot."""
-    num_subplots = experimentplotbase.calc_num_subplots(values)
+    num_subplots = pre_values.shape[0]
+    log.debug(f"number of subplots: {num_subplots}")
     
-    figure, axs  = plottingbase.draw_figure(
+    figure, axs = plottingbase.draw_figure(
         num_subplots,
         config["rows_page"],
         config["cols_page"],
@@ -512,11 +519,11 @@ def plot(
         config["fig_width"],
         )
     
-    dp_colors = plottlingbase.linear_gradient(
-            config['color_init'],
-            config['color_end'],
-            n=pre_values.shape[1]
-            )
+    dp_colors = plottingbase.linear_gradient(
+        config['color_init'],
+        config['color_end'],
+        n=pre_values.shape[1]
+        )
     
     dp_color = it.cycle(dp_colors['hex'])
     
@@ -557,6 +564,7 @@ def plot(
     plt.close(figure)
     
     return
+
 
 if __name__ == "__main__":
     

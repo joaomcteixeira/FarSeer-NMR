@@ -405,6 +405,7 @@ def plot(
     
     # validates type of named optional arguments
     args2validate = [
+        ("header", header, str),
         ("suptitles", suptitles, list),
         ("peak_status", peak_status, np.ndarray),
         ]

@@ -1,4 +1,3 @@
-import collections
 import numpy as np
 import json
 
@@ -18,7 +17,7 @@ _default_config = {
     "cols_page": 5,
     "rows_page": 8,
     
-    "y_lims":(0,0.3),
+    "y_lims": (0, 0.3),
     "hspace": 0.5,
     "wspace": 0.5,
     
@@ -40,13 +39,13 @@ _default_config = {
     "y_label": "CSPs",
     
     "set_x_values": False,
-    "titration_x_values": [0,25,50,100,200,400,500],
+    "titration_x_values": [0, 25, 50, 100, 200, 400, 500],
     "x_ticks_fn": "Arial",
     "x_ticks_fs": 5,
     "x_ticks_pad": 1,
     "x_ticks_weight": "normal",
     "x_ticks_rot": 30,
-    "x_ticks_len":2,
+    "x_ticks_len": 2,
     "x_ticks_nbins": 5,
     
     "y_ticks_fn": "Arial",
@@ -54,8 +53,8 @@ _default_config = {
     "y_ticks_pad": 1,
     "y_ticks_weight": "normal",
     "y_ticks_rot": 0,
-    "y_ticks_len":2,
-    "y_ticks_nbins":8,
+    "y_ticks_len": 2,
+    "y_ticks_nbins": 8,
     
     "line_style": "-",
     "line_width": 1,
@@ -123,7 +122,7 @@ def _subplot(
     # Draws subplot title
     ax.set_title(
         suptitles[i],
-        y=c["subtitle_fs"]
+        y=c["subtitle_fs"],
         fontsize=c["subtitle_fs"],
         fontname=c["subtitle_fn"],
         fontweight=c["subtitle_weight"],
@@ -147,31 +146,31 @@ def _subplot(
     ax.xaxis.tick_bottom()
     
     ax.tick_params(
-            axis='x',
-            pad=c["x_ticks_pad"],
-            length=c["x_ticks_len"],
-            direction='out',
-            )
+        axis='x',
+        pad=c["x_ticks_pad"],
+        length=c["x_ticks_len"],
+        direction='out',
+        )
     
     # Defines Y axis
     ax.set_ylim(c["y_lims"][0], c["y_lims"][1])
     ax.locator_params(axis='y', tight=True, nbins=c["y_ticks_nbins"])
     ax.set_yticklabels(
-            ['{:.2f}'.format(yy) for yy in ax.get_yticks()],
-            fontname=c["y_ticks_fn"],
-            fontsize=c["y_ticks_fs"],
-            fontweight=c["y_ticks_weight"],
-            rotation=c["y_ticks_rot"],
-            )
+        ['{:.2f}'.format(yy) for yy in ax.get_yticks()],
+        fontname=c["y_ticks_fn"],
+        fontsize=c["y_ticks_fs"],
+        fontweight=c["y_ticks_weight"],
+        rotation=c["y_ticks_rot"],
+        )
     
     ax.yaxis.tick_left()
     
     ax.tick_params(
-            axis='y',
-            pad=c["y_ticks_pad"],
-            length=c["y_ticks_len"],
-            direction='out',
-            )
+        axis='y',
+        pad=c["y_ticks_pad"],
+        length=c["y_ticks_len"],
+        direction='out',
+        )
     
     # Both Axes
     ax.spines['bottom'].set_zorder(10)
@@ -188,16 +187,16 @@ def _subplot(
         )
     
     ax.set_ylabel(
-            c["y_label"],
-            fontsize=c["y_label_fs"],
-            labelpad=c["y_label_pad"],
-            fontname=c["y_label_fn"],
-            weight=c["y_label_weight"],
-            )
+        c["y_label"],
+        fontsize=c["y_label_fs"],
+        labelpad=c["y_label_pad"],
+        fontname=c["y_label_fn"],
+        weight=c["y_label_weight"],
+        )
     
     # writes unassigned in the center of the plot for unassigned peaks
     # and plots nothing
-    if peak_status is not None and peak_status[i,0] == 'unassigned':
+    if peak_status is not None and peak_status[i, 0] == 'unassigned':
         ax.text(
             (c["titration_x_value"][0] + c["titration_x_value"][-1]) / 2,
             (c["y_lims"][0] + c["y_lims"][1]) / 2,
@@ -211,7 +210,7 @@ def _subplot(
         return
     
     # do not represent the missing peaks.
-    mas = peak_status[i, :] != "missing"
+    mask = peak_status[i, :] != "missing"
     measured = values[mask]
     x_measured = ax.get_xticks()[mask]
     
@@ -242,9 +241,9 @@ def _subplot(
             np.linspace(
                 c["titration_x_values"][0],
                 c["titration_x_values"][-1],
-                len(fitting[i, :],
+                len(fitting[i, :]),
                 ),
-            fitting[i,:],
+            fitting[i, :],
             ls=c["fit_line_style"],
             lw=c["fit_line_width"],
             color=c["fit_line_color"],
@@ -253,7 +252,7 @@ def _subplot(
     
     if fitting_info is not None:
         ax.text(
-            xmax*0.05,
+            xmax * 0.05,
             c["y_lims"][1] * 0.97,
             fitting_info[i],
             ha='left',
@@ -266,12 +265,14 @@ def _subplot(
 
 def plot(
         values,
+        header="",
         exp_values=None,
         xlabels=None,
         suptitles=None,
         peak_status=None,
         fitting=None,
-        fittin_info=None,
+        fitting_info=None,
+        **kwargs,
         ):
     """
     Plots Residue Evolution Plot.
@@ -368,6 +369,7 @@ def plot(
     
     # validates type of named optional arguments
     args2validate = [
+        ("header", header, str),
         ("exp_values", exp_values, list),
         ("xlabels", xlabels, list),
         ("suptitles", suptitles, list),
@@ -393,7 +395,7 @@ def plot(
         ("fitting_info", fitting_info)
         ]
     
-    [plotvalidators.validate_len(values[:,0], t)
+    [plotvalidators.validate_len(values[:, 0], t)
         for t in args2validate if t[1] is not None]
     
     args2validate = [
@@ -401,7 +403,7 @@ def plot(
         ("xlabels", xlabels),
         ]
     
-    [plotvalidators.validate_len(values[0,:], t)
+    [plotvalidators.validate_len(values[0, :], t)
         for t in args2validate if t[1] is not None]
     
     # assigned and validates config
@@ -417,7 +419,7 @@ def plot(
     
     elif exp_values is None and not config["set_x_values"]:
         config.update(
-            {"titration_x_values":list(range(1, values.shape[1] + 1))}
+            {"titration_x_values": list(range(1, values.shape[1] + 1))}
             )
         
         if xlabels is None:
@@ -430,15 +432,15 @@ def plot(
         )
     
     # additional validation
-    plotvalidate.validate_len(
-        values[0,:],
+    plotvalidators.validate_len(
+        values[0, :],
         ("titration_x_values", config["titration_x_values"]),
         )
     
     """Runs all operations to plot."""
     num_subplots = values.shape[0]
     
-    figure, axs  = plottingbase.draw_figure(
+    figure, axs = plottingbase.draw_figure(
         num_subplots,
         config["rows_page"],
         config["cols_page"],
@@ -478,6 +480,7 @@ def plot(
     plt.close(figure)
     
     return
+
 
 if __name__ == "__main__":
     

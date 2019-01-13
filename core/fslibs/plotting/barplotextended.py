@@ -3,6 +3,7 @@ import json
 
 from matplotlib import pyplot as plt
 
+from core import validate
 from core.fslibs import Logger
 from plotlibs import (
     plottingbase,
@@ -18,9 +19,9 @@ _default_config = {
     "cols_page": 1,
     "rows_page": 6,
     
-    "y_lims":(0,0.3),
-    "x_label":"Residues",
-    "y_label":"your labels goes here",
+    "y_lims": (0, 0.3),
+    "x_label": "Residues",
+    "y_label": "your labels goes here",
     
     "suptitle_fn": "Arial",
     "suptitle_fs": 8,
@@ -31,13 +32,13 @@ _default_config = {
     "x_label_fs": 8,
     "x_label_pad": 2,
     "x_label_weight": "bold",
-    "x_label_rotation":0,
+    "x_label_rotation": 0,
     
     "y_label_fn": "Arial",
     "y_label_fs": 8,
     "y_label_pad": 3,
     "y_label_weight": "bold",
-    "y_label_rot":90,
+    "y_label_rot": 90,
     
     "x_ticks_pad": 2,
     "x_ticks_len": 2,
@@ -45,7 +46,7 @@ _default_config = {
     "x_ticks_fs": 6,
     "x_ticks_rot": 90,
     "x_ticks_weight": "normal",
-    "x_ticks_color_flag":True,
+    "x_ticks_color_flag": True,
     
     "y_ticks_fn": "Arial",
     "y_ticks_fs": 6,
@@ -53,7 +54,7 @@ _default_config = {
     "y_ticks_pad": 1,
     "y_ticks_weight": "normal",
     "y_ticks_len": 2,
-    "y_ticks_nbins":8,
+    "y_ticks_nbins": 8,
     
     "y_grid_flag": True,
     "y_grid_color": "lightgrey",
@@ -77,24 +78,24 @@ _default_config = {
     "user_marks_dict": {
         "foo": "f",
         "bar": "b",
-        "boo": "o"
-    },
+        "boo": "o",
+        },
     "user_bar_colors_dict": {
         "foo": "green",
         "bar": "yellow",
-        "boo": "magenta"
-    },
+        "boo": "magenta",
+        },
     
     "threshold_flag": True,
     "threshold_color": "red",
     "threshold_linewidth": 0.5,
     "threshold_alpha": 0.8,
-    "threshold_zorder":10,
+    "threshold_zorder": 10,
     
-    "plot_theoretical_pre":False,
+    "plot_theoretical_pre": False,
     "theo_pre_color": "red",
     "theo_pre_lw": 1.0,
-    "tag_id":"*",
+    "tag_id": "*",
     
     "tag_cartoon_color": "black",
     "tag_cartoon_ls": "-",
@@ -103,12 +104,12 @@ _default_config = {
     "hspace": 0.5,
     "wspace": 0.5,
     
-    "header_fontsize":5,
+    "header_fontsize": 5,
     
-    "figure_path":"bar_extended_horizontal.pdf",
-    "figure_dpi":300,
+    "figure_path": "bar_extended_horizontal.pdf",
+    "figure_dpi": 300,
     "fig_height": 11.69,
-    "fig_width": 8.69
+    "fig_width": 8.69,
     }
 
 
@@ -218,7 +219,7 @@ def _subplot(
     ax.set_xticks(xticks)
     
     # Set X ticks labels
-    ## https://github.com/matplotlib/matplotlib/issues/6266
+    # https://github.com/matplotlib/matplotlib/issues/6266
     ax.set_xticklabels(
         xticks_labels,
         fontname=c["x_ticks_fn"],
@@ -327,11 +328,11 @@ def _subplot(
         log.debug("Configuring for x_ticks_color_flag...")
         experimentplotbase.set_item_colors(
             ax.get_xticklabels(),
-            peak_status[i,0::mod_],
+            peak_status[i, 0::mod_],
             {
-                'measured':c["measured_color"],
-                'missing':c["missing_color"],
-                'unassigned':c["unassigned_color"],
+                'measured': c["measured_color"],
+                'missing': c["missing_color"],
+                'unassigned': c["unassigned_color"],
                 },
             )
         log.debug("...Done")
@@ -356,7 +357,7 @@ def _subplot(
             range(num_of_bars),
             ydata,
             letter_code,
-            {'P':c["mark_prolines_symbol"]},
+            {'P': c["mark_prolines_symbol"]},
             fs=c["mark_fontsize"],
             )
         log.debug("Prolines Marked: OK")
@@ -403,7 +404,7 @@ def _subplot(
             experimentplotbase.draw_paramagnetic_tag(
                 ax,
                 tag_found,
-                y_max,
+                ymax,
                 tag_cartoon_color=c["tag_cartoon_color"],
                 tag_cartoon_ls=c["tag_cartoon_ls"],
                 tag_cartoon_lw=c["tag_cartoon_lw"],
@@ -447,7 +448,7 @@ def plot(
     header : str, optional
         Multi-line string with additional human-readable notes.
         Header will be written in the output figure file in a dedicated
-        blank space. 
+        blank space.
     
     suptitles : list of str, optional
         Titles of each subplot, length must be equal to values.shape[0].
@@ -543,10 +544,10 @@ def plot(
         ("letter_code", letter_code),
         ]
     
-    [plotvalidators.validate_len(values[0,:], t)
+    [plotvalidators.validate_len(values[0, :], t)
         for t in args2validate if t[1] is not None]
     
-    plotvalidators.validate_len(values[:,0], ("suptitles", suptitles))
+    plotvalidators.validate_len(values[:, 0], ("suptitles", suptitles))
     
     # assigned and validates config
     config = {**_default_config, **kwargs}
@@ -560,7 +561,7 @@ def plot(
     """Runs all operations to plot."""
     num_subplots = experimentplotbase.calc_num_subplots(values)
     
-    figure, axs  = plottingbase.draw_figure(
+    figure, axs = plottingbase.draw_figure(
         num_subplots,
         config["rows_page"],
         config["cols_page"],
@@ -607,15 +608,16 @@ def plot(
     
     return
 
+
 if __name__ == "__main__":
     
     print_config()
     
-    ######################################################################## 1
-    ############ Short data set
+    # ####################################################################### 1
+    # ########### Short data set
     
-    values = np.full((7,15), 0.2)
-    labels = np.arange(1, len(values[0])+1).astype(str)
+    values = np.full((7, 15), 0.2)
+    labels = np.arange(1, len(values[0]) + 1).astype(str)
     
     c = {"figure_path": 1}
     plot(values, labels, header="oh my headeR!!!", **c)
