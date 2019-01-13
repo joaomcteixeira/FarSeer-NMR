@@ -37,7 +37,7 @@ def validate_config(ref, target, name="some config"):
     for key, value in ref.items():
         eval_types(key, value)
     
-    msg = f"Parameters type for {name} Plot evaluated successfully"
+    msg = f"Parameters type for {name} evaluated successfully"
     log.debug(msg)
     
     return
