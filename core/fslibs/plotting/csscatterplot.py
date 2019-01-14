@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 
 from core import validate
 from core.fslibs import Logger
-from plotlibs import (
+from core.fslibs.plotting.plotlibs import (
     plottingbase,
     plotvalidators,
     )
