@@ -1,3 +1,4 @@
+import itertools as it
 import numpy as np
 import json
 
@@ -5,7 +6,7 @@ from matplotlib import pyplot as plt
 
 from core import validate
 from core.fslibs import Logger
-from plotting import (
+from core.fslibs.plotting.plotlibs import (
     plottingbase,
     plotvalidators,
     )
@@ -94,8 +95,8 @@ def print_config(indent=4, sort_keys=True):
     return
 
 
-_subplot(
-        axs,
+def _subplot(
+        ax,
         residue_x_values,
         residue_y_values,
         i,
@@ -130,7 +131,7 @@ _subplot(
     if peak_status is not None:
         missing_mask = peak_status[i, :] == "missing"
         mark_color_list = \
-            [c["missing_color" if missing_mask[j] else mark_color_list[j]
+            [c["missing_color"] if missing_mask[j] else mark_color_list[j]
                 for j in range(len(mark_color_list))]
     
     # filter visibility according to user preferences
@@ -143,9 +144,9 @@ _subplot(
     ax.scatter(
         x_values,
         y_values,
-        c=mark_color_list[experiment],
+        c=mark_color_list,
         s=c["mk_size"],
-        alpha=alpha_list[experiment],
+        alpha=alpha_list,
         zorder=9,
         )
     
@@ -180,7 +181,7 @@ def _set_axis(ax, c):
         length=c["y_ticks_len"],
         direction='out'
         )
-    ## Configure axes labels
+    # Configure axes labels
     ax.set_xlabel(
         c["x_label"],
         fontsize=c["x_label_fs"],
@@ -188,7 +189,7 @@ def _set_axis(ax, c):
         fontname=c["x_label_fn"],
         weight=c["x_label_weight"]
         )
-    ## Configure YY ticks/label
+    # Configure YY ticks/label
     ax.set_ylabel(
         c["y_label"],
         fontsize=c["y_label_fs"],
@@ -314,8 +315,6 @@ def plot(
         >>> plot(some_values, some_labels, figure_path="my_plot.pdf")
     """
     
-    suptitles = suptitles or [str(i) for i in range(x_axis_values.shape[0])]
-    
     # validates type of positional arguments
     args2validate = [
         ("x_axis_values", x_axis_values, np.ndarray),
@@ -348,7 +347,7 @@ def plot(
         ]
     
     [plotvalidators.validate_len(x_axis_values[:, 0], t)
-        fort in args2validate if t[1] is not None]
+        for t in args2validate if t[1] is not None]
     
     # assigned and validates config
     config = {**_default_config, **kwargs}
