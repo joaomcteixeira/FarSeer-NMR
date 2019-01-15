@@ -1,3 +1,13 @@
+"""
+Parameter Evolution Plot.
+
+The Parameter Evolution Plot represents a grid of subplots where,
+in each subplot is represented the evolution of a given parameter
+along the titration series for a specific residue.
+
+The final figure contains one subplot per residue identified in the
+input data.
+"""
 import numpy as np
 import json
 
@@ -39,7 +49,7 @@ _default_config = {
     "y_label": "CSPs",
     
     "set_x_values": False,
-    "titration_x_values": [0, 25, 50, 100, 200, 400, 500],
+    "titration_x_values": [],
     "x_ticks_fn": "Arial",
     "x_ticks_fs": 5,
     "x_ticks_pad": 1,
@@ -111,7 +121,6 @@ def _subplot(
         values,
         i,
         c,
-        xlabels,
         suptitles,
         peak_status,
         fitting,
@@ -129,14 +138,28 @@ def _subplot(
         )
     
     # Defines X Axis
-    ax.set_xticks(c["titration_x_values"])
-    xmin, xmax = c["titration_x_values"][0], c["titration_x_values"][-1]
+    
+    try:
+        xticks = [float(n) for n in c["titration_x_values"]]
+        is_float = True
+    
+    except ValueError as e:
+        xticks = list(range(len(values)))
+        is_float = False
+    
+    ax.set_xticks(xticks)
+    xmin, xmax = xticks[0], xticks[-1]
     ax.set_xlim(xmin, xmax)
-    if c["set_x_values"]:
-        ax.locator_params(axis="x", tight=True, nbins=c["x_ticks_nbins"])
+    
+    if is_float:
+        ax.locator_params(
+            axis="x",
+            tight=True,
+            nbins=c["x_ticks_nbins"],
+            )
     
     ax.set_xticklabels(
-        xlabels,
+        c["titration_x_values"],
         fontname=c["x_ticks_fn"],
         fontsize=c["x_ticks_fs"],
         fontweight=c["x_ticks_weight"],
@@ -210,14 +233,19 @@ def _subplot(
         return
     
     # do not represent the missing peaks.
-    mask = peak_status[i, :] != "missing"
-    measured = values[mask]
-    x_measured = ax.get_xticks()[mask]
+    if peak_status is not None:
+        measured_mask = peak_status[i, :] == "measured"
+        measured_values = values[measured_mask]
+        x_measured = ax.get_xticks()[measured_mask]
+    
+    else:
+        measured_values = values
+        x_measured = ax.get_xticks()
     
     # Plots data
     ax.plot(
         x_measured,
-        measured,
+        measured_values,
         ls=c["line_style"],
         color=c["line_color"],
         marker=c["marker_style"],
@@ -231,7 +259,7 @@ def _subplot(
         ax.fill_between(
             x_measured,
             0,
-            measured,
+            measured_values,
             facecolor=c["fill_color"],
             alpha=c["fill_alpha"],
             )
@@ -266,8 +294,6 @@ def _subplot(
 def plot(
         values,
         header="",
-        exp_values=None,
-        xlabels=None,
         suptitles=None,
         peak_status=None,
         fitting=None,
@@ -275,35 +301,34 @@ def plot(
         **kwargs,
         ):
     """
-    Plots Residue Evolution Plot.
-    
-    "Residue Evolution Plot" is an historical name. It represents
-    a grid of one subplot per each protein residue. In each subplot,
-    the evolution of a given parameter is represented against along
-    the titration series.
+    Plots Parameter Evolution plot.
     
     Parameters
     ----------
     values : np.ndarray with shape (y, x), dtype=float
-        Values to plot.
+        Values of the parameter to plot.
         
         Where X (axis=1) represents the evolution of the parameter
-        to plot for the individual residues along the titration series,
+        to plot for an individual residues along the titration series,
         
         and Y (axis=0) represents the different residues sequentially
         ordered according to the protein sequence.
     
-    exp_values : list of length X (values.shape[1]), dtype=float or int
-        Values to represent as plot x axis values.
-        Should to represent data derived from sequential titrations.
+        The plot X axis data (xticks) is given by the
+        "titration_x_values" key of the configuration dictionary
+        (see Plot Configuration Parameters bellow).
         
-        If none provided, uses range(1, values.shape[1] + 1).
-        Points in plot will be drawn equidistantly.
-    
-    xlabels : list of length X (values.shape[1]), dtype=str
-        Labels to represent in the X axis in case the series does not
-        represent a sequential series. If <exp_values> is given, <xlabels>
-        are ignored.
+        "titration_x_values" should be a list of the vales to represent
+        in the subplots X axis ticks. Optional parameter.
+        
+        If not provided (default) assumes an integer range: 1, 2, 3...
+        
+        If "titration_x_values" can be converted to int or floats it
+        will be used as such and X ticks separation will be according
+        to those values.
+        
+        Otherwise it will be used as string labels in evenly separated
+        ticks.
     
     suptitles : list of lenght Y (values.shape[0]), dtype=str, optional
         Suptitles for each subplot. Generally are the residue names:
@@ -370,8 +395,6 @@ def plot(
     # validates type of named optional arguments
     args2validate = [
         ("header", header, str),
-        ("exp_values", exp_values, list),
-        ("xlabels", xlabels, list),
         ("suptitles", suptitles, list),
         ("peak_status", peak_status, np.ndarray),
         ("fitting", fitting, np.ndarray),
@@ -398,44 +421,22 @@ def plot(
     [plotvalidators.validate_len(values[:, 0], t)
         for t in args2validate if t[1] is not None]
     
-    args2validate = [
-        ("exp_values", exp_values),
-        ("xlabels", xlabels),
-        ]
+    # args2validate = [
+        #
+        # ]
     
-    [plotvalidators.validate_len(values[0, :], t)
-        for t in args2validate if t[1] is not None]
+    # [plotvalidators.validate_len(values[0, :], t)
+        # for t in args2validate if t[1] is not None]
     
     # assigned and validates config
     config = {**_default_config, **kwargs}
     
-    if exp_values:
-        config.update(
-            {
-                "set_x_values": True,
-                "titration_x_values": exp_values,
-                }
-            )
-    
-    elif exp_values is None and not config["set_x_values"]:
-        config.update(
-            {"titration_x_values": list(range(1, values.shape[1] + 1))}
-            )
-        
-        if xlabels is None:
-            xlabels = [str(i) for i in config["titration_x_values"]]
-    
     plotvalidators.validate_config(
         _default_config,
         config,
-        name="Residue Evolution Plot",
+        name="Parameter Evolution Plot",
         )
     
-    # additional validation
-    plotvalidators.validate_len(
-        values[0, :],
-        ("titration_x_values", config["titration_x_values"]),
-        )
     
     """Runs all operations to plot."""
     num_subplots = values.shape[0]
@@ -454,7 +455,6 @@ def plot(
             values[i],
             i,
             config,
-            xlabels,
             suptitles,
             peak_status,
             fitting,
