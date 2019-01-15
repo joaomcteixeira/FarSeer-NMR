@@ -1,11 +1,5 @@
-import inspect
-import collections
 import numpy as np
 
-from matplotlib.axes import Axes
-from matplotlib import pyplot as plt
-
-from core import validate
 from core.fslibs import Logger
 
 log = Logger.FarseerLogger(__name__).setup_log()
@@ -26,6 +20,7 @@ def calc_num_subplots(values):
     log.debug(f"Number of subplots: {num_subplots}")
     
     return num_subplots
+
 
 def draw_paramagnetic_tag(
         ax,
@@ -64,7 +59,7 @@ def draw_paramagnetic_tag(
         Tag tick line width. Defaults to 1.0.
     """
     
-    y_lim = y_lim*0.1
+    y_lim = y_lim * 0.1
     
     if plottype in ['h', 'DPRE_plot']:
         ax.vlines(
@@ -119,6 +114,7 @@ def draw_paramagnetic_tag(
             )
     return
 
+
 def finds_paramagnetic_tag(
         data,
         tag_data,
@@ -153,13 +149,14 @@ def finds_paramagnetic_tag(
     
     log.debug("Tag info: {}".format(tag_data))
     
-    where_tag = np.where(tag_data==tag_id)
+    where_tag = np.where(tag_data == tag_id)
     log.debug("Tag mask found: {}".format(where_tag))
     
     tag_position = list(range(len(data)))[where_tag[0][0]]
     log.debug("Tag bar index position: {}".format(tag_position))
     
     return tag_position
+
 
 def plot_theo_pre(
         ax,
@@ -213,6 +210,7 @@ def plot_theo_pre(
     
     return
 
+
 def set_item_colors(items, values, d):
     """
     Colour codes <items> according to conditions in <values>
@@ -236,6 +234,7 @@ def set_item_colors(items, values, d):
         if str(v) in d.keys():
             item_.set_color(d[str(v)])
     return
+
 
 def text_marker(
         ax,
@@ -282,13 +281,13 @@ def text_marker(
             if str(s) in d.keys():
                 
                 if np.nan_to_num(y) > 0:
-                    ha='left'
+                    ha = 'left'
                     
                 elif np.nan_to_num(y) < 0:
-                    ha='right'
+                    ha = 'right'
                 
                 else:
-                    ha='center'
+                    ha = 'center'
                 
                 ax.text(
                     np.nan_to_num(y),
@@ -305,13 +304,13 @@ def text_marker(
             if str(s) in d.keys():
                 
                 if np.nan_to_num(y) > 0:
-                    va='bottom'
+                    va = 'bottom'
                     
                 elif np.nan_to_num(y) < 0:
-                    va='top'
+                    va = 'top'
                 
                 else:
-                    va='bottom'
+                    va = 'bottom'
                 
                 ax.text(
                     np.nan_to_num(x),

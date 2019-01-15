@@ -1,12 +1,8 @@
-import inspect
 from math import ceil
 
-import numpy as np
-import matplotlib.figure as mplfigure
 from matplotlib import pyplot as plt
 
 
-from core import validate
 import core.fslibs.Logger as Logger
 from core.fslibs.WetHandler import WetHandler
 
@@ -44,13 +40,15 @@ def hex_to_RGB(hexx):
 
     "#FFFFFF" -> [255,255,255]
     """
-    # if clause not part of the original function, added for the Farseer-NMR Project.
+    # IF STATEMENT not part of the original function,
+    # added for the Farseer-NMR Project.
     if not(hexx.startswith("#") and len(hexx) == 7):
         msg = "The input colour is not in HEX format."
         wet = WetHandler(msg_title="ERROR", msg=msg, wet_num=27)
         wet.abort()
     # Pass 16 to the integer function for change of base
-    return [int(hexx[i:i+2], 16) for i in range(1,6,2)]
+    return [int(hexx[i:i + 2], 16) for i in range(1, 6, 2)]
+
 
 def RGB_to_hex(RGB):
     """
@@ -85,10 +83,12 @@ def RGB_to_hex(RGB):
     """
     # Components need to be integers for hex to make sense
     RGB = [int(x) for x in RGB]
-    hexx = "#"+"".join(
-        ["0{0:x}".format(v) if v < 16 else "{0:x}".format(v) for v in RGB]
+    hexx = "#" + "".join(
+        ["0{0:x}".format(v) if v < 16 else "{0:x}".format(v)
+            for v in RGB]
         )
     return hexx
+
 
 def color_dict(gradient):
     """
@@ -124,15 +124,16 @@ def color_dict(gradient):
     defined later on.
     """
     d = {
-        "hex":[self._RGB_to_hex(RGB) for RGB in gradient],
-        "r":[RGB[0] for RGB in gradient],
-        "g":[RGB[1] for RGB in gradient],
-        "b":[RGB[2] for RGB in gradient]
+        "hex": [RGB_to_hex(RGB) for RGB in gradient],
+        "r": [RGB[0] for RGB in gradient],
+        "g": [RGB[1] for RGB in gradient],
+        "b": [RGB[2] for RGB in gradient]
         }
     
     return d
 
-def linear_gradient(finish_hex="#FFFFFF", n=10):
+
+def linear_gradient(start_hex, finish_hex="#FFFFFF", n=10):
     """
     This function was taken verbatim from:
     Copyright 2017 Ben Southgate
@@ -167,21 +168,21 @@ def linear_gradient(finish_hex="#FFFFFF", n=10):
     inlcuding the number sign ("#FFFFFF")
     """
     # Starting and ending colors in RGB form
-    s = _hex_to_RGB(start_hex)
-    f = _hex_to_RGB(finish_hex)
+    s = hex_to_RGB(start_hex)
+    f = hex_to_RGB(finish_hex)
     # Initilize a list of the output colors with the starting color
     RGB_list = [s]
     # Calcuate a color at each evenly spaced value of t from 1 to n
     for t in range(1, n):
         # Interpolate RGB vector for color at the current value of t
         curr_vector = [
-            int(s[j] + (float(t)/(n-1))*(f[j]-s[j]))
+            int(s[j] + (float(t) / (n - 1)) * (f[j] - s[j]))
             for j in range(3)
-        ]
+            ]
         # Add it to our list of output colors
         RGB_list.append(curr_vector)
     
-    return _color_dict(RGB_list)
+    return color_dict(RGB_list)
 
 
 def calc_num_rows(num_subplots, cols_page):
@@ -206,7 +207,7 @@ def calc_num_rows(num_subplots, cols_page):
             The calculated number.
     """
     
-    return ceil(num_subplots/cols_page) + 1 
+    return ceil(num_subplots / cols_page) + 1
 
 
 def calc_real_fig_height(rows_page, numrows, fig_hgt):
@@ -232,7 +233,7 @@ def calc_real_fig_height(rows_page, numrows, fig_hgt):
             Value in Inches of the final figure height.
     """
     
-    return (fig_hgt/rows_page)*numrows
+    return (fig_hgt / rows_page) * numrows
 
 
 def draw_figure(
@@ -245,7 +246,7 @@ def draw_figure(
     """
     Draws the matplotlib figure architecture.
     
-    Defines subplot grid distrubitions based on the data to plot, 
+    Defines subplot grid distrubitions based on the data to plot,
     desired rows and columns per page, figure height and width.
     
     Parameters
@@ -278,7 +279,7 @@ def draw_figure(
         )
     
     real_fig_height = calc_real_fig_height(
-        rows_page, 
+        rows_page,
         numrows,
         fig_height,
         )
@@ -293,7 +294,7 @@ def draw_figure(
     axs = axs.ravel()
     
     plt.tight_layout(
-        rect=[0.01,0.01,0.995,0.995]
+        rect=[0.01, 0.01, 0.995, 0.995]
         )
     
     log.debug("Figure drawn: OKAY")
@@ -328,6 +329,7 @@ def adjust_subplots(figure, hspace, wspace):
         )
     
     return
+
 
 def clean_subplots(axes, num_subplots):
     """
@@ -387,7 +389,7 @@ def save_figure(
         The header fontsize.
     
     dpi : int
-        The resolution in dots per inch. 
+        The resolution in dots per inch.
         
         The Figure resolution in dpi. Deppends on the file extension.
         
@@ -407,6 +409,3 @@ def save_figure(
     log.info(f"**Saved plot figure** {file_path}\n")
     
     return
-
-
-
