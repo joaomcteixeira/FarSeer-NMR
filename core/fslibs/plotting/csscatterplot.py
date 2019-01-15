@@ -1,3 +1,10 @@
+"""
+Chemical Shift Scatter Flower Plot.
+    
+The chemical shift differences along the two dimensions (axes) are
+represented, centered at the refence value (0,0) in the plot scale,
+data for all protein residues are represented in a single subplot.
+"""
 import itertools as it
 import numpy as np
 import json

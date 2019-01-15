@@ -1,3 +1,14 @@
+"""
+DeltaPRE HeatMap Plot.
+
+Represents DeltaPRE data in heat maps, according to:
+
+Arbesú, M. et al. The Unique Domain Forms a Fuzzy Intramolecular 
+    Complex in Src Family Kinases. Structure 25, 630–640.e4 (2017).
+
+Subplots, one for each peaklist, i.e. experiment, are stacked
+sequentially from top to bottom.
+"""
 import numpy as np
 import json
 
@@ -195,14 +206,7 @@ def plot(
         **kwargs,
         ):
     """
-    Plots according to the DetalPRE Heat Map Plot Template.
-    
-    The DetalPRE Heat Map Plot template draws wide Bar plots that are
-    designed to fit one page with. Bar Plots represent parameters
-    for each residue individually in the form of bars.
-    
-    Subplots, one for each peaklist, i.e. experiment, are stacked
-    sequentially from top to bottom.
+    Plots DetalPRE Heat Map plot.
     
     Parameters
     ----------

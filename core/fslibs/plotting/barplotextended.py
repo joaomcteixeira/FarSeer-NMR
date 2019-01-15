@@ -1,3 +1,21 @@
+"""
+Extended Horizontal Bar Plot.
+
+Each subplot represents an datapoint in the experimental titration,
+i.e., a peaklist.
+
+The value of the parameter is represented for each residue in the
+form of bars - there is a bar for each residue.
+
+Subplots are stacked sequentially from top to bottom. This arrangement
+can be used directly as a supplementary figure in your publications.
+Or subplots can be cropped to fit figure panels.
+
+Plots can be enhanced using the specific parameters in .plot().
+
+The configuration dictionary provided with this module can be used
+to tweak the plotting style and details.
+"""
 import numpy as np
 import json
 

@@ -1,3 +1,14 @@
+"""
+DeltaPRE Plot.
+
+Represents PRE and DeltaPRE data, according to:
+
+Arbesú, M. et al. The Unique Domain Forms a Fuzzy Intramolecular 
+    Complex in Src Family Kinases. Structure 25, 630–640.e4 (2017).
+
+Subplots, one for each peaklist, i.e. experiment, are stacked
+sequentially from top to bottom.
+"""
 import itertools as it
 import numpy as np
 import json
@@ -383,16 +394,6 @@ def plot(
         ):
     """
     Plots according to the Delta PRE Plot Template.
-    
-    The Delta PRE Plot template draws wide subplots
-    designed to fit half page with individually.
-    
-    Bar Plots represent parameters for each residue individually
-    in the form of bars.
-    
-    Subplots, one for each peaklist, i.e. experiment, are stacked
-    sequentially in grid from top to bottom.
-    This arrangement can be used directly as a supplementary figure.
     
     Parameters
     ----------

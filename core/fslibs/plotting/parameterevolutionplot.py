@@ -1,7 +1,7 @@
 """
 Parameter Evolution Plot.
 
-The Parameter Evolution Plot represents a grid of subplots where,
+The Parameter Evolution Plot consists of a grid of subplots where,
 in each subplot is represented the evolution of a given parameter
 along the titration series for a specific residue.
 

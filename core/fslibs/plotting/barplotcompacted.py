@@ -1,3 +1,22 @@
+"""
+The Compacted Bar Plot template draws square-shaped subplots
+designed to fit half page with individually.
+
+Each subplot represents an datapoint in the experimental titration,
+i.e., a peaklist.
+
+The value of the parameter is represented for each residue in the
+form of bars - there is a bar for each residue.
+
+Subplots are stacked sequentially in grid from left to right and from
+top to bottom. This arrangement can be used directly as a supplementary
+figure in your publications.
+
+Plots can be enhanced using the specific parameters in .plot() function.
+
+The configuration dictionary provided with this module can be used
+to tweak the plotting style and details.
+"""
 import numpy as np
 import json
 
@@ -413,16 +432,6 @@ def plot(
         ):
     """
     Plots according to the Compacted Bar Plot Template.
-    
-    The Compacted Bar Plot template draws square-shaped subplots
-    designed to fit half page with individually.
-    
-    Bar Plots represent parameters for each residue individually
-    in the form of bars.
-    
-    Subplots, one for each peaklist, i.e. experiment, are stacked
-    sequentially in grid from left to right and from top to bottom.
-    This arrangement can be used directly as a supplementary figure.
     
     Parameters
     ----------

@@ -1,3 +1,11 @@
+"""
+Chemical Shift Scatter Plot.
+    
+It represents a grid of one subplot per each protein residue.
+
+The chemical shift differences along the two dimensions (axes) are
+represented, centered at the refence value (0,0) in the plot scale.
+"""
 import itertools as it
 import numpy as np
 import json
@@ -248,12 +256,7 @@ def plot(
         **kwargs,
         ):
     """
-    Plots Chemical Shift Scatter Plot.
-    
-    It represents a grid of one subplot per each protein residue.
-    
-    The chemical shift differences along the two axes are represented,
-    centered at the refence value (0,0) in the plot scale.
+    Plots Chemical Shift Scatter plot.
     
     Parameters
     ----------
